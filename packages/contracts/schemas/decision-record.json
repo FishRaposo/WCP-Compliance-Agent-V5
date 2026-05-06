@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DecisionRecord",
+  "description": "Official persisted decision record created by Data Platform",
+  "type": "object",
+  "required": ["decision_id", "request_id", "artifact_id", "verdict", "trust_score", "trust_band", "created_at"],
+  "properties": {
+    "decision_id": { "type": "string", "format": "uuid" },
+    "request_id": { "type": "string" },
+    "artifact_id": { "type": "string" },
+    "tenant_id": { "type": "string" },
+    "contract_id": { "type": "string" },
+    "verdict": { "type": "string", "enum": ["approved", "rejected", "needs_review"] },
+    "trust_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "trust_band": { "type": "string", "enum": ["auto_approve", "flag_for_review", "require_human_review"] },
+    "summary": { "type": "string" },
+    "issues": { "type": "array", "items": { "type": "object" } },
+    "deterministic_report_id": { "type": "string" },
+    "llm_trace_id": { "type": "string" },
+    "model": { "type": "string" },
+    "prompt_version": { "type": "string" },
+    "citations": { "type": "array", "items": { "type": "object" } },
+    "cost_usd": { "type": "number" },
+    "latency_ms": { "type": "integer" },
+    "trace_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

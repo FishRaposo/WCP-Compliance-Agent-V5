@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  typescript:
+    name: TypeScript Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test
+
+  compliance-core:
+    name: Compliance Core (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/compliance-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: snok/install-poetry@v1
+        with:
+          version: 1.8
+      - run: poetry install --no-interaction
+      - run: poetry run ruff check .
+      - run: poetry run mypy src/
+      - run: poetry run pytest tests/unit -v
+
+  data-platform:
+    name: Data Platform (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/data-platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: snok/install-poetry@v1
+        with:
+          version: 1.8
+      - run: poetry install --no-interaction
+      - run: poetry run ruff check .
+      - run: poetry run mypy src/
+      - run: poetry run pytest tests/unit -v

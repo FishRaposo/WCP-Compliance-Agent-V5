@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "generated_at": "2026-05-06",
+    "model": "mock",
+    "version": "5.0.0"
+  },
+  "scores": {
+    "gs-001": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-002": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
+    "gs-003": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count_min_met": true},
+    "gs-004": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-005": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
+    "gs-006": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-007": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
+    "gs-008": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-009": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-010": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0}
+  }
+}

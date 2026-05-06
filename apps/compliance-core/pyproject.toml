@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "wcp-compliance-core"
+version = "5.0.0"
+description = "Deterministic payroll compliance validation for Davis-Bacon Act — WCP V5 Compliance Core Service"
+authors = ["WCP Team"]
+packages = [{include = "wcp_compliance", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = ">=0.115.0"
+uvicorn = {version = ">=0.32.0", extras = ["standard"]}
+pydantic = ">=2.10.0"
+pdfplumber = ">=0.11.0"
+python-multipart = ">=0.0.18"
+pydantic-settings = ">=2.7.0"
+opentelemetry-api = ">=1.29.0"
+opentelemetry-sdk = ">=1.29.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3.0"
+pytest-asyncio = ">=0.24.0"
+ruff = ">=0.8.0"
+mypy = ">=1.13.0"
+httpx = "^0.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "eval: golden-set evaluation tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true

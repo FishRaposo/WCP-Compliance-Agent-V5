@@ -1,0 +1,650 @@
+[
+  {
+    "id": "gs-001",
+    "input": "Contractor: Apex Builders Inc.\nProject: Federal Building Renovation\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: John Doe\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Clean payroll"
+  },
+  {
+    "id": "gs-002",
+    "input": "Contractor: Budget Construction\nProject: Highway Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Jane Smith\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 25.00\nFringe: 500.00\nGross: 1000.00\nDeductions: 100.00\nNet: 900.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "Underpaid electrician"
+  },
+  {
+    "id": "gs-003",
+    "input": "Contractor: Overtime Corp\nProject: Stadium Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Bob Wilson\nTrade: Electrician\nHours: 45\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1600.00\nGross: 2475.00\nDeductions: 200.00\nNet: 2275.00",
+    "expected_verdict": "needs_review",
+    "expected_overall": "warnings",
+    "expected_violations": 0,
+    "expected_warnings_min": 1,
+    "description": "Missing overtime"
+  },
+  {
+    "id": "gs-004",
+    "input": "Contractor: FringeCo\nProject: Library Renovation\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice Green\nTrade: Plumber\nHours: 40\nOvertime Hours: 0\nHourly Wage: 50.00\nFringe: 1200.00\nGross: 2000.00\nDeductions: 100.00\nNet: 1900.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Plumber adequate"
+  },
+  {
+    "id": "gs-005",
+    "input": "Contractor: Math Errors Inc\nProject: School Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Carl Brown\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 9999.00\nDeductions: 150.00\nNet: 9849.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Arithmetic error"
+  },
+  {
+    "id": "gs-006",
+    "input": "Contractor: Better Builders\nProject: Park Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Diana Li\nTrade: Carpenter\nHours: 40\nOvertime Hours: 0\nHourly Wage: 45.00\nFringe: 1100.00\nGross: 1800.00\nDeductions: 100.00\nNet: 1700.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Carpenter above DBWD"
+  },
+  {
+    "id": "gs-007",
+    "input": "Contractor: MinWage Violation\nProject: Bridge Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Eva White\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 5.00\nFringe: 0.00\nGross: 200.00\nDeductions: 0.00\nNet: 200.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 3,
+    "expected_warnings": 0,
+    "description": "Below federal minimum wage"
+  },
+  {
+    "id": "gs-008",
+    "input": "Contractor: Good Job Inc\nProject: Hospital Project\nLocation: Washington, DC\nCertified: 2025-06-15\nPayroll # 1\nWeek Ending: 2025-06-14\n\nName: Frank Gold\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Complete with payroll number"
+  },
+  {
+    "id": "gs-009",
+    "input": "Contractor: Masonry Plus\nProject: Courthouse Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Greg Stone\nTrade: Mason\nHours: 40\nOvertime Hours: 0\nHourly Wage: 42.15\nFringe: 950.00\nGross: 1686.00\nDeductions: 100.00\nNet: 1586.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Mason at exact DBWD rate"
+  },
+  {
+    "id": "gs-010",
+    "input": "Contractor: Roofer Express\nProject: Airport Terminal\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Helen Top\nTrade: Roofer\nHours: 40\nOvertime Hours: 0\nHourly Wage: 30.00\nFringe: 800.00\nGross: 1200.00\nDeductions: 100.00\nNet: 1100.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Roofer below DBWD minimum"
+  },
+  {
+    "id": "gs-011",
+    "input": "Contractor: ExactMatch Corp\nProject: City Hall\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ian Exact\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 51.69\nFringe: 1385.20\nGross: 2067.60\nDeductions: 0.00\nNet: 2067.60",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Wage exactly at DBWD minimum, fringe exactly at DBWD minimum"
+  },
+  {
+    "id": "gs-012",
+    "input": "Contractor: PennyOff Inc\nProject: Small Project\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Jack Penny\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 51.68\nFringe: 1400.00\nGross: 2067.20\nDeductions: 0.00\nNet: 2067.20",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Wage one penny below DBWD minimum"
+  },
+  {
+    "id": "gs-013",
+    "input": "Contractor: MassiveOvertime Corp\nProject: Emergency Repair\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Kate Long\nTrade: Electrician\nHours: 60\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 2100.00\nGross: 3300.00\nDeductions: 300.00\nNet: 3000.00",
+    "expected_verdict": "needs_review",
+    "expected_overall": "warnings",
+    "expected_violations": 0,
+    "expected_warnings_min": 1,
+    "description": "60 hours no overtime recorded"
+  },
+  {
+    "id": "gs-015",
+    "input": "Contractor: ZeroFringe Inc\nProject: Warehouse\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Mike Zero\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 60.00\nFringe: 0.00\nGross: 2400.00\nDeductions: 0.00\nNet: 2400.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Zero fringe benefits"
+  },
+  {
+    "id": "gs-016",
+    "input": "Contractor: PartialFringe LLC\nProject: Office Park\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Nancy Half\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 700.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Fringe at half of required"
+  },
+  {
+    "id": "gs-017",
+    "input": "Contractor: ExcessFringe Co\nProject: Luxury Tower\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Oscar Rich\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 3000.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Excess fringe \u00e2\u20ac\u201d well above DBWD minimum"
+  },
+  {
+    "id": "gs-018",
+    "input": "Contractor: GrossOnlyErr Inc\nProject: Small Office\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Paul Gross\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 3000.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Gross overstated, net correct"
+  },
+  {
+    "id": "gs-019",
+    "input": "Contractor: NetOnlyErr Inc\nProject: Retail Space\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Quinn Net\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 3000.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Net overstated, gross correct"
+  },
+  {
+    "id": "gs-020",
+    "input": "Contractor: NoSignature LLC\nProject: Anonymous Build\nLocation: Washington, DC\n\nName: Rita None\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Missing certification date"
+  },
+  {
+    "id": "gs-021",
+    "input": "Contractor: FutureDated Inc\nProject: Time Machine\nLocation: Washington, DC\nCertified: 2099-12-31\n\nName: Sam Future\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Future-dated certification"
+  },
+  {
+    "id": "gs-022",
+    "input": "Contractor: Dual Workers Inc\nProject: Twin Towers\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00\n\nName: Bob\nTrade: Plumber\nHours: 40\nOvertime Hours: 0\nHourly Wage: 50.00\nFringe: 1200.00\nGross: 2000.00\nDeductions: 100.00\nNet: 1900.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Two clean employees"
+  },
+  {
+    "id": "gs-023",
+    "input": "Contractor: MixedTrades LLC\nProject: Strip Mall\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 20.00\nFringe: 500.00\nGross: 800.00\nDeductions: 0.00\nNet: 800.00\n\nName: Bob\nTrade: Plumber\nHours: 40\nOvertime Hours: 0\nHourly Wage: 50.00\nFringe: 1200.00\nGross: 2000.00\nDeductions: 100.00\nNet: 1900.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "One violating, one clean"
+  },
+  {
+    "id": "gs-024",
+    "input": "Contractor: TripleThreat Inc\nProject: Mega Mall\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00\n\nName: Bob\nTrade: Laborer\nHours: 40\nOvertime Hours: 0\nHourly Wage: 30.00\nFringe: 700.00\nGross: 1200.00\nDeductions: 100.00\nNet: 1100.00\n\nName: Carol\nTrade: Ironworker\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1300.00\nGross: 2200.00\nDeductions: 100.00\nNet: 2100.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Three employees, three trades"
+  },
+  {
+    "id": "gs-025",
+    "input": "Contractor: MultiViolation Inc\nProject: Disaster Zone\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 10.00\nFringe: 0.00\nGross: 400.00\nDeductions: 0.00\nNet: 400.00\n\nName: Bob\nTrade: Laborer\nHours: 50\nOvertime Hours: 0\nHourly Wage: 10.00\nFringe: 0.00\nGross: 500.00\nDeductions: 0.00\nNet: 500.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 4,
+    "expected_warnings_min": 1,
+    "description": "Multiple severe violations"
+  },
+  {
+    "id": "gs-026",
+    "input": "Contractor: NegativeHours Corp\nProject: Time Warp\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Dave Negative\nTrade: Electrician\nHours: -5\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: -275.00\nDeductions: 0.00\nNet: -275.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Negative hours \u00e2\u20ac\u201d data integrity fail"
+  },
+  {
+    "id": "gs-027",
+    "input": "Contractor: ImpossibleHours Inc\nProject: Overworked\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Eve Impossible\nTrade: Electrician\nHours: 200\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 7000.00\nGross: 11000.00\nDeductions: 0.00\nNet: 11000.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings_min": 1,
+    "description": "200 hours in a week \u00e2\u20ac\u201d data integrity fail"
+  },
+  {
+    "id": "gs-028",
+    "input": "Contractor: DeductionsExceedGross\nProject: Garnishment\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Frank Garnish\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 3000.00\nNet: -800.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "Deductions exceed gross + negative net"
+  },
+  {
+    "id": "gs-029",
+    "input": "Contractor: ZeroRateWorker\nProject: Volunteer\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Grace Zero\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 0.00\nFringe: 0.00\nGross: 0.00\nDeductions: 0.00\nNet: 0.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Zero hourly wage \u00e2\u20ac\u201d data integrity + minimum wage fail"
+  },
+  {
+    "id": "gs-030",
+    "input": "Contractor: Flagger Corp\nProject: Road Work\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Hank Flag\nTrade: Flagger\nHours: 40\nOvertime Hours: 0\nHourly Wage: 22.75\nFringe: 492.00\nGross: 910.00\nDeductions: 0.00\nNet: 910.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Flagger at exact DBWD rate"
+  },
+  {
+    "id": "gs-031",
+    "input": "Contractor: Painter Corp\nProject: Mural\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Iris Paint\nTrade: Painter\nHours: 40\nOvertime Hours: 0\nHourly Wage: 38.90\nFringe: 740.00\nGross: 1556.00\nDeductions: 0.00\nNet: 1556.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Painter at exact DBWD rate"
+  },
+  {
+    "id": "gs-032",
+    "input": "Contractor: Trucker LLC\nProject: Logistics\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Jack Drive\nTrade: Truck Driver\nHours: 40\nOvertime Hours: 0\nHourly Wage: 30.20\nFringe: 658.00\nGross: 1208.00\nDeductions: 0.00\nNet: 1208.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Truck Driver at exact DBWD rate"
+  },
+  {
+    "id": "gs-033",
+    "input": "Contractor: Welder Pro\nProject: Steel Frame\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Kyle Weld\nTrade: Welder\nHours: 40\nOvertime Hours: 0\nHourly Wage: 48.25\nFringe: 1076.00\nGross: 1930.00\nDeductions: 0.00\nNet: 1930.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Welder at exact DBWD rate"
+  },
+  {
+    "id": "gs-034",
+    "input": "Contractor: RooferCheap\nProject: Leaky Roof\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Leo Leak\nTrade: Roofer\nHours: 40\nOvertime Hours: 0\nHourly Wage: 25.00\nFringe: 500.00\nGross: 1000.00\nDeductions: 0.00\nNet: 1000.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "Roofer way below DBWD minimum"
+  },
+  {
+    "id": "gs-035",
+    "input": "Contractor: InsulationCheap\nProject: Cold Storage\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Mary Cold\nTrade: Insulation Worker\nHours: 40\nOvertime Hours: 0\nHourly Wage: 37.60\nFringe: 806.00\nGross: 1504.00\nDeductions: 0.00\nNet: 1504.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Insulation Worker at exact DBWD rate"
+  },
+  {
+    "id": "gs-036",
+    "input": "Contractor: NoEmployees Inc\nProject: Empty Lot\nLocation: Washington, DC\nCertified: 2025-06-15\nPayroll # 2\nWeek Ending: 2025-06-14",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Payroll with no employees \u00e2\u20ac\u201d edge case"
+  },
+  {
+    "id": "gs-037",
+    "input": "Contractor: UnknownTrade Co\nProject: Mystery\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Zoe Mystery\nTrade: Underwater Basket Weaver\nHours: 40\nOvertime Hours: 0\nHourly Wage: 50.00\nFringe: 1000.00\nGross: 2000.00\nDeductions: 100.00\nNet: 1900.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Unknown trade classification \u00e2\u20ac\u201d fail"
+  },
+  {
+    "id": "gs-041",
+    "input": "Contractor: PartialWeek\nProject: Half Time\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Wendy Part\nTrade: Electrician\nHours: 20\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 700.00\nGross: 1100.00\nDeductions: 100.00\nNet: 1000.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Part-time worker \u00e2\u20ac\u201d 20 hours"
+  },
+  {
+    "id": "gs-042",
+    "input": "Contractor: PartTimeFringeFail\nProject: Half Time Cheap\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Xavier Cheap\nTrade: Electrician\nHours: 20\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 350.00\nGross: 1100.00\nDeductions: 100.00\nNet: 1000.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Part-time with insufficient fringe"
+  },
+  {
+    "id": "gs-043",
+    "input": "Contractor: DrywallMaster\nProject: Interior\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Yara Dry\nTrade: Drywall Installer\nHours: 40\nOvertime Hours: 0\nHourly Wage: 35.90\nFringe: 706.00\nGross: 1436.00\nDeductions: 0.00\nNet: 1436.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Drywall Installer at exact DBWD rate"
+  },
+  {
+    "id": "gs-044",
+    "input": "Contractor: TolerenceEdge\nProject: Precision\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Zack Edge\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.009\nDeductions: 150.00\nNet: 2050.009",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Within 1 cent tolerance"
+  },
+  {
+    "id": "gs-045",
+    "input": "Contractor: TolerenceFail\nProject: Imprecise\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Amy Fail\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.02\nDeductions: 150.00\nNet: 2050.02",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Just outside 1 cent tolerance"
+  },
+  {
+    "id": "gs-046",
+    "input": "Contractor: Employer Label\nProject: Government Center\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Pat Gov\nTrade: Electrician\nHours: 40\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "No overtime hours field \u00e2\u20ac\u201d extraction handles"
+  },
+  {
+    "id": "gs-048",
+    "input": "Contractor: Address Format\nAddress: 1600 Pennsylvania Ave\nProject: White House\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Don Addr\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Contractor address extracted"
+  },
+  {
+    "id": "gs-049",
+    "input": "Contractor: EIN Format\nEIN: 12-3456789\nProject: Federal\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Eva EIN\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "EIN extracted"
+  },
+  {
+    "id": "gs-050",
+    "input": "Contractor: Contract Number\nProject: Highway 5\nLocation: Washington, DC\nContract Number: DOT-2025-555\nCertified: 2025-06-15\n\nName: Frank Contract\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Contract number extracted"
+  },
+  {
+    "id": "gs-052",
+    "input": "Contractor: TaxID Format\nProject: Revenue\nLocation: Washington, DC\nTax ID: 12-3456789\nCertified: 2025-06-15\n\nName: Hank Tax\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Tax ID label variant extracted"
+  },
+  {
+    "id": "gs-053",
+    "input": "Contractor: WageDet Format\nProject: Prevailing\nLocation: Washington, DC\nWage Determination: DC2025-001\nCertified: 2025-06-15\n\nName: Iris Wage\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Wage determination number extracted"
+  },
+  {
+    "id": "gs-054",
+    "input": "Contractor: TwoEmployeesBlock\nProject: Duplex\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Alice\nTrade: Electrician\nHours: 40\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00\n\nName: Bob\nTrade: Carpenter\nHours: 40\nHourly Wage: 45.00\nFringe: 1100.00\nGross: 1800.00\nDeductions: 100.00\nNet: 1700.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Two employees block format"
+  },
+  {
+    "id": "gs-055",
+    "input": "Contractor: NoDeductions\nProject: Simple\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Lily Simple\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "No deductions field \u00e2\u20ac\u201d net equals gross"
+  },
+  {
+    "id": "gs-057",
+    "input": "Contractor: Job Name\nProject: Job Site\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Nina Job\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Job Name label variant"
+  },
+  {
+    "id": "gs-058",
+    "input": "Contractor: Federal ID\nProject: Government\nLocation: Washington, DC\nFederal ID #: 12-3456789\nCertified: 2025-06-15\n\nName: Oscar Fed\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Federal ID label variant"
+  },
+  {
+    "id": "gs-059",
+    "input": "Contractor: AllTrades Co\nProject: Mixed Use\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: P1\nTrade: Surveyor\nHours: 40\nOvertime Hours: 0\nHourly Wage: 45.30\nFringe: 980.00\nGross: 1812.00\nDeductions: 0.00\nNet: 1812.00\n\nName: P2\nTrade: Concrete Finisher\nHours: 40\nOvertime Hours: 0\nHourly Wage: 38.40\nFringe: 796.00\nGross: 1536.00\nDeductions: 0.00\nNet: 1536.00\n\nName: P3\nTrade: Tile Setter\nHours: 40\nOvertime Hours: 0\nHourly Wage: 40.25\nFringe: 872.00\nGross: 1610.00\nDeductions: 0.00\nNet: 1610.00\n\nName: P4\nTrade: Glazier\nHours: 40\nOvertime Hours: 0\nHourly Wage: 41.80\nFringe: 896.00\nGross: 1672.00\nDeductions: 0.00\nNet: 1672.00\n\nName: P5\nTrade: Sheet Metal Worker\nHours: 40\nOvertime Hours: 0\nHourly Wage: 46.75\nFringe: 1092.00\nGross: 1870.00\nDeductions: 0.00\nNet: 1870.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Five employees, five different trades, all clean"
+  },
+  {
+    "id": "gs-060",
+    "input": "Contractor: EquipmentOp\nProject: Heavy\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Quinn Op\nTrade: Equipment Operator\nHours: 40\nOvertime Hours: 0\nHourly Wage: 44.60\nFringe: 912.00\nGross: 1784.00\nDeductions: 0.00\nNet: 1784.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Equipment Operator at exact DBWD rate"
+  },
+  {
+    "id": "gs-061",
+    "input": "Contractor: HVACPro\nProject: Climate\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Rick HVAC\nTrade: HVAC Technician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 49.10\nFringe: 1178.00\nGross: 1964.00\nDeductions: 0.00\nNet: 1964.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "HVAC Technician at exact DBWD rate"
+  },
+  {
+    "id": "gs-062",
+    "input": "Contractor: MisspelledTrade\nProject: Typo\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Sue Type\nTrade: Eletrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Misspelled trade \u00e2\u20ac\u201d fuzzy match resolves to Electrician"
+  },
+  {
+    "id": "gs-063",
+    "input": "Contractor: AliasTrade\nProject: Short Name\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Tom Alias\nTrade: elec\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Trade alias 'elec' \u00e2\u2020\u2019 Electrician"
+  },
+  {
+    "id": "gs-064",
+    "input": "Contractor: UppercaseTrade\nProject: CAPS\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Uma Caps\nTrade: ELECTRICIAN\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Uppercase trade \u00e2\u2020\u2019 case-insensitive match"
+  },
+  {
+    "id": "gs-065",
+    "input": "Contractor: WhitespaceTrade\nProject: Space\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Val Space\nTrade:   Electrician   \nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Trade with extra whitespace"
+  },
+  {
+    "id": "gs-066",
+    "input": "Contractor: RowFormat\nProject: Tabular\nLocation: Washington, DC\nCertified: 2025-06-15\n\nAlice Johnson Electrician 40 55.00 1400.00 2200.00 150.00 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Row format employee extraction"
+  },
+  {
+    "id": "gs-067",
+    "input": "Contractor: TwoRowFormat\nProject: Two Row\nLocation: Washington, DC\nCertified: 2025-06-15\n\nAlice Johnson Electrician 40 55.00 1400.00 2200.00 150.00 2050.00\nBob Smith Plumber 40 50.00 1200.00 2000.00 100.00 1900.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Two employees in row format"
+  },
+  {
+    "id": "gs-068",
+    "input": "Contractor: RowWithViolation\nProject: Bad Row\nLocation: Washington, DC\nCertified: 2025-06-15\n\nCarl Bad Electrician 40 20.00 500.00 800.00 0.00 800.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "Row format with wage violation"
+  },
+  {
+    "id": "gs-069",
+    "input": "Contractor: OvertimeWarningOnly\nProject: Warning Zone\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Will Warn\nTrade: Electrician\nHours: 45\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1560.00\nGross: 2475.00\nDeductions: 0.00\nNet: 2475.00",
+    "expected_verdict": "needs_review",
+    "expected_overall": "warnings",
+    "expected_violations": 0,
+    "expected_warnings_min": 1,
+    "description": "Only overtime warning, no other violations"
+  },
+  {
+    "id": "gs-070",
+    "input": "Contractor: SignatureWithPayroll\nProject: Full Form\nLocation: Washington, DC\nCertified: 2025-06-15\nPayroll # 14\nWeek Ending: 2025-06-14\n\nName: Zoe Full\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Complete form with all metadata fields"
+  },
+  {
+    "id": "gs-071",
+    "input": "Contractor: SignatureToday\nProject: Current\nLocation: Washington, DC\nCertified: 2026-05-06\n\nName: Abel Today\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Today's certification date (not future)"
+  },
+  {
+    "id": "gs-072",
+    "input": "Contractor: SignatureYesterday\nProject: Recent\nLocation: Washington, DC\nCertified: 2026-05-05\n\nName: Beth Yesterday\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Yesterday's certification date (valid)"
+  },
+  {
+    "id": "gs-073",
+    "input": "Contractor: DollarSigns\nProject: Currency\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Chip Money\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: $55.00\nFringe: $1,400.00\nGross: $2,200.00\nDeductions: $150.00\nNet: $2,050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Dollar signs and commas in amounts"
+  },
+  {
+    "id": "gs-075",
+    "input": "Contractor: MultiRoleExtraction\nProject: Complex\nLocation: Washington, DC\nCertified: 2025-06-15\nPayroll # 5\nWeek Ending: 2025-06-14\n\nName: Multi Role\nRole: Electrician\nHours Worked: 40\nHourly Wage: 55.00\nBenefits: 1400.00\nGross Earnings: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Role label instead of Trade"
+  },
+  {
+    "id": "gs-076",
+    "input": "Contractor: ClassificationLabel\nProject: Categorized\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Clara Class\nClassification: Electrician\nHours: 40\nOvertime: 0\nWage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Classification and Wage labels"
+  },
+  {
+    "id": "gs-077",
+    "input": "Contractor: PeriodEnding\nProject: Biweekly\nLocation: Washington, DC\nCertified: 2025-06-15\nPeriod Ending: 2025-06-14\n\nName: Pete Period\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Period Ending label"
+  },
+  {
+    "id": "gs-078",
+    "input": "Contractor: SingleName\nProject: Minimal\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ed\nTrade: Plumber\nHours: 40\nOvertime Hours: 0\nHourly Wage: 50.00\nFringe: 1200.00\nGross: 2000.00\nDeductions: 100.00\nNet: 1900.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Single-name employee"
+  },
+  {
+    "id": "gs-079",
+    "input": "Contractor: TripleName\nProject: Long Name\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Anna Maria Garcia\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Triple-name employee"
+  },
+  {
+    "id": "gs-080",
+    "input": "Contractor: MinimalForm\nProject: Bare\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Gil Min\nTrade: Electrician\nHours: 40\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Minimal fields present"
+  }
+]

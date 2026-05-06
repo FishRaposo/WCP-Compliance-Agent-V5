@@ -1,0 +1,40 @@
+U.S. Department of Labor
+Wage and Hour Division
+
+PAYROLL (For a Prime Contractor and Each Subcontractor)
+This payroll provides the information required by the Davis-Bacon and Related Acts.
+
+Contractor: Apex Builders Inc.
+Address: 1420 K Street NW, Washington, DC 20005
+
+Project: Federal Office Building Renovation
+Project Location: Washington, DC
+Contract Number: DC-2025-FF-0042
+Wage Determination Number: DC-2025-001
+
+Payroll Number: 14
+Week Ending: 2025-01-12
+
+Employee Name: John Doe
+Trade Classification: Electrician
+Hours Worked: 40
+Overtime Hours: 0
+Hourly Rate: 55.00
+Fringe Benefits: 1385.20
+Gross Earnings: 2200.00
+Deductions: 150.00
+Net Wages: 2050.00
+
+Employee Name: Jane Smith
+Trade Classification: Plumber
+Hours Worked: 40
+Overtime Hours: 5
+Hourly Rate: 48.00
+Fringe Benefits: 1136.80
+Gross Earnings: 2280.00
+Deductions: 200.00
+Net Wages: 2080.00
+
+I certify that the above information is true and correct.
+Signature: ________________________
+Date: 2025-01-14

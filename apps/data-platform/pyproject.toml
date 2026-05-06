@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "wcp-data-platform"
+version = "5.0.0"
+description = "WCP Compliance Agent V5 — Data Platform Service"
+authors = ["WCP Team"]
+packages = [{include = "wcp_data", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = {version = "^0.34.0", extras = ["standard"]}
+pydantic = {extras = ["email"], version = "^2.13.3"}
+pydantic-settings = "^2.7.0"
+sqlalchemy = {version = "^2.0.36", extras = ["asyncio"]}
+asyncpg = "^0.30.0"
+alembic = "^1.14.0"
+opentelemetry-api = "^1.29.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.25.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+httpx = "^0.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true

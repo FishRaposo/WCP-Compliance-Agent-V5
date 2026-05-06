@@ -1,0 +1,16 @@
+{
+  "name": "@wcp/contracts",
+  "version": "5.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "python3 generate.py",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.24.0"
+  }
+}

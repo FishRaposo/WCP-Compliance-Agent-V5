@@ -1,0 +1,8 @@
+include:
+  - docker-compose.yml
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: wcp_v5_mock
+      POSTGRES_USER: wcp_mock
+      POSTGRES_PASSWORD: mock
