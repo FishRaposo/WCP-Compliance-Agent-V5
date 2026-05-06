@@ -1,7 +1,7 @@
 import KPICard from "../../components/analytics/KPICard";
 import ChartCard from "../../components/analytics/ChartCard";
 import AnalyticsLayout from "../../components/analytics/AnalyticsLayout";
-import { useWagesAnalytics } from "../../hooks/useAnalyticsV4";
+import { useWagesAnalytics } from "../../hooks/useAnalytics";
 
 export default function WagesAnalytics() {
   const { data, isLoading } = useWagesAnalytics();

@@ -47,3 +47,24 @@ export function useCostAnalytics() {
       apiClient.get<CostAnalytics>("/api/v1/analytics/cost"),
   });
 }
+
+export function useComplianceAnalytics() {
+  return useQuery({
+    queryKey: ["analytics", "compliance"],
+    queryFn: () => apiClient.get<any[]>("/api/v1/analytics/compliance"),
+  });
+}
+
+export function useWagesAnalytics() {
+  return useQuery({
+    queryKey: ["analytics", "wages"],
+    queryFn: () => apiClient.get<any[]>("/api/v1/analytics/wages"),
+  });
+}
+
+export function useLLMAnalytics() {
+  return useQuery({
+    queryKey: ["analytics", "llm"],
+    queryFn: () => apiClient.get<any[]>("/api/v1/analytics/llm"),
+  });
+}

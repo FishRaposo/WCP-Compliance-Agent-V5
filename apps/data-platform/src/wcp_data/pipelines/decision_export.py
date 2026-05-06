@@ -1,7 +1,6 @@
 """Monthly decision export to Parquet archive."""
 
 import logging
-from datetime import datetime
 
 from wcp_data.pipelines.utils import import_safe_flow
 from wcp_data.storage.parquet_writer import export_decisions
@@ -17,7 +16,6 @@ async def decision_export(records: list[dict] | None = None) -> dict:
     elif len(records) == 0:
         return {"file": "", "records": 0, "error": "No records to export"}
 
-    partition_date = datetime.utcnow().strftime("%Y-%m")
     result = export_decisions(records)
     logger.info("Monthly export: %d decisions to %s", result["records"], result["file"])
     return result

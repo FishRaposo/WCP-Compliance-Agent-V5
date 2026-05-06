@@ -10,7 +10,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:contracts": "turbo run test:contracts",
-    "test:golden": "turbo run test:golden"
+    "test:golden": "turbo run test:golden",
+    "test:gateway:integration": "cd apps/gateway && pnpm test integration"
   },
   "devDependencies": {
     "turbo": "^2.3.0"

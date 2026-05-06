@@ -1,9 +1,11 @@
 import logging
+import os
 from datetime import date
 
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from wcp_data.connectors.sam_gov import SamGovClient, SamGovError
 from wcp_data.models.schemas import DBWDRateResponse
 from wcp_data.models.tables import dbwd_rates_table
 from wcp_data.repositories.dbwd_repo import get_rates as _get_rates
@@ -40,11 +42,78 @@ async def get_rates(
     locality: str | None = None,
     limit: int = 100,
 ) -> list[DBWDRateResponse]:
-    return await _get_rates(session, trade, locality, limit)
+    cache_key = f"dbwd_rates:{trade or 'all'}:{locality or 'all'}:{limit}"
+    
+    try:
+        from wcp_data.services.redis_cache import cache_get, cache_set
+        cached = await cache_get(cache_key)
+        if cached and isinstance(cached, dict) and "rates" in cached:
+            logger.debug("DBWD rates cache hit: %s", cache_key)
+            return [DBWDRateResponse.model_validate(item) for item in cached["rates"]]
+    except Exception:
+        logger.debug("Redis cache unavailable for DBWD rates")
+    
+    rates = await _get_rates(session, trade, locality, limit)
+    
+    try:
+        from wcp_data.services.redis_cache import cache_set
+        await cache_set(cache_key, {"rates": [r.model_dump() for r in rates]})
+    except Exception:
+        logger.debug("Failed to cache DBWD rates")
+    
+    return rates
 
 
-async def refresh_rates(session: AsyncSession) -> int:
+async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
     count = 0
+
+    if use_sam_gov and os.environ.get("SAM_GOV_API_KEY"):
+        try:
+            client = SamGovClient()
+            rates = await client.fetch_rates_for_locality(state="DC", county="Washington")
+            
+            for rate in rates:
+                existing = await session.execute(
+                    select(dbwd_rates_table).where(
+                        dbwd_rates_table.c.trade == rate["trade_title"],
+                        dbwd_rates_table.c.locality == rate["locality_code"],
+                    )
+                )
+                row = existing.first()
+
+                if row:
+                    await session.execute(
+                        update(dbwd_rates_table)
+                        .where(dbwd_rates_table.c.trade == rate["trade_title"])
+                        .where(dbwd_rates_table.c.locality == rate["locality_code"])
+                        .values(
+                            rate=rate["wage"],
+                            fringe=rate["fringe"],
+                            effective_date=date.fromisoformat(str(rate["effective_date"])) if rate["effective_date"] else None,
+                            wage_determination_number=rate["wage_determination_number"],
+                        )
+                    )
+                else:
+                    await session.execute(
+                        insert(dbwd_rates_table).values(
+                            trade=rate["trade_title"],
+                            locality=rate["locality_code"],
+                            rate=rate["wage"],
+                            fringe=rate["fringe"],
+                            effective_date=date.fromisoformat(str(rate["effective_date"])) if rate["effective_date"] else None,
+                            wage_determination_number=rate["wage_determination_number"],
+                        )
+                    )
+                count += 1
+            
+            await session.commit()
+            logger.info("DBWD rates refreshed from SAM.gov: %d records", count)
+            return count
+        except SamGovError as exc:
+            logger.warning("SAM.gov refresh failed, using fallback: %s", exc)
+        except Exception as exc:
+            logger.warning("SAM.gov refresh failed, using fallback: %s", exc)
+
     for item in FALLBACK_CORPUS:
         existing = await session.execute(
             select(dbwd_rates_table).where(
@@ -80,5 +149,5 @@ async def refresh_rates(session: AsyncSession) -> int:
         count += 1
 
     await session.commit()
-    logger.info("DBWD rates refreshed: %d records", count)
+    logger.info("DBWD rates refreshed from fallback: %d records", count)
     return count

@@ -1,7 +1,6 @@
 """Connector registry for managing enterprise data connectors."""
 
 import logging
-from typing import Any
 
 from wcp_data.connectors.base import BaseConnector
 

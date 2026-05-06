@@ -97,15 +97,25 @@ async def test_regression_against_baseline():
 
         if baseline.get("verdict_match"):
             if verdict != example["expected_verdict"]:
-                failures.append(f"{ex_id}: verdict mismatch (expected {example['expected_verdict']}, got {verdict})")
+                exp = example["expected_verdict"]
+                msg = f"{ex_id}: verdict mismatch (expected {exp}, got {verdict})"
+                failures.append(msg)
 
         if baseline.get("overall_match"):
             if report.overall_status != example["expected_overall"]:
-                failures.append(f"{ex_id}: overall mismatch (expected {example['expected_overall']}, got {report.overall_status})")
+                exp = example["expected_overall"]
+                msg = f"{ex_id}: overall mismatch (expected {exp}, got {report.overall_status})"
+                failures.append(msg)
 
         if baseline.get("violation_count_min_met"):
-            if report.violation_count < example.get("expected_violations_min", 0):
-                failures.append(f"{ex_id}: violation count regression ({report.violation_count} < {example['expected_violations_min']})")
+            min_violations = example.get("expected_violations_min", 0)
+            if report.violation_count < min_violations:
+                msg = (
+                    f"{ex_id}: violation count regression "
+                    f"({report.violation_count} < {min_violations})"
+                )
+                failures.append(msg)
 
     if failures:
-        pytest.fail(f"Regression detected in {len(failures)} examples:\n" + "\n".join(failures[:10]))
+        summary = "\n".join(failures[:10])
+        pytest.fail(f"Regression detected in {len(failures)} examples:\n" + summary)

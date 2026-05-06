@@ -1,7 +1,7 @@
 import KPICard from "../../components/analytics/KPICard";
 import ChartCard from "../../components/analytics/ChartCard";
 import AnalyticsLayout from "../../components/analytics/AnalyticsLayout";
-import { useLLMAnalytics } from "../../hooks/useAnalyticsV4";
+import { useLLMAnalytics } from "../../hooks/useAnalytics";
 
 export default function LLMAnalytics() {
   const { data, isLoading } = useLLMAnalytics();

@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from wcp_data.models.schemas import ContractCreate
-from wcp_data.repositories.contract_repo import create_contract as _create
 from wcp_data.services.contract_service import create_contract
 
 

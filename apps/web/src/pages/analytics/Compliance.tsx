@@ -1,6 +1,6 @@
 import ChartCard from "../../components/analytics/ChartCard";
 import AnalyticsLayout from "../../components/analytics/AnalyticsLayout";
-import { useComplianceAnalytics } from "../../hooks/useAnalyticsV4";
+import { useComplianceAnalytics } from "../../hooks/useAnalytics";
 import { Badge } from "@/components/ui/badge";
 
 export default function ComplianceAnalytics() {

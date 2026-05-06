@@ -53,7 +53,10 @@ def chunk_text(
                             "end": len(current_chunk.strip()),
                         })
                         chunk_id += 1
-                        current_chunk = current_chunk[-overlap:] + " " + sentence if overlap > 0 else sentence
+                        if overlap > 0:
+                            current_chunk = current_chunk[-overlap:] + " " + sentence
+                        else:
+                            current_chunk = sentence
                     else:
                         current_chunk = sentence
 

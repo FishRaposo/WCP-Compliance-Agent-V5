@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from wcp_data.quality.validators import (
-    ValidationResult,
     validate_contract,
     validate_payroll_record,
 )

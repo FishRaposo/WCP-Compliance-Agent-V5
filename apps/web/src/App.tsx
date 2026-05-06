@@ -9,6 +9,9 @@ import ReviewQueue from "./pages/ReviewQueue";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Contracts from "./pages/Contracts";
+import Payrolls from "./pages/Payrolls";
+import Ingestion from "./pages/Ingestion";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AnalyticsOverview = lazy(() => import("./pages/analytics/Overview"));
@@ -68,6 +71,9 @@ export default function App() {
                     <Route path="/analyze" element={<Analyze />} />
                     <Route path="/decisions" element={<Decisions />} />
                     <Route path="/review" element={<ReviewQueue />} />
+                    <Route path="/contracts" element={<Contracts />} />
+                    <Route path="/payrolls" element={<Payrolls />} />
+                    <Route path="/ingestion" element={<Ingestion />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/analytics/overview" element={<Suspense fallback={<PageLoader />}><AnalyticsOverview /></Suspense>} />
                     <Route path="/analytics/compliance" element={<Suspense fallback={<PageLoader />}><AnalyticsCompliance /></Suspense>} />

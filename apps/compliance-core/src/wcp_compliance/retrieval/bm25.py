@@ -20,7 +20,7 @@ def bm25_search(query: str, corpus: list[dict], top_k: int = 5) -> list[dict]:
     tokenized_corpus = [_tokenize(doc.get("text", "")) for doc in corpus]
     query_tokens = _tokenize(query)
     avg_dl = sum(len(doc) for doc in tokenized_corpus) / len(tokenized_corpus)
-    N = len(tokenized_corpus)
+    n = len(tokenized_corpus)
 
     _df: dict[str, int] = {}
     for doc in tokenized_corpus:
@@ -34,7 +34,7 @@ def bm25_search(query: str, corpus: list[dict], top_k: int = 5) -> list[dict]:
         for token in query_tokens:
             if token not in _df:
                 continue
-            idf = math.log((N - _df[token] + 0.5) / (_df[token] + 0.5) + 1.0)
+            idf = math.log((n - _df[token] + 0.5) / (_df[token] + 0.5) + 1.0)
             tf = doc.count(token)
             score += idf * (tf * (K1 + 1)) / (tf + K1 * (1 - B + B * dl / avg_dl))
 

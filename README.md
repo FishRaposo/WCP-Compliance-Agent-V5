@@ -51,6 +51,7 @@ cd apps/data-platform && poetry install && poetry run uvicorn wcp_data.main:app 
 ```bash
 docker compose -f infra/docker-compose.yml up -d postgres redis
 cd apps/data-platform && poetry run alembic upgrade head
+cd ../.. && python infra/scripts/seed_database.py
 LLM_MODE=real OPENAI_API_KEY=sk-... pnpm dev
 ```
 

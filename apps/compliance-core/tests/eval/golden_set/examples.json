@@ -646,5 +646,95 @@
     "expected_violations": 0,
     "expected_warnings": 0,
     "description": "Minimal fields present"
+  },
+  {
+    "id": "gs-081",
+    "input": "Contractor: EmptyInput\nProject: Void\nLocation: Washington, DC\nCertified: 2025-06-15\n\n",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Empty payroll input - no employees"
+  },
+  {
+    "id": "gs-082",
+    "input": "Contractor: MalformedDate\nProject: Invalid\nLocation: Washington, DC\nCertified: 2025-13-45\n\nName: Hal Date\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Invalid certification date format"
+  },
+  {
+    "id": "gs-083",
+    "input": "Contractor: DecimalHours\nProject: Fractional\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ida Decimal\nTrade: Electrician\nHours: 40.5\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1417.50\nGross: 2227.50\nDeductions: 150.00\nNet: 2077.50",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Decimal hours (40.5)"
+  },
+  {
+    "id": "gs-084",
+    "input": "Contractor: OvertimeWithPay\nProject: OT Paid\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Jane OT\nTrade: Electrician\nHours: 40\nOvertime Hours: 5\nHourly Wage: 55.00\nOT Rate: 82.50\nFringe: 1750.00\nGross: 2612.50\nDeductions: 150.00\nNet: 2462.50",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Overtime hours with proper overtime rate (1.5x)"
+  },
+  {
+    "id": "gs-085",
+    "input": "Contractor: OvertimeWrongRate\nProject: OT Wrong\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Joe Wrong\nTrade: Electrician\nHours: 40\nOvertime Hours: 5\nHourly Wage: 55.00\nOT Rate: 55.00\nFringe: 1400.00\nGross: 2475.00\nDeductions: 150.00\nNet: 2325.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Overtime hours without overtime premium (1x rate)"
+  },
+  {
+    "id": "gs-086",
+    "input": "Contractor: MixedLocality\nProject: Multi-Site\nLocation: Washington, DC / Baltimore, MD\nCertified: 2025-06-15\n\nName: Kim Mixed\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "needs_review",
+    "expected_overall": "warnings",
+    "expected_violations": 0,
+    "expected_warnings_min": 1,
+    "description": "Multiple localities listed - ambiguous"
+  },
+  {
+    "id": "gs-087",
+    "input": "Contractor: NoTrade\nProject: Missing\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Lee None\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Missing trade field"
+  },
+  {
+    "id": "gs-088",
+    "input": "Contractor: NoWage\nProject: Missing\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: May None\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Missing hourly wage field"
+  },
+  {
+    "id": "gs-089",
+    "input": "Contractor: NoHours\nProject: Missing\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ned None\nTrade: Electrician\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Missing hours field"
+  },
+  {
+    "id": "gs-090",
+    "input": "Contractor: SpecialCharacters\nProject: Symbols\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: O'Brien, Mary-Jane\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Name with hyphen and apostrophe"
   }
 ]

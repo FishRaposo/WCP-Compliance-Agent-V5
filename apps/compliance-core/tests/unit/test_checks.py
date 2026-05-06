@@ -1,14 +1,18 @@
 from datetime import date
 
-import pytest
-
 from wcp_compliance.checks.fringe_check import check_fringe
 from wcp_compliance.checks.overtime_check import check_overtime
 from wcp_compliance.checks.signature_check import check_signature
 from wcp_compliance.checks.total_check import check_totals
 from wcp_compliance.checks.wage_check import check_wage
 from wcp_compliance.models.enums import CheckStatus
-from wcp_compliance.models.schemas import DBWDRateRecord, EmployeeRecord, ExtractedWCP, ContractorInfo, ProjectInfo
+from wcp_compliance.models.schemas import (
+    ContractorInfo,
+    DBWDRateRecord,
+    EmployeeRecord,
+    ExtractedWCP,
+    ProjectInfo,
+)
 
 
 def _make_employee(**overrides) -> EmployeeRecord:

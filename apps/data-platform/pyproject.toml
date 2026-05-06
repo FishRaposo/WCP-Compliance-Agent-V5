@@ -23,6 +23,12 @@ ruff = "^0.8.0"
 mypy = "^1.13.0"
 httpx = "^0.28.1"
 
+[tool.poetry.extras]
+analytics = ["duckdb", "pyarrow"]
+connectors = ["aiohttp"]
+cache = ["redis"]
+all = ["duckdb", "pyarrow", "aiohttp", "redis"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -43,6 +43,7 @@ jobs:
       - run: poetry run ruff check .
       - run: poetry run mypy src/
       - run: poetry run pytest tests/unit -v
+      - run: poetry run pytest tests/integration -v
 
   data-platform:
     name: Data Platform (Python)
@@ -62,3 +63,4 @@ jobs:
       - run: poetry run ruff check .
       - run: poetry run mypy src/
       - run: poetry run pytest tests/unit -v
+      - run: poetry run pytest tests/integration -v

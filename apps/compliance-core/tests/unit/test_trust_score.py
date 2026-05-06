@@ -1,4 +1,3 @@
-import pytest
 
 from wcp_compliance.models.enums import CheckStatus, OverallStatus, TrustBand, VerdictStatus
 from wcp_compliance.models.schemas import (
@@ -57,7 +56,12 @@ def _make_verdict(**overrides) -> LLMVerdict:
 
 
 def test_compute_trust_score_perfect():
-    components = {"deterministic": 0.35, "classification": 0.25, "llm_self": 0.20, "agreement": 0.20}
+    components = {
+        "deterministic": 0.35,
+        "classification": 0.25,
+        "llm_self": 0.20,
+        "agreement": 0.20,
+    }
     score = compute_trust_score(components)
     assert abs(score - 1.0) < 0.001
 
@@ -69,7 +73,12 @@ def test_compute_trust_score_zero():
 
 
 def test_compute_trust_score_partial():
-    components = {"deterministic": 0.30, "classification": 0.20, "llm_self": 0.15, "agreement": 0.10}
+    components = {
+        "deterministic": 0.30,
+        "classification": 0.20,
+        "llm_self": 0.15,
+        "agreement": 0.10,
+    }
     score = compute_trust_score(components)
     assert abs(score - 0.75) < 0.001
 

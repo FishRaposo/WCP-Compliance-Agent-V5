@@ -1,6 +1,10 @@
 import pytest
 
-from wcp_compliance.dbwd_matching.rate_lookup import get_dbwd_rate, reset_corpus_cache, _normalize_trade
+from wcp_compliance.dbwd_matching.rate_lookup import (
+    _normalize_trade,
+    get_dbwd_rate,
+    reset_corpus_cache,
+)
 
 
 @pytest.fixture(autouse=True)

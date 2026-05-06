@@ -24,7 +24,6 @@ class SFTPConnector(BaseConnector):
             port = self.config.get("port", 22)
             user = self.config["user"]
             password = self.config.get("password")
-            key_file = self.config.get("key_file")
 
             transport = paramiko.Transport((host, port))
             transport.connect(username=user, password=password, pkey=None)
@@ -49,7 +48,6 @@ class SFTPConnector(BaseConnector):
         if not self._client:
             return []
         try:
-            import io
             with self._client.open(reference, "r") as f:
                 content = f.read()
             return [{"reference": reference, "content": content.decode("utf-8", errors="replace")}]
