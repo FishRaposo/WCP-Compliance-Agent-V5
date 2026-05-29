@@ -102,7 +102,7 @@ Project: Test
 Location: Washington, DC
 Certified: 2025-06-15
 
-Name: Alexander Maximilian Bartholomew Christopher Darius Edward Frederick Gregory Henry Isaiah Jonathan Kevin Lawrence Michael Nathaniel Oliver Patrick Quincy Robert Stephen Thomas Ulysses Victor William Xavier Yancy Zachariah
+Name: Alexander Maximilian Bartholomew Christopher Darius Edward Frederick Gregory Henry Isaiah
 Trade: Electrician
 Hours: 40
 Hourly Wage: 55.00

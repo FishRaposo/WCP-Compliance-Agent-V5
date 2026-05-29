@@ -16,7 +16,6 @@ DEFAULT_DB_PATH = Path("data/analytics.duckdb")
 class DuckDBStore:
     def __init__(self, db_path: str | Path = DEFAULT_DB_PATH) -> None:
         self.db_path = Path(db_path)
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = None
 
     @property
@@ -28,6 +27,7 @@ class DuckDBStore:
     def connect(self, postgres_dsn: str | None = None) -> None:
         try:
             import duckdb
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
             self._conn = duckdb.connect(str(self.db_path))
 
             if postgres_dsn:
@@ -58,7 +58,6 @@ class DuckDBStore:
     def register_postgres_view(self, view_name: str, table_name: str, schema: str = "public") -> None:
         """Register a PostgreSQL table as a DuckDB view."""
         if not self._conn:
-            logger.warning("Cannot register view: DuckDB not connected")
             return
         try:
             self._conn.execute(f"""
@@ -75,18 +74,16 @@ class DuckDBStore:
             logger.warning("Cannot export: DuckDB not connected")
             return ""
         try:
-            import pyarrow as pa
-            import pyarrow.parquet as pq
-
+            import importlib.util
+            if importlib.util.find_spec("pyarrow") is None:
+                logger.warning("pyarrow not installed for Parquet export")
+                return ""
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             self._conn.execute(f"COPY {table_or_view} TO '{output_file}' (FORMAT PARQUET);")
             logger.info("Exported %s to %s", table_or_view, output_file)
             return str(output_file)
-        except ImportError:
-            logger.warning("pyarrow not installed for Parquet export")
-            return ""
         except Exception as exc:
             logger.warning("Failed to export %s to Parquet: %s", table_or_view, exc)
             return ""

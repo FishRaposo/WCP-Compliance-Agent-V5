@@ -1,6 +1,6 @@
 # ADR 0007: Trust Score Weights
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Date:** 2026-05-06
 
@@ -47,4 +47,8 @@ Regardless of trust score, the `safeVerdict()` function overrides any LLM "appro
 
 ## Status
 
-Proposed. Implementation pending after Phase 15 weight alignment and golden-set re-baselining.
+Accepted. Implemented in Phase 15. Both services confirmed using 35/25/20/20 weights:
+- TypeScript: `apps/agent/src/agents/trust-score.ts` `computeTrustComponents()`
+- Python: `apps/compliance-core/src/wcp_compliance/rules/engine.py` `compute_trust_components()`
+
+Band thresholds confirmed identical: `HIGH_BAND=0.85`, `REVIEW_THRESHOLD=0.60`.

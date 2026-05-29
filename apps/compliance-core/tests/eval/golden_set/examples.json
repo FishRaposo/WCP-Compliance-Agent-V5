@@ -736,5 +736,95 @@
     "expected_violations": 0,
     "expected_warnings": 0,
     "description": "Name with hyphen and apostrophe"
+  },
+  {
+    "id": "gs-091",
+    "input": "Contractor: WeeklyPayroll Inc\nProject: Office Tower\nLocation: Washington, DC\nCertified: 2025-06-15\nPayroll Period: 2025-06-09 to 2025-06-15\n\nName: Aaron Weekly\nTrade: Ironworker\nHours: 40\nOvertime Hours: 0\nHourly Wage: 52.30\nFringe: 1206.00\nGross: 2092.00\nDeductions: 200.00\nNet: 1892.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Ironworker at exact DBWD rate with payroll period"
+  },
+  {
+    "id": "gs-092",
+    "input": "Contractor: HVAC Masters\nProject: Federal Complex\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Beth Cooling\nTrade: HVAC Technician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 49.10\nFringe: 1178.00\nGross: 1964.00\nDeductions: 150.00\nNet: 1814.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "HVAC Technician at DBWD minimum"
+  },
+  {
+    "id": "gs-093",
+    "input": "Contractor: HVAC Cheap LLC\nProject: Annex\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Carl Cold\nTrade: HVAC Technician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 35.00\nFringe: 800.00\nGross: 1400.00\nDeductions: 100.00\nNet: 1300.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "HVAC Technician significantly below DBWD wage and fringe"
+  },
+  {
+    "id": "gs-094",
+    "input": "Contractor: Welder Pro Corp\nProject: Steel Fabrication\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Dana Sparks\nTrade: Welder\nHours: 40\nOvertime Hours: 8\nHourly Wage: 48.25\nOT Rate: 72.38\nFringe: 1614.00\nGross: 2509.04\nDeductions: 200.00\nNet: 2309.04",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Welder with properly paid overtime at 1.5x"
+  },
+  {
+    "id": "gs-095",
+    "input": "Contractor: TruckFleet Co\nProject: Materials Transport\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Eli Driver\nTrade: Truck Driver\nHours: 40\nOvertime Hours: 0\nHourly Wage: 30.20\nFringe: 658.00\nGross: 1208.00\nDeductions: 100.00\nNet: 1108.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Truck Driver at exact DBWD rate"
+  },
+  {
+    "id": "gs-096",
+    "input": "Contractor: FlaggerHire Inc\nProject: Road Work\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Fiona Flag\nTrade: Flagger\nHours: 40\nOvertime Hours: 0\nHourly Wage: 22.75\nFringe: 492.00\nGross: 910.00\nDeductions: 50.00\nNet: 860.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Flagger at DBWD minimum wage"
+  },
+  {
+    "id": "gs-097",
+    "input": "Contractor: FlaggerLow LLC\nProject: Highway Maintenance\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Gary Flag\nTrade: Flagger\nHours: 40\nOvertime Hours: 0\nHourly Wage: 15.00\nFringe: 300.00\nGross: 600.00\nDeductions: 50.00\nNet: 550.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 2,
+    "expected_warnings": 0,
+    "description": "Flagger at federal minimum wage only — far below DBWD"
+  },
+  {
+    "id": "gs-098",
+    "input": "Contractor: PaintCrew LLC\nProject: Interior Finish\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Heidi Brush\nTrade: Painter\nHours: 32\nOvertime Hours: 0\nHourly Wage: 38.90\nFringe: 592.00\nGross: 1244.80\nDeductions: 80.00\nNet: 1164.80",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Painter with part-time hours (32h), compliant wage"
+  },
+  {
+    "id": "gs-099",
+    "input": "Contractor: SheetMetal Pro\nProject: Ductwork Install\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ivan Sheet\nTrade: Sheet Metal Worker\nHours: 40\nOvertime Hours: 0\nHourly Wage: 46.75\nFringe: 0.00\nGross: 1870.00\nDeductions: 100.00\nNet: 1770.00",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Sheet Metal Worker missing fringe benefits entirely"
+  },
+  {
+    "id": "gs-100",
+    "input": "Contractor: SurveyorGroup\nProject: Land Survey\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Julia Survey\nTrade: Surveyor\nHours: 40\nOvertime Hours: 4\nHourly Wage: 45.30\nOT Rate: 45.30\nFringe: 1372.00\nGross: 2193.20\nDeductions: 150.00\nNet: 2043.20",
+    "expected_verdict": "rejected",
+    "expected_overall": "fail",
+    "expected_violations_min": 1,
+    "expected_warnings": 0,
+    "description": "Surveyor with overtime hours but no overtime premium (straight time)"
   }
 ]

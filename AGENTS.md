@@ -14,15 +14,15 @@ V5 is a monorepo with five services, managed by Turborepo + pnpm workspaces.
 
 Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 
-## Test Tally: 271 tests, 0 failures
+## Test Tally: 309 tests, 0 failures
 
 | Service | Tests | Framework |
 |---|---|---|
-| Compliance Core | 66 + 73 eval | pytest |
-| Data Platform | 30 | pytest |
+| Compliance Core | 66 unit + 73 eval | pytest |
+| Data Platform | 48 unit + 22 integration | pytest |
 | Agent | 55 | vitest |
-| Gateway | 20 | vitest |
-| Web | 10 | vitest |
+| Gateway | 22 | vitest |
+| Web | 28 | vitest |
 | Contracts | 17 | vitest |
 
 ## Commands

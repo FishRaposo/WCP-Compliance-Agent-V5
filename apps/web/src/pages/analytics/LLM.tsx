@@ -1,40 +1,39 @@
 import KPICard from "../../components/analytics/KPICard";
 import ChartCard from "../../components/analytics/ChartCard";
 import AnalyticsLayout from "../../components/analytics/AnalyticsLayout";
+import { LLMCostChart, LLMLatencyChart, ModelUsageChart } from "../../components/analytics/charts";
 import { useLLMAnalytics } from "../../hooks/useAnalytics";
 
 export default function LLMAnalytics() {
   const { data, isLoading } = useLLMAnalytics();
 
-  const items = Array.isArray(data) ? data : [];
+  const summary = (data as any)?.summary ?? {};
+  const costPerDecision = (data as any)?.cost_per_decision ?? [];
+  const latencyByModel = (data as any)?.latency_by_model ?? [];
+  const modelDistribution = (data as any)?.model_distribution ?? [];
 
   return (
     <AnalyticsLayout title="LLM Cost Analytics" description="Model usage, cost, and latency metrics">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <KPICard label="Total Decisions" value={items.reduce((s: number, b: any) => s + (b.count || 0), 0)} loading={isLoading} />
-        <KPICard label="Avg Cost/Decision" value={items.length > 0 ? (items.reduce((s: number, b: any) => s + (b.avg_cost || 0), 0) / items.length) : 0} format="currency" loading={isLoading} />
-        <KPICard label="Avg Latency" value={items.length > 0 ? `${Math.round(items.reduce((s: number, b: any) => s + (b.avg_latency_ms || 0), 0) / items.length)}ms` : "0ms"} loading={isLoading} />
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <KPICard label="Total Cost" value={summary.total_cost ?? 0} format="currency" loading={isLoading} />
+        <KPICard label="Cost / Decision" value={summary.cost_per_decision ?? 0} format="currency" loading={isLoading} />
+        <KPICard label="Avg Latency" value={summary.avg_latency_ms ? `${Math.round(summary.avg_latency_ms)}ms` : "—"} loading={isLoading} />
+        <KPICard label="Total Decisions" value={summary.decisions ?? 0} loading={isLoading} />
       </div>
 
-      <ChartCard title="Cost by Verdict" subtitle="Average cost and latency per verdict type" loading={isLoading}>
-        {items.length > 0 ? (
-          <div className="space-y-2">
-            {items.map((item: any) => (
-              <div key={item.verdict} className="flex items-center justify-between text-sm">
-                <span className="capitalize">{item.verdict}</span>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{item.count} decisions</span>
-                  <span>${item.avg_cost?.toFixed(4)} avg</span>
-                  <span>{Math.round(item.avg_latency_ms || 0)}ms</span>
-                  <span>{(item.avg_trust_score * 100).toFixed(0)}% trust</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No LLM analytics data available.</p>
-        )}
+      <ChartCard title="Cost per Decision (14-day)" subtitle="Cost/decision trend with daily volume" loading={isLoading}>
+        <LLMCostChart data={costPerDecision} />
       </ChartCard>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ChartCard title="Latency by Model" subtitle="p50 / p95 / p99 in ms" loading={isLoading}>
+          <LLMLatencyChart data={latencyByModel} />
+        </ChartCard>
+
+        <ChartCard title="Model Usage Distribution" loading={isLoading}>
+          <ModelUsageChart data={modelDistribution} />
+        </ChartCard>
+      </div>
     </AnalyticsLayout>
   );
 }

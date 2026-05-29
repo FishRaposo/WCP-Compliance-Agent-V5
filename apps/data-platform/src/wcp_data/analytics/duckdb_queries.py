@@ -76,6 +76,56 @@ def llm_analytics() -> list[dict]:
         return []
 
 
+def query_wage_trends(months: int = 6) -> list[dict]:
+    """6-month wage violation trend — total checked vs violations per month."""
+    try:
+        return store.execute(f"""
+            SELECT
+                date_trunc('month', created_at)::DATE::TEXT AS month,
+                COUNT(*) AS total_checked,
+                SUM(violation_count) AS total_violations,
+                AVG(trust_score) AS avg_trust
+            FROM decisions
+            WHERE created_at >= CURRENT_DATE - INTERVAL '{months} months'
+            GROUP BY date_trunc('month', created_at)
+            ORDER BY month DESC
+            LIMIT {months}
+        """)
+    except Exception:
+        return []
+
+
+def query_llm_cost_analytics() -> dict:
+    """Per-model cost breakdown and cumulative spend."""
+    try:
+        by_verdict = store.execute("""
+            SELECT
+                verdict,
+                COUNT(*) AS decisions,
+                SUM(cost_usd) AS total_cost,
+                AVG(cost_usd) AS avg_cost,
+                AVG(latency_ms) AS avg_latency_ms
+            FROM decisions
+            WHERE cost_usd IS NOT NULL
+            GROUP BY verdict
+            ORDER BY total_cost DESC
+        """)
+        cumulative = store.execute("""
+            SELECT
+                date_trunc('day', created_at)::DATE::TEXT AS date,
+                SUM(SUM(cost_usd)) OVER (ORDER BY date_trunc('day', created_at)) AS cumulative_cost,
+                COUNT(*) AS decisions
+            FROM decisions
+            WHERE cost_usd IS NOT NULL
+            GROUP BY date_trunc('day', created_at)
+            ORDER BY date DESC
+            LIMIT 30
+        """)
+        return {"by_verdict": by_verdict, "cumulative": cumulative}
+    except Exception:
+        return {"by_verdict": [], "cumulative": []}
+
+
 def approval_rate() -> dict:
     """Overall approval rate."""
     try:

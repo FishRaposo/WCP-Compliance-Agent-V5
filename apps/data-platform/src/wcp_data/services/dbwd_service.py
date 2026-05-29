@@ -1,14 +1,30 @@
 import logging
-import os
 from datetime import date
+from typing import Any
 
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from wcp_data.config import settings
 from wcp_data.connectors.sam_gov import SamGovClient, SamGovError
 from wcp_data.models.schemas import DBWDRateResponse
 from wcp_data.models.tables import dbwd_rates_table
 from wcp_data.repositories.dbwd_repo import get_rates as _get_rates
+
+_cache_get: Any = None
+_cache_set: Any = None
+_cache_invalidate_pattern: Any = None
+_REDIS_AVAILABLE = False
+
+try:
+    from wcp_data.services.redis_cache import (
+        cache_get as _cache_get,
+        cache_set as _cache_set,
+        cache_invalidate_pattern as _cache_invalidate_pattern,
+    )
+    _REDIS_AVAILABLE = True
+except Exception:
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -44,30 +60,30 @@ async def get_rates(
 ) -> list[DBWDRateResponse]:
     cache_key = f"dbwd_rates:{trade or 'all'}:{locality or 'all'}:{limit}"
     
-    try:
-        from wcp_data.services.redis_cache import cache_get, cache_set
-        cached = await cache_get(cache_key)
-        if cached and isinstance(cached, dict) and "rates" in cached:
-            logger.debug("DBWD rates cache hit: %s", cache_key)
-            return [DBWDRateResponse.model_validate(item) for item in cached["rates"]]
-    except Exception:
-        logger.debug("Redis cache unavailable for DBWD rates")
-    
+    if _REDIS_AVAILABLE and _cache_get is not None:
+        try:
+            cached = await _cache_get(cache_key)
+            if cached and isinstance(cached, dict) and "rates" in cached:
+                logger.debug("DBWD rates cache hit: %s", cache_key)
+                return [DBWDRateResponse.model_validate(item) for item in cached["rates"]]
+        except Exception:
+            logger.debug("Redis cache unavailable for DBWD rates")
+
     rates = await _get_rates(session, trade, locality, limit)
-    
-    try:
-        from wcp_data.services.redis_cache import cache_set
-        await cache_set(cache_key, {"rates": [r.model_dump() for r in rates]})
-    except Exception:
-        logger.debug("Failed to cache DBWD rates")
-    
+
+    if _REDIS_AVAILABLE and _cache_set is not None:
+        try:
+            await _cache_set(cache_key, {"rates": [r.model_dump() for r in rates]})
+        except Exception:
+            logger.debug("Failed to cache DBWD rates")
+
     return rates
 
 
 async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
     count = 0
 
-    if use_sam_gov and os.environ.get("SAM_GOV_API_KEY"):
+    if use_sam_gov and settings.sam_gov_api_key:
         try:
             client = SamGovClient()
             rates = await client.fetch_rates_for_locality(state="DC", county="Washington")
@@ -108,6 +124,12 @@ async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
             
             await session.commit()
             logger.info("DBWD rates refreshed from SAM.gov: %d records", count)
+            if _cache_invalidate_pattern is not None:
+                try:
+                    await _cache_invalidate_pattern("dbwd*")
+                    logger.debug("DBWD cache invalidated after SAM.gov refresh")
+                except Exception:
+                    pass
             return count
         except SamGovError as exc:
             logger.warning("SAM.gov refresh failed, using fallback: %s", exc)
@@ -150,4 +172,9 @@ async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
 
     await session.commit()
     logger.info("DBWD rates refreshed from fallback: %d records", count)
+    if _cache_invalidate_pattern is not None:
+        try:
+            await _cache_invalidate_pattern("dbwd*")
+        except Exception:
+            pass
     return count

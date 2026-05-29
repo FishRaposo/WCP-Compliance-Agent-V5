@@ -5,8 +5,11 @@ import { mockDecisionSummaries } from "../utils/mock-data";
 
 const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
+const MAX_EVENTS = 50;
+
 export function useDecisionStream() {
   const [latestDecision, setLatestDecision] = useState<DecisionSummary | null>(null);
+  const [events, setEvents] = useState<DecisionSummary[]>([]);
   const [connected, setConnected] = useState(false);
   const esRef = useRef<EventSource | null>(null);
   const retryRef = useRef(0);
@@ -17,7 +20,9 @@ export function useDecisionStream() {
       setConnected(true);
       const interval = setInterval(() => {
         const random = mockDecisionSummaries[Math.floor(Math.random() * mockDecisionSummaries.length)]!;
-        setLatestDecision({ ...random, created_at: new Date().toISOString() });
+        const decision = { ...random, created_at: new Date().toISOString() };
+        setLatestDecision(decision);
+        setEvents((prev) => [decision, ...prev].slice(0, MAX_EVENTS));
       }, 10_000);
       return () => clearInterval(interval);
     }
@@ -38,6 +43,7 @@ export function useDecisionStream() {
       try {
         const decision: DecisionSummary = JSON.parse(event.data);
         setLatestDecision(decision);
+        setEvents((prev) => [decision, ...prev].slice(0, MAX_EVENTS));
       } catch {
         // ignore malformed events
       }
@@ -74,5 +80,5 @@ export function useDecisionStream() {
     };
   }, [connect]);
 
-  return { latestDecision, connected };
+  return { latestDecision, events, connected };
 }

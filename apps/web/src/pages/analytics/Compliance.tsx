@@ -1,35 +1,42 @@
+import KPICard from "../../components/analytics/KPICard";
 import ChartCard from "../../components/analytics/ChartCard";
 import AnalyticsLayout from "../../components/analytics/AnalyticsLayout";
+import {
+  ComplianceByTradeChart,
+  ViolationBreakdownChart,
+  TopViolatorsChart,
+} from "../../components/analytics/charts";
 import { useComplianceAnalytics } from "../../hooks/useAnalytics";
-import { Badge } from "@/components/ui/badge";
 
 export default function ComplianceAnalytics() {
   const { data, isLoading } = useComplianceAnalytics();
 
+  const byTrade = (data as any)?.by_trade ?? [];
+  const byLocality = (data as any)?.by_locality ?? [];
+  const violationTypes = (data as any)?.violation_types ?? [];
+  const totalDecisions = (data as any)?.total_decisions ?? 0;
+  const approvalRate = (data as any)?.approval_rate ?? 0;
+
   return (
     <AnalyticsLayout title="Compliance Analytics" description="Breakdown by trade, locality, and violation type">
-      <ChartCard title="Verdict Distribution" loading={isLoading}>
-        {data && Array.isArray(data) ? (
-          <div className="space-y-2">
-            {data.map((item: any) => (
-              <div key={item.verdict} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Badge variant={item.verdict === "approved" ? "default" : item.verdict === "rejected" ? "destructive" : "secondary"}>
-                    {item.verdict}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{item.count} decisions</span>
-                  <span>{(item.avg_violations ?? 0).toFixed(1)} avg violations</span>
-                  <span>{(item.avg_warnings ?? 0).toFixed(1)} avg warnings</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No compliance data available.</p>
-        )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <KPICard label="Total Decisions" value={totalDecisions} loading={isLoading} />
+        <KPICard label="Approval Rate" value={approvalRate / 100} format="percent" loading={isLoading} />
+      </div>
+
+      <ChartCard title="Compliance by Trade" subtitle="Stacked approved / flagged / rejected" loading={isLoading}>
+        <ComplianceByTradeChart data={byTrade} />
       </ChartCard>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ChartCard title="Violation Types" loading={isLoading}>
+          <ViolationBreakdownChart data={violationTypes} />
+        </ChartCard>
+
+        <ChartCard title="Localities by Violation Rate" loading={isLoading}>
+          <TopViolatorsChart data={byLocality} />
+        </ChartCard>
+      </div>
     </AnalyticsLayout>
   );
 }

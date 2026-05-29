@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     skip_db_startup: bool = False
 
+    sam_gov_api_key: str = ""
+    sam_gov_base_url: str = "https://api.sam.gov"
+
     @field_validator("environment", "log_level", mode="before")
     @classmethod
     def _strip_whitespace(cls, v: str) -> str:

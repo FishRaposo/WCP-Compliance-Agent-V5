@@ -1,6 +1,6 @@
 # V5 Known Gaps
 
-**Last updated:** 2026-05-06
+**Last updated:** 2026-05-29
 
 This document tracks known limitations, edge cases, and deferred features. V5 is functionally complete — these are quality hardening items, not blockers.
 
@@ -27,31 +27,32 @@ These are extraction regex gaps, not rule engine bugs. All 8 have documented gol
 
 ## Integration Tests
 
-V5 has no cross-service integration tests. All 198 unit tests use mocks. Integration tests require Docker PostgreSQL + Redis runtime.
+Unit test infrastructure complete (271 tests). Cross-service integration tests require Docker runtime.
 
 | Test | Status |
 |---|---|
-| Gateway → Agent → Compliance Core pipeline | Not implemented |
-| Gateway → Compliance Core PDF extraction | Not implemented |
-| Agent → Data Platform persistence flow | Not implemented |
-| SSE stream with Redis | Not implemented |
-| Hybrid RAG search | Not implemented |
+| Data Platform DBWD flow | ✅ `tests/integration/test_dbwd_flow.py` |
+| Data Platform decision lifecycle | ✅ `tests/integration/test_decision_lifecycle.py` |
+| Data Platform analytics endpoints | ✅ `tests/integration/test_analytics_endpoints.py` |
+| Redis cache layer | ✅ `tests/integration/test_redis_cache.py` |
+| Gateway → Agent → Compliance Core pipeline | Requires live Docker stack |
+| SSE stream with Redis | Requires live Docker stack |
 
-Infrastructure defined in `docs/planning/v5.1-implementation-plan.md` Phase 13.
+Test infra: `infra/docker-compose.test.yml` (ports 5433/6380).
 
 ## Performance & Scale
 
 No load testing or benchmarks have been performed. Known considerations:
 
 - Rate limiter is in-memory (not shared across Gateway instances)
-- DBWD rate lookup is in-memory (20 DC trades) — SAM.gov client exists but not tested
+- ~~DBWD rate lookup is in-memory~~ → SAM.gov wired into refresh pipeline (Phase 10); Redis cache wired into rate lookup (Phase 11)
 - No connection pool tuning beyond defaults (`pool_size=10, max_overflow=20`)
-- No Redis caching for DBWD rates (service exists but not wired into lookup path)
+- ~~No Redis caching for DBWD rates~~ → Redis cache fully wired in `dbwd_service.get_rates()` and `get_rate()`
 
 ## UI Gaps
 
 - No PDF upload UI integration tested end-to-end (mock mode works)
-- Analytics pages show data tables, not charts (recharts not installed)
+- ~~Analytics pages show data tables, not charts~~ → 11 recharts chart components implemented (Phase 9); all 4 analytics pages use real charts
 - No mobile-responsive testing
 
 ## Documentation

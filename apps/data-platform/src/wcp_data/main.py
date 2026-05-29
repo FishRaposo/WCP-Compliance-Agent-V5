@@ -4,16 +4,22 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from wcp_data.analytics.duckdb_store import get_analytics_store
 from wcp_data.api.router import router
 from wcp_data.config import settings
 from wcp_data.db.session import init_db
+from wcp_data.storage.duckdb_init import init_duckdb_views
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if not settings.skip_db_startup:
         await init_db()
+    store = get_analytics_store()
+    postgres_dsn = str(settings.database_url).replace("+asyncpg", "")
+    init_duckdb_views(store, postgres_dsn=postgres_dsn)
     yield
+    store.close()
 
 
 def create_app() -> FastAPI:

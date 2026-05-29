@@ -21,6 +21,8 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -43,6 +45,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://wcp:${DB_PASSWORD:-wcp_prod}@postgres:5432/wcp_compliance
       REDIS_URL: redis://redis:6379
+      SAM_GOV_API_KEY: ${SAM_GOV_API_KEY:-}
     ports:
       - "8001:8001"
     depends_on:
@@ -82,6 +85,8 @@ services:
 
   web:
     build: ../apps/web
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
     ports:
       - "80:80"
     depends_on:
@@ -89,3 +94,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
