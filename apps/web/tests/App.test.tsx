@@ -9,7 +9,7 @@ describe("App routing", () => {
 
   it("shows login page when no token is present", () => {
     render(<App />);
-    expect(screen.getByText(/sign in to your account/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in to access the Davis-Bacon audit command center/i)).toBeInTheDocument();
   });
 
   it("does not show sidebar when unauthenticated", () => {
