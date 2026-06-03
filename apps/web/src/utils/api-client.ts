@@ -19,10 +19,6 @@ import {
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 export const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
-function getToken(): string | null {
-  return localStorage.getItem("wcp_token");
-}
-
 async function request<T>(path: string, init?: RequestInit, params?: Record<string, string | number | undefined>): Promise<T> {
   if (IS_MOCK) {
     return mockResolve<T>(path);
@@ -44,10 +40,8 @@ async function request<T>(path: string, init?: RequestInit, params?: Record<stri
     headers["Content-Type"] = "application/json";
   }
 
-  const token = getToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  // Token is stored in httpOnly cookie by the server - no need to read from localStorage
+  // Browser automatically sends cookies with same-origin requests
 
   if (init?.headers) {
     Object.assign(headers, init.headers as Record<string, string>);
@@ -56,11 +50,14 @@ async function request<T>(path: string, init?: RequestInit, params?: Record<stri
   const fullUrl = BASE_URL ? `${BASE_URL}${url}` : url;
   const res = await fetch(fullUrl, {
     ...init,
+    credentials: "include", // Ensure cookies are sent with cross-origin requests too
     headers,
   });
 
   if (res.status === 401) {
+    // Clear any legacy localStorage data (harmless if not present)
     localStorage.removeItem("wcp_token");
+    localStorage.removeItem("wcp_user");
     window.dispatchEvent(new CustomEvent("auth:expired"));
     window.location.href = "/login";
     throw new Error("Session expired. Please log in again.");

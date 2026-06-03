@@ -1,5 +1,6 @@
 import logging
 
+import bcrypt
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
@@ -36,7 +37,9 @@ async def validate_credentials(
     if row is None:
         return AuthValidateResponse(valid=False)
 
-    if body.password != row["password_hash"]:
+    # Use bcrypt to verify the password against the stored hash
+    stored_hash = row["password_hash"]
+    if not bcrypt.checkpw(body.password.encode("utf-8"), stored_hash.encode("utf-8")):
         return AuthValidateResponse(valid=False)
 
     return AuthValidateResponse(

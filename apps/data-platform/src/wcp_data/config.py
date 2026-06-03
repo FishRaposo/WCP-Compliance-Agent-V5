@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     environment: str = "development"
 
+    internal_service_token: str = ""
+
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     skip_db_startup: bool = False
 

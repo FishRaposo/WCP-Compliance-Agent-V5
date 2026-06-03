@@ -48,7 +48,10 @@ function NotFound() {
 }
 
 function isAuthenticated(): boolean {
-  return Boolean(localStorage.getItem("wcp_token"));
+  // Check for auth cookie instead of localStorage
+  // The JWT token is stored in an httpOnly cookie set by the server
+  const cookies = document.cookie.split(";");
+  return cookies.some((cookie) => cookie.trim().startsWith("wcp_auth"));
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

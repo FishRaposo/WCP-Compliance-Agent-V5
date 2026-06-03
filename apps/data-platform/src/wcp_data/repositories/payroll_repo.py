@@ -64,17 +64,19 @@ async def bulk_insert_payrolls(
     ingestion_job_id: str | None = None,
 ) -> list[PayrollRecordResponse]:
     await ensure_partition(session, contract_id)
-    created: list[PayrollRecordResponse] = []
+    # PERF-02: Batch insert instead of sequential individual inserts
+    values_list = []
     for record in records:
         values = record.model_dump()
         values["contract_id"] = contract_id
         values["ingestion_job_id"] = ingestion_job_id
-        result = await session.execute(
-            insert(payroll_records_table).values(**values).returning(payroll_records_table)
-        )
-        row = result.first()
-        if row is not None:
-            created.append(_payroll_response(row))
+        values_list.append(values)
+
+    result = await session.execute(
+        insert(payroll_records_table).values(values_list).returning(payroll_records_table)
+    )
+    rows = result.fetchall()
+    created = [_payroll_response(row) for row in rows]
     await session.commit()
     return created
 

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import { config } from "../config.js";
 import { runWCPPipeline, runPipelineFromExtracted } from "../workflows/wcp-pipeline.js";
 import { ExtractedWCPSchema } from "../types.js";
 
@@ -20,6 +21,34 @@ function getTraceHeaders(c: any): Record<string, string> {
     "x-trace-id": traceId,
   };
 }
+
+/**
+ * Middleware to verify internal service token.
+ * If INTERNAL_SERVICE_TOKEN is not configured (dev mode), skip the check with a warning.
+ */
+async function verifyInternalToken(c: any, next: any) {
+  // Skip validation in dev mode when token is not configured
+  if (!config.INTERNAL_SERVICE_TOKEN) {
+    console.warn(
+      "INTERNAL_SERVICE_TOKEN not configured - skipping internal route authentication. " +
+      "This is only acceptable in development."
+    );
+    return next();
+  }
+
+  const token = c.req.header("X-Internal-Token");
+  if (!token) {
+    return c.json({ error: "Missing X-Internal-Token header" }, 401);
+  }
+
+  if (token !== config.INTERNAL_SERVICE_TOKEN) {
+    return c.json({ error: "Invalid internal service token" }, 403);
+  }
+
+  return next();
+}
+
+workflowRoutes.use("/*", verifyInternalToken);
 
 workflowRoutes.post("/wcp-pipeline", async (c) => {
   const body = await c.req.json();

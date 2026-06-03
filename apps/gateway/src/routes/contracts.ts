@@ -21,7 +21,29 @@ const CreateContractRequest = z.object({
   location: z.string().optional(),
 }).passthrough();
 
-const PatchContractRequest = z.object({}).passthrough();
+// HIGH-04 Fix: Explicit allowed fields with strict() to prevent extra fields
+const PatchContractRequest = z.object({
+  contractor_name: z.string().optional(),
+  project_name: z.string().optional(),
+  status: z.enum(["active", "completed", "terminated"]).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  wage_determination_number: z.string().optional(),
+  location: z.string().optional(),
+}).strict();
+
+// HIGH-03 Fix: Add validation for bulk contract import
+const BulkContractRequest = z.object({
+  contracts: z.array(z.object({
+    contract_number: z.string().min(1),
+    contractor_name: z.string().min(1),
+    project_name: z.string().min(1),
+    start_date: z.string(),
+    end_date: z.string(),
+    wage_determination_number: z.string().optional(),
+    location: z.string().optional(),
+  })),
+});
 
 contractsRoutes.get("/api/v1/contracts", async (c) => {
   const params: Record<string, string> = {};
@@ -94,7 +116,11 @@ contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
 contractsRoutes.post("/api/v1/contracts/bulk", async (c) => {
   try {
     const body = await c.req.json();
-    const data = await dataPlatformClient.post<unknown>("/internal/contracts/bulk", body);
+    const parsed = BulkContractRequest.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    }
+    const data = await dataPlatformClient.post<unknown>("/internal/contracts/bulk", parsed.data);
     return c.json(data, 202);
   } catch (err) {
     if (err instanceof ServiceClientError) {

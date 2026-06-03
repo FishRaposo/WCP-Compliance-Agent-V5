@@ -32,6 +32,6 @@ pnpm dev
 
 - `AGENTS.md` — Commands, conventions, testing
 - `docs/architecture/v5-service-boundaries.md` — Full architecture
-- `docs/adrs/` — Architecture Decision Records (6 ADRs)
+- `docs/adrs/` — Architecture Decision Records (7 ADRs)
 - `docs/planning/v5-implementation-plan.md` — Phase plan
 - `docs/planning/v5-porting-guide.md` — V3→V5 file mapping

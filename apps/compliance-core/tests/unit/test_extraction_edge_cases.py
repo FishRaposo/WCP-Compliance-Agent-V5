@@ -14,8 +14,8 @@ async def test_empty_input():
     """Test that empty input returns empty extraction with appropriate flags."""
     result = extract_from_text("")
     assert result.employees == []
-    assert result.contractor.name == ""
-    assert result.project.name == ""
+    assert result.contractor.name == "Unknown Contractor"
+    assert result.project.name == "Unknown Project"
 
 
 @pytest.mark.asyncio

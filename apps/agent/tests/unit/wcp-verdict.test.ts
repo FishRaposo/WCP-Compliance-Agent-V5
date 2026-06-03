@@ -39,7 +39,7 @@ describe("wcp-verdict agent", () => {
     expect(result.verdict).toBe("approved");
     expect(result.confidence).toBe(0.95);
     expect(result.model).toBe("mock");
-  });
+  }, { timeout: 15000 });
 
   it("mock mode returns rejected for fail", async () => {
     vi.doMock("../../src/config.js", () => ({

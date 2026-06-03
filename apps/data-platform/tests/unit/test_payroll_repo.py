@@ -51,7 +51,8 @@ async def test_bulk_insert_payrolls_single_record():
         "ingestion_job_id": None,
         "created_at": "2025-01-01T00:00:00Z",
     }
-    mock_result.first.return_value = row_mock
+    # PERF-02: Batch insert uses fetchall() instead of first()
+    mock_result.fetchall.return_value = [row_mock]
     session.execute = AsyncMock(return_value=mock_result)
     record = PayrollRecordCreate(
         employee_name="John Doe",

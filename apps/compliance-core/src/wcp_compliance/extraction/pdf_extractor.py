@@ -87,7 +87,7 @@ def extract_from_text(text: str) -> ExtractedWCP:
 
     project_location = _extract_pattern(
         text,
-        r"(?:project.?location|site.?location|locality)[:\s]+([^\n,]+)",
+        r"(?:project.?location|site.?location|locality)[:\s]+([^\n]+)",
     ) or "Washington, DC"
 
     contract_number = _extract_pattern(
@@ -104,12 +104,12 @@ def extract_from_text(text: str) -> ExtractedWCP:
 
     week_ending = _extract_date(
         text,
-        r"(?:week.?ending|period.?ending)[:\s]*(\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4})",
+        r"(?:week.?ending|period.?ending)[:\s]*([^\n,]+)",
     )
 
     certification_date = _extract_date(
         text,
-        r"(?:certified|certification.?date)[:\s]*(\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4})",
+        r"(?:certified|certification.?date)[:\s]*([^\n,]+)",
     )
 
     employees = _extract_employees(text)
@@ -209,36 +209,40 @@ def _extract_employees_simple(text: str) -> list[EmployeeRecord]:
 
 
 def _parse_employee_block(block: str) -> EmployeeRecord | None:
-    name = _extract_pattern(
+    name_extracted = _extract_pattern(
         block,
-        r"(?:name|employee)[:\s]+([A-Z][a-zA-Z]+(?:[ ][A-Z][a-zA-Z]+)*)",
-    ) or "Unknown"
+        r"(?:name|employee)[: \t]+([^\n,]+)",
+    )
+    name = name_extracted.strip() if name_extracted else "Unknown"
     if name == "Unknown":
         return None
 
     raw_trade = _extract_pattern(
         block,
-        r"(?:trade|role|classification)[:\s]+([A-Za-z\s]+?)(?:[,\n]|$)",
-    ) or "Laborer"
+        r"(?:trade|role|classification)[: \t]+([^\n,]+)",
+    ) or "Unknown"
     trade = resolve_classification(raw_trade.strip())
 
-    hours = _extract_float(block, r"(?:hours.?worked|hours)[:\s]*(\d+(?:\.\d+)?)") or 40.0
-    overtime = _extract_float(block, r"(?:overtime|ot)[:\s]*(\d+(?:\.\d+)?)") or 0.0
+    hours = _extract_float(block, r"(?:hours.?worked|hours)[: \t]*(-?\d+(?:\.\d+)?)") or 0.0
+    overtime = _extract_float(block, r"(?:overtime.?hours|overtime|ot)[: \t]*(-?\d+(?:\.\d+)?)") or 0.0
 
-    wage = _extract_float(block, r"(?:hourly.?wage|wage)[:\s]*\$?(\d+(?:\.\d+)?)") or 0.0
+    # Issue 8: total hours calculation for arithmetic checks
+    total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
+
+    wage = _extract_float(block, r"(?:hourly.?wage|wage|hourly.?rate|rate)[: \t]*\$?(-?\d+(?:\.\d+)?)") or 0.0
 
     fringe = _extract_float(
-        block, r"(?:fringe|benefits)[:\s]*\$?(\d+(?:,\d+)*(?:\.\d+)?)"
+        block, r"(?:fringe|benefits)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"
     ) or 0.0
 
     gross = _extract_float(
-        block, r"(?:gross|gross.?earnings)[:\s]*\$?(\d+(?:,\d+)*(?:\.\d+)?)"
+        block, r"(?:gross|gross.?earnings)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"
     ) or 0.0
     net = _extract_float(
-        block, r"(?:net|net.?wages)[:\s]*\$?(\d+(?:,\d+)*(?:\.\d+)?)"
+        block, r"(?:net|net.?wages)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"
     ) or 0.0
     deductions_raw = _extract_float(
-        block, r"(?:deductions?)[:\s]*\$?(\d+(?:,\d+)*(?:\.\d+)?)"
+        block, r"(?:deductions?)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"
     )
     deductions = (
         deductions_raw
@@ -249,7 +253,7 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     return EmployeeRecord(
         name=name,
         trade_classification=trade,
-        hours_worked=hours,
+        hours_worked=total_hours,
         overtime_hours=overtime,
         hourly_wage=wage,
         fringe_benefits=fringe,

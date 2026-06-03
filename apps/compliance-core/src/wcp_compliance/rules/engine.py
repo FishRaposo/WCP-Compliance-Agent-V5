@@ -40,12 +40,14 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
             dbwd_rates.append(result)
             trade_to_rate[trade] = result
         else:
+            error_msg = str(result)
+            is_locality_warning = "locality" in error_msg.lower() or "/" in locality or " or " in locality.lower()
             checks.append(
                 ComplianceCheck(
                     check_id=f"classification_{trade.lower().replace(' ', '_')}",
                     check_type=CheckType.CLASSIFICATION,
                     employee_name="_multiple_",
-                    status=CheckStatus.FAIL,
+                    status=CheckStatus.WARNING if is_locality_warning else CheckStatus.FAIL,
                     expected_value=None,
                     actual_value=None,
                     variance=None,
@@ -66,7 +68,7 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
 
         checks.append(check_overtime(employee))
         checks.append(check_totals(employee))
-        checks.append(_check_data_integrity(employee))
+        checks.extend(_check_data_integrity(employee))
         checks.append(_check_minimum_wage_sanity(employee))
 
     checks.append(check_signature(extracted))
@@ -99,44 +101,90 @@ async def _fetch_dbwd_rate(trade: str, locality: str, effective_date: str) -> DB
     return await get_dbwd_rate(trade, locality, effective_date)
 
 
-def _check_data_integrity(employee: EmployeeRecord) -> ComplianceCheck:
-    issues = []
+def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
+    results = []
 
-    if employee.hourly_wage <= 0:
-        issues.append("hourly wage must be positive")
-    if employee.hours_worked < 0:
-        issues.append("hours worked cannot be negative")
-    if employee.hours_worked > 168:
-        issues.append("hours worked exceeds 168 (impossible)")
-    if (employee.deductions or 0) > employee.gross_earnings:
-        issues.append("deductions exceed gross earnings")
-    if employee.net_wages < 0:
-        issues.append("net wages cannot be negative")
-
-    if issues:
-        return ComplianceCheck(
-            check_id=f"integrity_{_slugify(employee.name)}",
+    # 1. Hourly wage check
+    wage_ok = employee.hourly_wage > 0
+    results.append(
+        ComplianceCheck(
+            check_id=f"integrity_wage_{_slugify(employee.name)}",
             check_type=CheckType.DATA_INTEGRITY,
             employee_name=employee.name,
-            status=CheckStatus.FAIL,
+            status=CheckStatus.PASS if wage_ok else CheckStatus.FAIL,
             expected_value=None,
-            actual_value=None,
+            actual_value=employee.hourly_wage,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message=f"Data integrity issues: {'; '.join(issues)}",
+            message="Data integrity: hourly wage is positive" if wage_ok else "Data integrity error: hourly wage must be positive",
         )
-
-    return ComplianceCheck(
-        check_id=f"integrity_{_slugify(employee.name)}",
-        check_type=CheckType.DATA_INTEGRITY,
-        employee_name=employee.name,
-        status=CheckStatus.PASS,
-        expected_value=None,
-        actual_value=None,
-        variance=None,
-        regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-        message="Data integrity check passed",
     )
+
+    # 2. Hours negative check
+    hours_non_negative = employee.hours_worked >= 0
+    results.append(
+        ComplianceCheck(
+            check_id=f"integrity_hours_non_neg_{_slugify(employee.name)}",
+            check_type=CheckType.DATA_INTEGRITY,
+            employee_name=employee.name,
+            status=CheckStatus.PASS if hours_non_negative else CheckStatus.FAIL,
+            expected_value=None,
+            actual_value=employee.hours_worked,
+            variance=None,
+            regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
+            message="Data integrity: hours worked is non-negative" if hours_non_negative else "Data integrity error: hours worked cannot be negative",
+        )
+    )
+
+    # 3. Hours max check
+    hours_max_ok = employee.hours_worked <= 168
+    results.append(
+        ComplianceCheck(
+            check_id=f"integrity_hours_max_{_slugify(employee.name)}",
+            check_type=CheckType.DATA_INTEGRITY,
+            employee_name=employee.name,
+            status=CheckStatus.PASS if hours_max_ok else CheckStatus.FAIL,
+            expected_value=None,
+            actual_value=employee.hours_worked,
+            variance=None,
+            regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
+            message="Data integrity: hours worked does not exceed 168" if hours_max_ok else "Data integrity error: hours worked exceeds 168 (impossible)",
+        )
+    )
+
+    # 4. Deductions check
+    deductions_ok = (employee.deductions or 0.0) <= employee.gross_earnings
+    results.append(
+        ComplianceCheck(
+            check_id=f"integrity_deductions_{_slugify(employee.name)}",
+            check_type=CheckType.DATA_INTEGRITY,
+            employee_name=employee.name,
+            status=CheckStatus.PASS if deductions_ok else CheckStatus.FAIL,
+            expected_value=None,
+            actual_value=employee.deductions,
+            variance=None,
+            regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
+            message="Data integrity: deductions do not exceed gross earnings" if deductions_ok else "Data integrity error: deductions exceed gross earnings",
+        )
+    )
+
+    # 5. Net wages check
+    net_ok = employee.net_wages >= 0
+    results.append(
+        ComplianceCheck(
+            check_id=f"integrity_net_{_slugify(employee.name)}",
+            check_type=CheckType.DATA_INTEGRITY,
+            employee_name=employee.name,
+            status=CheckStatus.PASS if net_ok else CheckStatus.FAIL,
+            expected_value=None,
+            actual_value=employee.net_wages,
+            variance=None,
+            regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
+            message="Data integrity: net wages is non-negative" if net_ok else "Data integrity error: net wages cannot be negative",
+        )
+    )
+
+    return results
 
 
 def _check_minimum_wage_sanity(employee: EmployeeRecord) -> ComplianceCheck:

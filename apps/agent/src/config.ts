@@ -29,6 +29,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   TRUST_SCORE_REVIEW_THRESHOLD: z.coerce.number().default(0.6),
   TRUST_SCORE_HIGH_BAND: z.coerce.number().default(0.85),
+  INTERNAL_SERVICE_TOKEN: z.string().default(""),
 });
 
 const raw = envSchema.parse(trimmedEnv);

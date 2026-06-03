@@ -1,5 +1,32 @@
 # Changelog
 
+## [5.0.1] - 2026-06-03
+
+### Security Fixes
+- **CRIT-01**: Replaced plaintext password comparison with bcrypt hashing
+- **CRIT-02**: Added SQL injection protection in DuckDB analytics queries
+- **CRIT-03**: Fixed rate limiter IP spoofing vulnerability
+- **CRIT-04**: Added memory cap to prevent rate limiter DoS
+- **CRIT-05**: Removed JWT from response body; httpOnly cookies only
+- **HIGH-01**: Added internal service token authentication
+- **HIGH-02**: Removed localStorage token storage in frontend
+- **HIGH-03**: Added Zod validation on bulk import endpoints
+- **HIGH-04**: Replaced permissive passthrough() with strict schema
+- **HIGH-05**: Implemented Redis connection pooling
+- **HIGH-06**: Fixed content-type bypass on file upload
+
+### Performance Improvements
+- **PERF-01**: Parallel SAM.gov wage determination fetching
+- **PERF-02**: Batch insert for payroll records
+- **PERF-03**: Removed duplicate query in decision repo
+- **PERF-06**: Persistent aiohttp session for SAM.gov client
+
+### Bug Fixes
+- Upgraded asyncpg from 0.30.0 to 0.31.0 (Windows compatibility)
+- Added aiohttp as dev dependency for SAM.gov tests
+
+---
+
 ## V5.1.0 (2026-05-06) — Portfolio Completion
 
 ### Added

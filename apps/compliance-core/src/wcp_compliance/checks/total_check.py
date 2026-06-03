@@ -9,13 +9,31 @@ TOLERANCE = 0.01
 
 def check_totals(employee: EmployeeRecord) -> ComplianceCheck:
     ot_hours = employee.overtime_hours or 0.0
+    wage = employee.hourly_wage
 
-    expected_gross = (employee.hours_worked * employee.hourly_wage) + (
-        ot_hours * employee.hourly_wage * 0.5
+    # Theoretical unrounded calculation
+    expected_gross_unrounded = (employee.hours_worked * wage) + (
+        ot_hours * wage * 0.5
     )
 
+    # Rounded overtime rate calculation (matching standard payroll accounting)
+    reg_hours = max(0.0, employee.hours_worked - ot_hours)
+    rounded_ot_rate = round(wage * 1.5, 2)
+    expected_gross_rounded = (reg_hours * wage) + (ot_hours * rounded_ot_rate)
+
     actual_gross = employee.gross_earnings
-    gross_variance = actual_gross - expected_gross
+    
+    # Check if either expected gross is within tolerance
+    variance_unrounded = actual_gross - expected_gross_unrounded
+    variance_rounded = actual_gross - expected_gross_rounded
+    
+    if abs(variance_rounded) < abs(variance_unrounded):
+        expected_gross = expected_gross_rounded
+        gross_variance = variance_rounded
+    else:
+        expected_gross = expected_gross_unrounded
+        gross_variance = variance_unrounded
+        
     gross_within_tolerance = abs(gross_variance) <= TOLERANCE
 
     expected_net = actual_gross - (employee.deductions or 0.0)

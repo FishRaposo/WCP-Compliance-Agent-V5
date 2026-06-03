@@ -52,6 +52,7 @@ def _make_extracted_wcp(cert_date=None):
         employees=[],
         certification_date=cert_date,
         payroll_number=1,
+        week_ending=date(2025, 6, 14),
     )
 
 

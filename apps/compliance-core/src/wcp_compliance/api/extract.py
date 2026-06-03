@@ -26,10 +26,11 @@ async def extract_wcp(
 
     try:
         if file:
-            if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES:
+            # HIGH-06 Fix: Make content type check unconditional
+            if not file.content_type or file.content_type not in ALLOWED_CONTENT_TYPES:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid file type: {file.content_type}. Only PDF is supported",
+                    detail=f"Invalid content type: {file.content_type}. Only PDF files are accepted.",
                 )
             content = await file.read()
             if len(content) > MAX_UPLOAD_SIZE:

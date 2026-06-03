@@ -23,6 +23,7 @@ def _make_decision_row():
     from datetime import datetime
 
     mock_get = MagicMock()
+    # PERF-03 fix: Ensure _mapping is a real dict for proper dict() conversion
     mock_get._mapping = {
         "id": "dec-001",
         "job_id": "job-001",
@@ -62,8 +63,8 @@ async def test_create_decision_returns_response():
     get_result = MagicMock()
     get_result.first.return_value = _make_decision_row()
 
-    # 4 calls: persist_decision, append_audit, get_decision (2 internal calls)
-    session.execute = AsyncMock(side_effect=[persist_result, audit_result, MagicMock(), get_result])
+    # PERF-03: Removed duplicate query - now 3 calls: persist_decision, append_audit, get_decision
+    session.execute = AsyncMock(side_effect=[persist_result, audit_result, get_result])
 
     draft = DecisionCreate(
         job_id="job-001",
@@ -118,9 +119,9 @@ async def test_create_decision_with_human_review_flag():
     get_result = MagicMock()
     get_result.first.return_value = mock_d_row
 
-    # 5 calls: persist, audit1, audit2, get_decision (2 internal)
+    # 5 calls: persist, audit1, audit2, get_decision (2 internal) -> 4 calls now
     session.execute = AsyncMock(side_effect=[
-        persist_result, audit_result, audit_result, MagicMock(), get_result,
+        persist_result, audit_result, audit_result, get_result,
     ])
 
     draft = DecisionCreate(
@@ -175,8 +176,8 @@ async def test_create_decision_persists_with_contract_id():
     get_result = MagicMock()
     get_result.first.return_value = mock_d_row
 
-    # 4 calls: persist_decision, append_audit, get_decision (2 internal calls)
-    session.execute = AsyncMock(side_effect=[persist_result, audit_result, MagicMock(), get_result])
+    # PERF-03: Removed duplicate query - now 3 calls: persist_decision, append_audit, get_decision
+    session.execute = AsyncMock(side_effect=[persist_result, audit_result, get_result])
 
     draft = DecisionCreate(
         job_id="job-003",

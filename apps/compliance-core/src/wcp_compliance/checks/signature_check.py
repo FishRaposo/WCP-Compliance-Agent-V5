@@ -23,6 +23,9 @@ def check_signature(extracted: ExtractedWCP) -> ComplianceCheck:
     elif is_future_dated:
         status = CheckStatus.FAIL
         message = f"Certification date is in the future: {cert_date}"
+    elif len(extracted.employees) == 0 and (not has_payroll_number or extracted.week_ending is None):
+        status = CheckStatus.FAIL
+        message = "No Work Performed payroll must specify a valid payroll number and week ending date"
     else:
         status = CheckStatus.PASS
         date_str = str(cert_date)

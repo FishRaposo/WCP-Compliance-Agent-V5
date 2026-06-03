@@ -49,10 +49,7 @@ async def persist_decision(session: AsyncSession, decision: DecisionCreate) -> s
 
 
 async def get_decision(session: AsyncSession, decision_id: str) -> DecisionResponse | None:
-    result = await session.execute(
-        select(text("decisions")).where(text("decisions.id = :id")),
-        {"id": decision_id},
-    )
+    # PERF-03: Remove duplicate query - keep only the proper SQLAlchemy query
     from wcp_data.models.tables import decisions_table
 
     result = await session.execute(

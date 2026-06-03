@@ -1,8 +1,23 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { getPayrolls, bulkImportPayrolls } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 
 export const payrollsRoutes = new Hono();
+
+// HIGH-03 Fix: Add validation schema for bulk payroll import
+const BulkPayrollRequest = z.object({
+  contract_id: z.string().min(1),
+  records: z.array(z.object({
+    employee_id: z.string().min(1),
+    employee_name: z.string().min(1),
+    work_period_start: z.string(),
+    work_period_end: z.string(),
+    hours_worked: z.number().positive(),
+    wages_paid: z.number().nonnegative(),
+    job_classification: z.string().optional(),
+  })),
+});
 
 payrollsRoutes.get("/api/v1/payrolls", async (c) => {
   const params: Record<string, string> = {};
@@ -27,7 +42,11 @@ payrollsRoutes.get("/api/v1/payrolls", async (c) => {
 payrollsRoutes.post("/api/v1/payrolls/bulk", async (c) => {
   try {
     const body = await c.req.json();
-    const data = await bulkImportPayrolls(body);
+    const parsed = BulkPayrollRequest.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    }
+    const data = await bulkImportPayrolls(parsed.data);
     return c.json(data, 202);
   } catch (err) {
     if (err instanceof ServiceClientError) {

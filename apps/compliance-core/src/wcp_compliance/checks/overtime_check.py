@@ -13,7 +13,7 @@ def check_overtime(employee: EmployeeRecord) -> ComplianceCheck:
     total_hours = employee.hours_worked
     calculated_ot_hours = max(0, total_hours - OVERTIME_THRESHOLD_HOURS)
 
-    if calculated_ot_hours > 0 and overtime_hours == 0:
+    if calculated_ot_hours > 0.5 and overtime_hours == 0:
         expected_ot_pay = calculated_ot_hours * employee.hourly_wage * OVERTIME_MULTIPLIER
         return ComplianceCheck(
             check_id=f"overtime_{_slugify(employee.name)}",

@@ -7,10 +7,11 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://wcp:wcp@localhost:5432/wcp"
     redis_url: str = "redis://localhost:6379"
-    data_platform_url: str = "http://localhost:8080"
+    data_platform_url: str = "http://localhost:8001"
     log_level: str = "INFO"
     environment: str = "development"
     skip_db_startup: bool = False
+    internal_service_token: str = ""
 
     cors_origins: list[str] = [
         "http://localhost:5173",

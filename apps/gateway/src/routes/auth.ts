@@ -45,7 +45,6 @@ authRoutes.post("/api/v1/auth/login", async (c) => {
     });
 
     return c.json({
-      token,
       user_id: result.user_id,
       role: result.role,
     });

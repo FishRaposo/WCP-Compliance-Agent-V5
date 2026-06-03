@@ -19,11 +19,11 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const data = await apiClient.post<{ token: string; user_id: string; role: string }>(
+      const data = await apiClient.post<{ user_id: string; role: string }>(
         "/api/auth/login",
         { email, password }
       );
-      localStorage.setItem("wcp_token", data.token);
+      // Token is stored in httpOnly cookie by the server; only store user info
       localStorage.setItem("wcp_user", JSON.stringify({
         user_id: data.user_id,
         email,

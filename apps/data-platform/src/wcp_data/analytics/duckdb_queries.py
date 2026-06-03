@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 def decision_volume(days: int = 30) -> list[dict]:
     """Daily decision count with average trust score."""
     try:
+        # Validate and sanitize days parameter to prevent SQL injection
+        days = int(days)
+        if not 1 <= days <= 365:
+            raise ValueError("days must be between 1 and 365")
+        
         return store.execute(f"""
             SELECT
                 date_trunc('day', created_at)::DATE AS date,
@@ -79,6 +84,11 @@ def llm_analytics() -> list[dict]:
 def query_wage_trends(months: int = 6) -> list[dict]:
     """6-month wage violation trend — total checked vs violations per month."""
     try:
+        # Validate and sanitize months parameter to prevent SQL injection
+        months = int(months)
+        if not 1 <= months <= 24:
+            raise ValueError("months must be between 1 and 24")
+        
         return store.execute(f"""
             SELECT
                 date_trunc('month', created_at)::DATE::TEXT AS month,

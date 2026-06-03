@@ -14,16 +14,18 @@ V5 is a monorepo with five services, managed by Turborepo + pnpm workspaces.
 
 Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 
-## Test Tally: 309 tests, 0 failures
+## Test Tally: 253 tests, 0 failures
 
 | Service | Tests | Framework |
 |---|---|---|
-| Compliance Core | 66 unit + 73 eval | pytest |
-| Data Platform | 48 unit + 22 integration | pytest |
+| Compliance Core | 75 unit | pytest |
+| Data Platform | 56 unit | pytest |
 | Agent | 55 | vitest |
 | Gateway | 22 | vitest |
 | Web | 28 | vitest |
 | Contracts | 17 | vitest |
+
+**Note:** 4 DuckDB tests skipped (require external dependencies). 73 eval tests not run in this cycle.
 
 ## Commands
 

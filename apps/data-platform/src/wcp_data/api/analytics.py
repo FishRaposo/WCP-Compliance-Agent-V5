@@ -58,6 +58,11 @@ async def analytics_volume(
     days: int = Query(default=30, le=365),
     session: AsyncSession = Depends(get_session),
 ) -> list[dict]:
+    # Validate and sanitize days parameter to prevent SQL injection
+    days = int(days)
+    if not 1 <= days <= 365:
+        raise ValueError("days must be between 1 and 365")
+    
     duck = _duck(f"""
         SELECT
             date_trunc('day', created_at)::DATE::TEXT AS date,
