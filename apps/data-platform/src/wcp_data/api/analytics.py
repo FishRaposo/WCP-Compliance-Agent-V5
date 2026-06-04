@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def _duck(query: str) -> list[dict]:
+def _duck(query: str) -> list[dict[str, Any]]:
     """Try DuckDB first; return empty list on any failure (PG fallback used by caller)."""
     try:
         store = get_analytics_store()
@@ -26,7 +27,7 @@ def _duck(query: str) -> list[dict]:
 @router.get("/overview")
 async def analytics_overview(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck = _duck("""
         SELECT
             COUNT(*) AS total_decisions,
@@ -57,7 +58,7 @@ async def analytics_overview(
 async def analytics_volume(
     days: int = Query(default=30, le=365),
     session: AsyncSession = Depends(get_session),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     # Validate and sanitize days parameter to prevent SQL injection
     days = int(days)
     if not 1 <= days <= 365:
@@ -96,7 +97,7 @@ async def analytics_volume(
 @router.get("/approval-by-trade")
 async def analytics_approval_by_trade(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck = _duck("""
         SELECT
             COUNT(*) AS total,
@@ -140,7 +141,7 @@ async def analytics_approval_by_trade(
 @router.get("/trust-band-distribution")
 async def analytics_trust_band_distribution(
     session: AsyncSession = Depends(get_session),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     duck = _duck("""
         SELECT trust_band, COUNT(*) AS count
         FROM decisions
@@ -154,14 +155,14 @@ async def analytics_trust_band_distribution(
         select(decisions_table.c.trust_band, func.count().label("count")).group_by(decisions_table.c.trust_band)
     )
     rows = result.fetchall()
-    total = sum(r.count for r in rows) or 1
-    return [{"trust_band": r.trust_band, "count": r.count, "percentage": r.count / total} for r in rows]
+    total = sum(r[1] for r in rows) or 1
+    return [{"trust_band": r[0], "count": r[1], "percentage": r[1] / total} for r in rows]
 
 
 @router.get("/cost")
 async def analytics_cost(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck = _duck("""
         SELECT
             COUNT(*) AS decisions,
@@ -191,7 +192,7 @@ async def analytics_cost(
 @router.get("/compliance")
 async def analytics_compliance(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck_verdict = _duck("""
         SELECT
             verdict,
@@ -227,15 +228,15 @@ async def analytics_compliance(
         ).group_by(decisions_table.c.verdict)
     )
     rows = result.fetchall()
-    pg_total = sum(r.count for r in rows) or 0
-    pg_approved = sum(r.count for r in rows if r.verdict == "approved")
+    pg_total = sum(r[1] for r in rows) or 0
+    pg_approved = sum(r[1] for r in rows if r[0] == "approved")
     return {
         "total_decisions": pg_total,
         "approval_rate": round(pg_approved / pg_total * 100, 1) if pg_total > 0 else 0,
         "by_trade": [],
         "by_locality": [],
         "violation_types": [
-            {"type": r.verdict, "count": r.count, "percentage": r.count / pg_total if pg_total > 0 else 0}
+            {"type": r[0], "count": r[1], "percentage": r[1] / pg_total if pg_total > 0 else 0}
             for r in rows
         ],
         "source": "postgres",
@@ -245,7 +246,7 @@ async def analytics_compliance(
 @router.get("/wages")
 async def analytics_wages(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck_trend = _duck("""
         SELECT
             date_trunc('day', created_at)::DATE::TEXT AS date,
@@ -283,7 +284,7 @@ async def analytics_wages(
 @router.get("/llm")
 async def analytics_llm(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     duck_summary = _duck("""
         SELECT
             COUNT(*) AS decisions,

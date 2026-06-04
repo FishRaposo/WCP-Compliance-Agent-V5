@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 async def verify_internal_token(request: Request) -> None:
     """
     Verify the X-Internal-Token header matches the configured INTERNAL_SERVICE_TOKEN.
-    
+
     If INTERNAL_SERVICE_TOKEN is not configured (dev mode), skip the check with a warning.
     """
     # Skip validation in dev mode when token is not configured
@@ -22,14 +22,14 @@ async def verify_internal_token(request: Request) -> None:
             "This is only acceptable in development."
         )
         return
-    
+
     token = request.headers.get("X-Internal-Token")
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing X-Internal-Token header",
         )
-    
+
     if token != settings.internal_service_token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

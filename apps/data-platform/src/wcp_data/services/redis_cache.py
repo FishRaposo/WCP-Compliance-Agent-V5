@@ -40,7 +40,8 @@ async def cache_get(key: str) -> dict[str, Any] | None:
         r = await _get_redis()
         value = await r.get(key)
         if value:
-            return json.loads(value)
+            from typing import cast
+            return cast(dict[str, Any], json.loads(value))
     except Exception:
         logger.debug("Redis cache miss: %s", key)
     return None

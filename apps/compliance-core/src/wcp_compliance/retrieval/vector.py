@@ -5,10 +5,12 @@ Falls back gracefully when pgvector/embeddings are unavailable.
 
 import logging
 
+from typing import Any, cast
+
 logger = logging.getLogger(__name__)
 
 
-async def vector_search(query: str, top_k: int = 5) -> list[dict]:
+async def vector_search(query: str, top_k: int = 5) -> list[dict[str, Any]]:
     """Vector similarity search against regulation chunks.
 
     Falls back to empty results when pgvector is unavailable.
@@ -25,7 +27,7 @@ async def vector_search(query: str, top_k: int = 5) -> list[dict]:
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    return data.get("results", [])
+                    return cast(list[dict[str, Any]], data.get("results", []))
     except Exception:
         logger.debug("Vector search unavailable, returning empty")
 

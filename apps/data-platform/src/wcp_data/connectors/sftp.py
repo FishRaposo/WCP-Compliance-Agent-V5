@@ -19,7 +19,7 @@ class SFTPConnector(BaseConnector):
 
     async def connect(self) -> None:
         try:
-            import paramiko
+            import paramiko  # type: ignore[import-untyped]
             host = self.config["host"]
             port = self.config.get("port", 22)
             user = self.config["user"]

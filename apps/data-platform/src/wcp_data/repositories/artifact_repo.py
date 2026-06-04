@@ -34,7 +34,8 @@ async def get_artifact_metadata(
     row = result.fetchone()
     if row is None:
         return None
-    metadata = row.metadata
+    from typing import cast
+    metadata = row[0] if hasattr(row, "__getitem__") else getattr(row, "metadata", None)
     if isinstance(metadata, str):
-        return json.loads(metadata)
-    return metadata or {}
+        return cast(dict[str, Any], json.loads(metadata))
+    return cast(dict[str, Any], metadata) or {}

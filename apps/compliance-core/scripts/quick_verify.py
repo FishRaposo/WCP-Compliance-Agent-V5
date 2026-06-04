@@ -11,7 +11,6 @@ import sys
 import urllib.error
 import urllib.request
 
-
 SAMPLE_TEXT = (
     "Contractor: Apex Builders Inc.\n"
     "Project: Federal Building Renovation\n"
@@ -83,8 +82,9 @@ def main() -> int:
         results.append(False)
 
     print("\n[ DBWD Rates Check ]")
+    url = "http://localhost:8001/internal/dbwd/rates?limit=5"
     try:
-        with urllib.request.urlopen("http://localhost:8001/internal/dbwd/rates?limit=5", timeout=5) as r:
+        with urllib.request.urlopen(url, timeout=5) as r:
             rates = json.loads(r.read())
             print(f"  ✅ DBWD rates available: {len(rates)} records returned")
             results.append(True)

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     skip_db_startup: bool = False
     internal_service_token: str = ""
+    otel_exporter_endpoint: str = "http://localhost:4318/v1/traces"
 
     cors_origins: list[str] = [
         "http://localhost:5173",

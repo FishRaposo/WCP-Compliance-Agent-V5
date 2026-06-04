@@ -12,5 +12,15 @@ router = APIRouter()
 router.include_router(health_router, tags=["health"])
 router.include_router(extract_router, tags=["extraction"])
 router.include_router(validate_router, tags=["validation"])
-router.include_router(dbwd_router, prefix="/internal/dbwd", tags=["dbwd"], dependencies=[Depends(verify_internal_token)])
-router.include_router(search_router, prefix="/internal/search", tags=["search"], dependencies=[Depends(verify_internal_token)])
+router.include_router(
+    dbwd_router,
+    prefix="/internal/dbwd",
+    tags=["dbwd"],
+    dependencies=[Depends(verify_internal_token)],
+)
+router.include_router(
+    search_router,
+    prefix="/internal/search",
+    tags=["search"],
+    dependencies=[Depends(verify_internal_token)],
+)

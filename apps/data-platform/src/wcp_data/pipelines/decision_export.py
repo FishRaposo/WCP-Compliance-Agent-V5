@@ -1,6 +1,7 @@
 """Monthly decision export to Parquet archive."""
 
 import logging
+from typing import Any
 
 from wcp_data.pipelines.utils import import_safe_flow
 from wcp_data.storage.parquet_writer import export_decisions
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @import_safe_flow(name="decision-export")
-async def decision_export(records: list[dict] | None = None) -> dict:
+async def decision_export(records: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     if records is None:
         logger.info("No records provided for export, checking database...")
         records = []

@@ -6,6 +6,7 @@ business rules before persistence.
 
 import logging
 from datetime import date
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class ValidationResult:
     def add_warning(self, msg: str) -> None:
         self.warnings.append(msg)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "valid": self.is_valid,
             "errors": self.errors,
@@ -33,7 +34,7 @@ class ValidationResult:
         }
 
 
-def validate_contract(data: dict) -> ValidationResult:
+def validate_contract(data: dict[str, Any]) -> ValidationResult:
     result = ValidationResult()
 
     if not data.get("contract_number"):
@@ -64,7 +65,7 @@ def validate_contract(data: dict) -> ValidationResult:
     return result
 
 
-def validate_payroll_record(record: dict) -> ValidationResult:
+def validate_payroll_record(record: dict[str, Any]) -> ValidationResult:
     result = ValidationResult()
 
     if not record.get("employee_name"):
@@ -96,7 +97,7 @@ def validate_payroll_record(record: dict) -> ValidationResult:
     return result
 
 
-def validate_dbwd_rate(rate: dict) -> ValidationResult:
+def validate_dbwd_rate(rate: dict[str, Any]) -> ValidationResult:
     result = ValidationResult()
 
     if not rate.get("trade"):

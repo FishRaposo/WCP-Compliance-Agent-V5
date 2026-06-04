@@ -23,7 +23,17 @@ const navItems = [
   { href: "/contracts", label: "Contracts", icon: BriefcaseBusiness },
   { href: "/payrolls", label: "Payrolls", icon: TableProperties },
   { href: "/ingestion", label: "Ingestion", icon: Upload },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { 
+    href: "/analytics/overview", 
+    label: "Analytics", 
+    icon: BarChart3,
+    subItems: [
+      { href: "/analytics/overview", label: "Overview" },
+      { href: "/analytics/compliance", label: "Compliance" },
+      { href: "/analytics/wages", label: "Wages" },
+      { href: "/analytics/llm", label: "LLM Performance" }
+    ]
+  },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -61,21 +71,45 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
         
         <div className="space-y-1.5 flex-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isMainActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href.split('/').slice(0, 3).join('/')));
+
             return (
-              <Link
-                key={href}
-                to={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 relative group ${
-                  isActive
-                    ? "bg-gradient-premium text-white shadow-lg shadow-purple-500/5"
-                    : "text-gray-400 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                <Icon className={`h-4.5 w-4.5 transition-transform group-hover:scale-105 ${isActive ? "text-white" : "text-gray-400 group-hover:text-white"}`} />
-                <span>{label}</span>
-              </Link>
+              <div key={item.href} className="space-y-1">
+                <Link
+                  to={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 relative group ${
+                    isMainActive
+                      ? "bg-gradient-premium text-white shadow-lg shadow-purple-500/5"
+                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <Icon className={`h-4.5 w-4.5 transition-transform group-hover:scale-105 ${isMainActive ? "text-white" : "text-gray-400 group-hover:text-white"}`} />
+                  <span className="flex-1">{item.label}</span>
+                </Link>
+
+                {item.subItems && (pathname.startsWith("/analytics") || isMainActive) && (
+                  <div className="pl-6 space-y-1 border-l border-white/5 ml-5 mt-1">
+                    {item.subItems.map((sub) => {
+                      const isSubActive = pathname === sub.href;
+                      return (
+                        <Link
+                          key={sub.href}
+                          to={sub.href}
+                          className={`flex items-center py-1.5 px-3 rounded-lg text-[11px] font-medium tracking-wide transition-all duration-150 ${
+                            isSubActive
+                              ? "text-indigo-400 font-bold bg-white/5"
+                              : "text-gray-400 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

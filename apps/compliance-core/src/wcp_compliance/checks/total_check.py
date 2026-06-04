@@ -22,18 +22,18 @@ def check_totals(employee: EmployeeRecord) -> ComplianceCheck:
     expected_gross_rounded = (reg_hours * wage) + (ot_hours * rounded_ot_rate)
 
     actual_gross = employee.gross_earnings
-    
+
     # Check if either expected gross is within tolerance
     variance_unrounded = actual_gross - expected_gross_unrounded
     variance_rounded = actual_gross - expected_gross_rounded
-    
+
     if abs(variance_rounded) < abs(variance_unrounded):
         expected_gross = expected_gross_rounded
         gross_variance = variance_rounded
     else:
         expected_gross = expected_gross_unrounded
         gross_variance = variance_unrounded
-        
+
     gross_within_tolerance = abs(gross_variance) <= TOLERANCE
 
     expected_net = actual_gross - (employee.deductions or 0.0)

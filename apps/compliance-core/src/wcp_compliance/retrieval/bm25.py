@@ -3,6 +3,8 @@
 import logging
 import math
 
+from typing import Any
+
 logger = logging.getLogger(__name__)
 
 K1 = 1.5
@@ -13,7 +15,7 @@ def _tokenize(text: str) -> list[str]:
     return text.lower().split()
 
 
-def bm25_search(query: str, corpus: list[dict], top_k: int = 5) -> list[dict]:
+def bm25_search(query: str, corpus: list[dict[str, Any]], top_k: int = 5) -> list[dict[str, Any]]:
     if not corpus:
         return []
 

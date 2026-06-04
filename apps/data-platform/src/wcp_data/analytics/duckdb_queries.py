@@ -1,13 +1,14 @@
 """DuckDB analytics queries for decision volume, compliance, wages, and LLM analytics."""
 
 import logging
+from typing import Any
 
 from wcp_data.analytics.duckdb_store import _analytics_store as store
 
 logger = logging.getLogger(__name__)
 
 
-def decision_volume(days: int = 30) -> list[dict]:
+def decision_volume(days: int = 30) -> list[dict[str, Any]]:
     """Daily decision count with average trust score."""
     try:
         # Validate and sanitize days parameter to prevent SQL injection
@@ -30,7 +31,7 @@ def decision_volume(days: int = 30) -> list[dict]:
         return []
 
 
-def compliance_breakdown() -> list[dict]:
+def compliance_breakdown() -> list[dict[str, Any]]:
     """Violation breakdown by check type."""
     try:
         return store.execute("""
@@ -46,7 +47,7 @@ def compliance_breakdown() -> list[dict]:
         return []
 
 
-def wage_analytics() -> list[dict]:
+def wage_analytics() -> list[dict[str, Any]]:
     """Wage compliance statistics by trust band."""
     try:
         return store.execute("""
@@ -63,7 +64,7 @@ def wage_analytics() -> list[dict]:
         return []
 
 
-def llm_analytics() -> list[dict]:
+def llm_analytics() -> list[dict[str, Any]]:
     """LLM performance metrics: cost, latency, confidence by model."""
     try:
         return store.execute("""
@@ -81,7 +82,7 @@ def llm_analytics() -> list[dict]:
         return []
 
 
-def query_wage_trends(months: int = 6) -> list[dict]:
+def query_wage_trends(months: int = 6) -> list[dict[str, Any]]:
     """6-month wage violation trend — total checked vs violations per month."""
     try:
         # Validate and sanitize months parameter to prevent SQL injection
@@ -105,7 +106,7 @@ def query_wage_trends(months: int = 6) -> list[dict]:
         return []
 
 
-def query_llm_cost_analytics() -> dict:
+def query_llm_cost_analytics() -> dict[str, Any]:
     """Per-model cost breakdown and cumulative spend."""
     try:
         by_verdict = store.execute("""
@@ -136,7 +137,7 @@ def query_llm_cost_analytics() -> dict:
         return {"by_verdict": [], "cumulative": []}
 
 
-def approval_rate() -> dict:
+def approval_rate() -> dict[str, Any]:
     """Overall approval rate."""
     try:
         result = store.execute("""

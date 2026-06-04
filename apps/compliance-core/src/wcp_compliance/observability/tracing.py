@@ -32,7 +32,10 @@ def setup_tracing() -> None:
         logger.info("OpenTelemetry unavailable, tracing disabled")
 
 
-def get_tracer(name: str = "wcp-compliance-core"):
+from typing import Any, Generator
+
+
+def get_tracer(name: str = "wcp-compliance-core") -> Any:
     try:
         from opentelemetry import trace
         return trace.get_tracer(name)
@@ -40,13 +43,13 @@ def get_tracer(name: str = "wcp-compliance-core"):
         return None
 
 
-def create_span(name: str, attributes: dict | None = None):
+def create_span(name: str, attributes: dict[str, Any] | None = None) -> Any:
     tracer = get_tracer()
     if tracer is None:
         from contextlib import contextmanager
 
         @contextmanager
-        def _noop():
+        def _noop() -> Generator[None, None, None]:
             yield None
 
         return _noop()

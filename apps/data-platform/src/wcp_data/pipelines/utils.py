@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-def import_safe_flow(name: str):
+def import_safe_flow(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator that makes a function callable both as a Prefect flow and a plain async function."""
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(fn)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 from prefect import flow as prefect_flow
-                @prefect_flow(name=name)
-                async def _inner():
+                @prefect_flow(name=name)  # type: ignore[untyped-decorator]
+                async def _inner() -> Any:
                     return await fn(*args, **kwargs)
                 return await _inner()
             except ImportError:
@@ -31,7 +31,7 @@ def import_safe_flow(name: str):
     return decorator
 
 
-def retry(max_attempts: int = 3, delay_seconds: float = 1.0):
+def retry(max_attempts: int = 3, delay_seconds: float = 1.0) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Retry decorator with exponential backoff."""
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(fn)

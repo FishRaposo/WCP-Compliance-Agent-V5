@@ -16,9 +16,9 @@ STREAM_INGESTION = "wcp.ingestion"
 
 class EventProducer:
     def __init__(self) -> None:
-        self._redis = None
+        self._redis: Any = None
 
-    async def _get_redis(self):
+    async def _get_redis(self) -> Any:
         if self._redis is None:
             try:
                 import redis.asyncio as aioredis

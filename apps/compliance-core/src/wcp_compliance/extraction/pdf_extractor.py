@@ -224,12 +224,21 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     trade = resolve_classification(raw_trade.strip())
 
     hours = _extract_float(block, r"(?:hours.?worked|hours)[: \t]*(-?\d+(?:\.\d+)?)") or 0.0
-    overtime = _extract_float(block, r"(?:overtime.?hours|overtime|ot)[: \t]*(-?\d+(?:\.\d+)?)") or 0.0
+    overtime = (
+        _extract_float(block, r"(?:overtime.?hours|overtime|ot)[: \t]*(-?\d+(?:\.\d+)?)")
+        or 0.0
+    )
 
     # Issue 8: total hours calculation for arithmetic checks
     total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
 
-    wage = _extract_float(block, r"(?:hourly.?wage|wage|hourly.?rate|rate)[: \t]*\$?(-?\d+(?:\.\d+)?)") or 0.0
+    wage = (
+        _extract_float(
+            block,
+            r"(?:hourly.?wage|wage|hourly.?rate|rate)[: \t]*\$?(-?\d+(?:\.\d+)?)",
+        )
+        or 0.0
+    )
 
     fringe = _extract_float(
         block, r"(?:fringe|benefits)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"

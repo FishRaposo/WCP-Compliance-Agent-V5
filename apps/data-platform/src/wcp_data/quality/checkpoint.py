@@ -25,7 +25,7 @@ def run_checkpoint(
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     validator = validate_payroll_record if record_type == "payroll" else validate_contract
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
     passed = 0
     failed = 0
 

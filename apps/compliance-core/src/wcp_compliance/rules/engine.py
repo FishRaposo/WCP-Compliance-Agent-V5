@@ -41,7 +41,11 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
             trade_to_rate[trade] = result
         else:
             error_msg = str(result)
-            is_locality_warning = "locality" in error_msg.lower() or "/" in locality or " or " in locality.lower()
+            is_locality_warning = (
+                "locality" in error_msg.lower()
+                or "/" in locality
+                or " or " in locality.lower()
+            )
             checks.append(
                 ComplianceCheck(
                     check_id=f"classification_{trade.lower().replace(' ', '_')}",
@@ -116,7 +120,10 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.hourly_wage,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message="Data integrity: hourly wage is positive" if wage_ok else "Data integrity error: hourly wage must be positive",
+            message=(
+                "Data integrity: hourly wage is positive" if wage_ok
+                else "Data integrity error: hourly wage must be positive"
+            ),
         )
     )
 
@@ -132,7 +139,10 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.hours_worked,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message="Data integrity: hours worked is non-negative" if hours_non_negative else "Data integrity error: hours worked cannot be negative",
+            message=(
+                "Data integrity: hours worked is non-negative" if hours_non_negative
+                else "Data integrity error: hours worked cannot be negative"
+            ),
         )
     )
 
@@ -148,7 +158,10 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.hours_worked,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message="Data integrity: hours worked does not exceed 168" if hours_max_ok else "Data integrity error: hours worked exceeds 168 (impossible)",
+            message=(
+                "Data integrity: hours worked does not exceed 168" if hours_max_ok
+                else "Data integrity error: hours worked exceeds 168 (impossible)"
+            ),
         )
     )
 
@@ -164,7 +177,10 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.deductions,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message="Data integrity: deductions do not exceed gross earnings" if deductions_ok else "Data integrity error: deductions exceed gross earnings",
+            message=(
+                "Data integrity: deductions do not exceed gross earnings" if deductions_ok
+                else "Data integrity error: deductions exceed gross earnings"
+            ),
         )
     )
 
@@ -180,7 +196,10 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.net_wages,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message="Data integrity: net wages is non-negative" if net_ok else "Data integrity error: net wages cannot be negative",
+            message=(
+                "Data integrity: net wages is non-negative" if net_ok
+                else "Data integrity error: net wages cannot be negative"
+            ),
         )
     )
 

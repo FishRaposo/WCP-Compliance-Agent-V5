@@ -4,12 +4,14 @@ import logging
 
 from wcp_data.pipelines.utils import import_safe_flow, retry
 
+from typing import Any
+
 logger = logging.getLogger(__name__)
 
 
 @import_safe_flow(name="dbwd-refresh")
 @retry(max_attempts=2, delay_seconds=5.0)
-async def refresh_dbwd_rates():
+async def refresh_dbwd_rates() -> dict[str, Any]:
     """Refresh DBWD rates from available sources.
 
     Attempts SAM.gov API if configured, falls back to in-memory corpus.

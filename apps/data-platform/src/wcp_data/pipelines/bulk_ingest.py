@@ -4,6 +4,8 @@ import csv
 import io
 import logging
 
+from typing import Any
+
 from wcp_data.pipelines.utils import import_safe_flow
 from wcp_data.quality.validators import validate_contract, validate_payroll_record
 
@@ -15,7 +17,7 @@ async def bulk_ingest(
     csv_content: str,
     ingest_type: str = "payroll",
     contract_id: str = "",
-) -> dict:
+) -> dict[str, Any]:
     if not csv_content.strip():
         return {"created": 0, "failed": 0, "errors": ["Empty CSV content"]}
 

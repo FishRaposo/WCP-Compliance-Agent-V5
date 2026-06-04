@@ -6,7 +6,6 @@ import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
 import Decisions from "./pages/Decisions";
 import ReviewQueue from "./pages/ReviewQueue";
-import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Contracts from "./pages/Contracts";
@@ -77,7 +76,7 @@ export default function App() {
                     <Route path="/contracts" element={<Contracts />} />
                     <Route path="/payrolls" element={<Payrolls />} />
                     <Route path="/ingestion" element={<Ingestion />} />
-                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/analytics" element={<Navigate to="/analytics/overview" replace />} />
                     <Route path="/analytics/overview" element={<Suspense fallback={<PageLoader />}><AnalyticsOverview /></Suspense>} />
                     <Route path="/analytics/compliance" element={<Suspense fallback={<PageLoader />}><AnalyticsCompliance /></Suspense>} />
                     <Route path="/analytics/wages" element={<Suspense fallback={<PageLoader />}><AnalyticsWages /></Suspense>} />

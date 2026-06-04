@@ -69,7 +69,8 @@ class SamGovClient:
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    wds = data.get("wageDeterminations", [])
+                    from typing import cast
+                    wds = cast(list[dict[str, Any]], data.get("wageDeterminations", []))
                     logger.info("Found %d wage determinations", len(wds))
                     return wds
                 elif resp.status == 401:
@@ -94,7 +95,8 @@ class SamGovClient:
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as resp:
                 if resp.status == 200:
-                    return await resp.json()
+                    from typing import cast
+                    return cast(dict[str, Any], await resp.json())
                 elif resp.status == 404:
                     logger.warning("Wage determination %s not found", wd_number)
                     return None

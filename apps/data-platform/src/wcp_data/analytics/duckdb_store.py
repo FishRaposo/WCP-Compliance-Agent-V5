@@ -16,10 +16,10 @@ DEFAULT_DB_PATH = Path("data/analytics.duckdb")
 class DuckDBStore:
     def __init__(self, db_path: str | Path = DEFAULT_DB_PATH) -> None:
         self.db_path = Path(db_path)
-        self._conn = None
+        self._conn: Any = None
 
     @property
-    def conn(self):
+    def conn(self) -> Any:
         if self._conn is None:
             raise RuntimeError("DuckDB not connected. Call connect() first.")
         return self._conn

@@ -48,9 +48,10 @@ class ParquetWriter:
 
     def read_parquet(self, filepath: str) -> list[dict[str, Any]]:
         import pyarrow.parquet as pq
+        from typing import cast
 
         table = pq.read_table(filepath)
-        return table.to_pylist()
+        return cast(list[dict[str, Any]], table.to_pylist())
 
     def list_exports(self, prefix: str = "") -> list[dict[str, Any]]:
         files = sorted(

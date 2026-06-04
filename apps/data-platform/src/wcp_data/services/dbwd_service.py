@@ -153,7 +153,7 @@ async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
                 .values(
                     rate=item["rate"],
                     fringe=item["fringe"],
-                    effective_date=date.fromisoformat(item["effective_date"]),
+                    effective_date=date.fromisoformat(str(item["effective_date"])),
                     wage_determination_number=item["wage_determination_number"],
                 )
             )
@@ -164,7 +164,7 @@ async def refresh_rates(session: AsyncSession, use_sam_gov: bool = True) -> int:
                     locality=item["locality"],
                     rate=item["rate"],
                     fringe=item["fringe"],
-                    effective_date=date.fromisoformat(item["effective_date"]),
+                    effective_date=date.fromisoformat(str(item["effective_date"])),
                     wage_determination_number=item["wage_determination_number"],
                 )
             )

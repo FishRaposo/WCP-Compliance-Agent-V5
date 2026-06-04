@@ -6,6 +6,7 @@ for regulation chunk retrieval.
 
 import logging
 from dataclasses import dataclass, field
+from typing import Any
 
 from wcp_compliance.retrieval.bm25 import bm25_search
 from wcp_compliance.retrieval.vector import vector_search
@@ -19,13 +20,13 @@ class SearchResult:
     text: str
     score: float
     rerank_score: float = 0.0
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class HybridSearcher:
     def __init__(self) -> None:
-        self._bm25_index: dict = {}
-        self._corpus: list[dict] = []
+        self._bm25_index: dict[str, Any] = {}
+        self._corpus: list[dict[str, Any]] = []
 
     async def search(
         self,
@@ -33,8 +34,8 @@ class HybridSearcher:
         trade: str | None = None,
         locality: str | None = None,
         top_k: int = 5,
-    ) -> list[dict]:
-        results: list[dict] = []
+    ) -> list[dict[str, Any]]:
+        results: list[dict[str, Any]] = []
 
         try:
             bm25_results = bm25_search(query, self._corpus, top_k)

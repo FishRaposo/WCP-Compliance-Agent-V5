@@ -6,14 +6,16 @@ Falls back gracefully when sentence-transformers is not available.
 
 import logging
 
+from typing import Any
+
 logger = logging.getLogger(__name__)
 
 
 async def rerank(
     query: str,
-    results: list[dict],
+    results: list[dict[str, Any]],
     top_k: int = 5,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Re-rank search results using a cross-encoder model.
 
     If cross-encoder is unavailable, returns results unchanged.
