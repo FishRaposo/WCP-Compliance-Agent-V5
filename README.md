@@ -132,7 +132,7 @@ poetry run pytest tests/eval -v         # Golden-set evaluation (73 examples)
 
 | Pipeline | Trigger | Jobs |
 |---|---|---|
-| `ci.yml` | Push/PR to master | TypeScript (typecheck → lint → build → test), Compliance Core (ruff → mypy → pytest), Data Platform (ruff → mypy → pytest) |
+| `ci.yml` | Push/PR to main | TypeScript (typecheck → lint → build → test), Compliance Core (ruff → mypy → pytest), Data Platform (ruff → mypy → pytest) |
 | `eval.yml` | Weekly (Monday) + manual | Golden-set evaluation with regression detection |
 
 ## Commands
