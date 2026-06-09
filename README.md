@@ -4,7 +4,7 @@
 
 > A five-service monorepo where every service has a single responsibility, a distinct failure mode, and a clear reason to change. Upload a WH-347 payroll PDF and watch it flow through extraction, deterministic validation, LLM verdict synthesis, trust scoring, and auditable persistence — all with distributed tracing.
 
-**271 tests, 0 failures.** Mock mode works with zero dependencies.
+**253 tests, 0 failures.** Mock mode works with zero dependencies.
 
 ---
 
@@ -71,13 +71,13 @@ Upload WH-347 (PDF or text)
 
 | Service | Tests | Framework | What's Covered |
 |---|---|---|---|
-| Compliance Core | 66 + 73 eval | pytest | Checks, extraction, rules, trust score, DBWD lookup |
-| Data Platform | 30 | pytest | Repositories, services, API endpoints |
+| Compliance Core | 75 | pytest | Checks, extraction, rules, trust score, DBWD lookup |
+| Data Platform | 56 | pytest | Repositories, services, API endpoints |
 | Agent | 55 | vitest | Pipeline, tools, router, prompts, cost tracking, types |
-| Gateway | 20 | vitest | Middleware, routes, auth, config |
-| Web | 10 | vitest | Components, API client, mock data, routing |
+| Gateway | 22 | vitest | Middleware, routes, auth, config |
+| Web | 28 | vitest | Components, API client, mock data, routing |
 | Contracts | 17 | vitest | JSON schema validation across all boundaries |
-| **Total** | **271** | | **0 failures** |
+| **Total** | **253** | | **0 failures** |
 
 ```bash
 pnpm test                               # All TypeScript tests
