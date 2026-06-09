@@ -110,7 +110,7 @@ python3 generate.py           # Regenerate TS + Python types from JSON schemas
 
 ## CI Pipeline
 
-Three parallel Turborepo pipelines on push/PR to master:
+Three parallel Turborepo pipelines on push/PR to main:
 
 1. **TypeScript**: `typecheck` → `lint` → `build` → `test` across all TS packages
 2. **Python compliance-core**: `ruff check` → `mypy src/` → `pytest tests/unit`
