@@ -8,6 +8,7 @@ import {
   dataPlatformClient,
 } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { requireRole, getTenantId } from "../middleware/rbac.js";
 
 export const contractsRoutes = new Hono();
 
@@ -16,8 +17,10 @@ const CreateContractRequest = z.object({
   contractor_name: z.string().min(1),
   project_name: z.string().min(1),
   start_date: z.string(),
-  end_date: z.string(),
+  end_date: z.string().optional(),
   wage_determination_number: z.string().optional(),
+  // The Data Platform's field is `locality`; accept either name from clients.
+  locality: z.string().min(1).optional(),
   location: z.string().optional(),
 }).passthrough();
 
@@ -53,7 +56,7 @@ contractsRoutes.get("/api/v1/contracts", async (c) => {
   if (offset) params.offset = offset;
 
   try {
-    const data = await getContracts(params);
+    const data = await getContracts(params, getTenantId(c));
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
@@ -63,15 +66,22 @@ contractsRoutes.get("/api/v1/contracts", async (c) => {
   }
 });
 
-contractsRoutes.post("/api/v1/contracts", async (c) => {
+contractsRoutes.post("/api/v1/contracts", requireRole("admin", "auditor"), async (c) => {
   const body = await c.req.json();
   const parsed = CreateContractRequest.safeParse(body);
   if (!parsed.success) {
     return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
   }
 
+  // Map the client's `location` onto the Data Platform's required `locality`.
+  const locality = parsed.data.locality ?? parsed.data.location;
+  if (!locality) {
+    return c.json({ error: "Invalid request", details: { locality: "required" } }, 400);
+  }
+  const payload = { ...parsed.data, locality };
+
   try {
-    const data = await createContract(parsed.data);
+    const data = await createContract(payload, getTenantId(c));
     return c.json(data, 201);
   } catch (err) {
     if (err instanceof ServiceClientError) {
@@ -84,7 +94,7 @@ contractsRoutes.post("/api/v1/contracts", async (c) => {
 contractsRoutes.get("/api/v1/contracts/:id", async (c) => {
   const id = c.req.param("id");
   try {
-    const data = await getContract(id);
+    const data = await getContract(id, getTenantId(c));
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
@@ -94,8 +104,10 @@ contractsRoutes.get("/api/v1/contracts/:id", async (c) => {
   }
 });
 
-contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
-  const id = c.req.param("id");
+contractsRoutes.patch("/api/v1/contracts/:id", requireRole("admin", "auditor"), async (c) => {
+  // requireRole middleware erases Hono's param inference; the matched route
+  // guarantees the :id segment is present.
+  const id = c.req.param("id")!;
   const body = await c.req.json();
   const parsed = PatchContractRequest.safeParse(body);
   if (!parsed.success) {
@@ -103,7 +115,7 @@ contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
   }
 
   try {
-    const data = await patchContract(id, parsed.data);
+    const data = await patchContract(id, parsed.data, getTenantId(c));
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
@@ -113,14 +125,16 @@ contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
   }
 });
 
-contractsRoutes.post("/api/v1/contracts/bulk", async (c) => {
+contractsRoutes.post("/api/v1/contracts/bulk", requireRole("admin", "auditor"), async (c) => {
   try {
     const body = await c.req.json();
     const parsed = BulkContractRequest.safeParse(body);
     if (!parsed.success) {
       return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
     }
-    const data = await dataPlatformClient.post<unknown>("/internal/contracts/bulk", parsed.data);
+    const data = await dataPlatformClient.post<unknown>("/internal/contracts/bulk", parsed.data, {
+      "X-Tenant-Id": getTenantId(c),
+    });
     return c.json(data, 202);
   } catch (err) {
     if (err instanceof ServiceClientError) {

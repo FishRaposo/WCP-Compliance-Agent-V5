@@ -6,7 +6,7 @@ const secret = new TextEncoder().encode(config.JWT_SECRET);
 
 export async function authMiddleware(c: Context, next: Next) {
   if (isAuthDisabled) {
-    c.set("user", { user_id: "dev", role: "admin" });
+    c.set("user", { user_id: "dev", role: "admin", tenant_id: "default" });
     return next();
   }
 

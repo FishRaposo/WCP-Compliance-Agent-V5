@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from wcp_data.models.schemas import DecisionCreate
-from wcp_data.services.decision_service import create_decision
+from wcp_data.models.schemas import DecisionCreate, DecisionOverrideRequest
+from wcp_data.services.decision_service import create_decision, override_decision
 
 
 def _make_audit_row():
@@ -188,3 +188,49 @@ async def test_create_decision_persists_with_contract_id():
     )
     result = await create_decision(session, draft, trace_id="trace-003")
     assert result.contract_id == "ctr-001"
+
+
+@pytest.mark.unit
+async def test_override_decision_service_passes_through():
+    from datetime import datetime
+
+    session = AsyncMock()
+    session.commit = AsyncMock()
+
+    update_row = MagicMock()
+    update_row._mapping = {
+        "id": "dec-009",
+        "job_id": "job-009",
+        "verdict": "needs_review",
+        "trust_score": 0.4,
+        "trust_band": "require_human_review",
+        "requires_human_review": True,
+        "violation_count": 2,
+        "warning_count": 0,
+        "reasoning_summary": "Manual review",
+        "citations": [],
+        "cost_usd": 0.0,
+        "latency_ms": 100,
+        "phoenix_trace_id": "",
+        "contract_id": None,
+        "tenant_id": "default",
+        "review_status": "approved",
+        "reviewed_by": "auditor@wcp.dev",
+        "review_note": "Looks fine",
+        "reviewed_at": datetime(2025, 1, 2),
+        "created_at": datetime(2025, 1, 1),
+    }
+    update_result = MagicMock()
+    update_result.first.return_value = update_row
+    audit_result = MagicMock()
+    session.execute = AsyncMock(side_effect=[update_result, audit_result])
+
+    override = DecisionOverrideRequest(
+        review_status="approved",
+        reviewed_by="auditor@wcp.dev",
+        review_note="Looks fine",
+    )
+    result = await override_decision(session, "dec-009", override)
+    assert result is not None
+    assert result.review_status == "approved"
+    assert result.reviewed_by == "auditor@wcp.dev"

@@ -22,6 +22,7 @@ class AuthValidateResponse(BaseModel):
     valid: bool
     user_id: str | None = None
     role: str | None = None
+    tenant_id: str | None = None
 
 
 @router.post("/validate", response_model=AuthValidateResponse)
@@ -46,4 +47,5 @@ async def validate_credentials(
         valid=True,
         user_id=str(row["id"]),
         role=row["role"],
+        tenant_id=row.get("tenant_id") or "default",
     )

@@ -21,7 +21,7 @@ streamRoutes.get("/api/v1/decisions/stream", async (c) => {
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
     });
-  } catch (err) {
+  } catch {
     return c.text("Failed to create SSE stream", 500);
   }
 });

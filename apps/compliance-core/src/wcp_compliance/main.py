@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from wcp_compliance import __version__
 from wcp_compliance.api.router import router
 from wcp_compliance.config import settings
+from wcp_compliance.observability.tracing import instrument_app, setup_tracing
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper(), logging.INFO),
     )
+    setup_tracing()
+    instrument_app(app)
     yield
 
 

@@ -9,6 +9,7 @@ __pycache__/
 .mypy_cache/
 *.egg-info/
 .venv/
+.venv-wcp/
 *.db
 *.sqlite
 .DS_Store

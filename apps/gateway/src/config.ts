@@ -17,6 +17,7 @@ const envSchema = z.object({
   DATA_PLATFORM_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8001"),
   JWT_SECRET: z.string().default("change-me-before-launch"),
   AUTH_DISABLED: z.enum(["true", "false"]).default("false"),
+  RBAC_ENFORCED: z.enum(["true", "false"]).default("false"),
   PORT: z.coerce.number().default(3000),
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
   RATE_LIMIT_PER_MIN: z.coerce.number().default(60),
@@ -39,3 +40,4 @@ export type Config = typeof config;
 
 export const corsOrigins = config.CORS_ORIGINS.split(",").map((o) => o.trim());
 export const isAuthDisabled = config.AUTH_DISABLED === "true";
+export const isRbacEnforced = config.RBAC_ENFORCED === "true";

@@ -117,10 +117,30 @@ def test_check_overtime_warning():
     assert result.status == CheckStatus.WARNING
 
 
-def test_check_overtime_with_recorded_ot():
-    emp = _make_employee(hours_worked=45.0, overtime_hours=5.0)
+def test_check_overtime_recorded_no_rate_warns():
+    # Overtime hours present but no overtime rate reported -> cannot verify 1.5x.
+    emp = _make_employee(hours_worked=45.0, overtime_hours=5.0, overtime_rate=0.0)
+    result = check_overtime(emp)
+    assert result.status == CheckStatus.WARNING
+
+
+def test_check_overtime_paid_correctly():
+    # 1.5x of $55.00 base = $82.50/hr -> compliant.
+    emp = _make_employee(
+        hours_worked=45.0, overtime_hours=5.0, hourly_wage=55.00, overtime_rate=82.50
+    )
     result = check_overtime(emp)
     assert result.status == CheckStatus.PASS
+
+
+def test_check_overtime_underpaid_is_violation():
+    # Straight-time OT rate ($55.00 == 1x base) is a CWHSSA violation.
+    emp = _make_employee(
+        hours_worked=45.0, overtime_hours=5.0, hourly_wage=55.00, overtime_rate=55.00
+    )
+    result = check_overtime(emp)
+    assert result.status == CheckStatus.FAIL
+    assert result.variance is not None and result.variance < 0
 
 
 def test_check_overtime_under_threshold():

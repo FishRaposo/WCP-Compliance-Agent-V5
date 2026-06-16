@@ -1,6 +1,5 @@
 """Redis Streams event producer."""
 
-import json
 import logging
 from typing import Any
 
@@ -36,12 +35,10 @@ class EventProducer:
             r = await self._get_redis()
             if r is None:
                 return
-            payload = event.model_dump()
-            await r.xadd(
-                STREAM_DECISIONS,
-                {k: json.dumps(v) if not isinstance(v, str) else v for k, v in payload.items()},
-                maxlen=10000,
-            )
+            # Emit a {type, event} envelope: a single `event` field holding the
+            # full JSON payload, which the gateway SSE bridge parses and forwards
+            # to web clients as a DecisionSummary.
+            await r.xadd(STREAM_DECISIONS, event.to_stream_fields(), maxlen=10000)
         except Exception:
             logger.warning("Failed to publish decision event", exc_info=True)
 

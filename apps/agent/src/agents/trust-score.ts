@@ -13,6 +13,29 @@ interface TrustComponents {
   agreement: number;
 }
 
+/**
+ * Confidence that trade classifications resolved to a DBWD rate. Mirrors
+ * compliance-core `compute_classification_score`: classification checks are only
+ * emitted on a failed/ambiguous rate lookup. A FAIL is a full miss, a WARNING a
+ * half miss; no classification checks => full confidence (1.0).
+ */
+export function computeClassificationScore(
+  deterministic: DeterministicReport
+): number {
+  const classificationChecks = deterministic.checks.filter(
+    (c) => c.check_type === "classification"
+  );
+  if (classificationChecks.length === 0) {
+    return 1.0;
+  }
+  const fails = classificationChecks.filter((c) => c.status === "fail").length;
+  const warnings = classificationChecks.filter(
+    (c) => c.status === "warning"
+  ).length;
+  const missRatio = (fails + 0.5 * warnings) / classificationChecks.length;
+  return Math.max(0.0, 1.0 - missRatio);
+}
+
 export function computeTrustComponents(
   deterministic: DeterministicReport,
   llmVerdict: LLMVerdict
@@ -20,7 +43,7 @@ export function computeTrustComponents(
   const violationRatio =
     deterministic.violation_count / Math.max(deterministic.checks.length, 1);
   const deterministicScore = 1.0 - violationRatio;
-  const classificationScore = 0.95;
+  const classificationScore = computeClassificationScore(deterministic);
   const llmScore = llmVerdict.confidence;
   const agreementScore = computeAgreement(deterministic, llmVerdict);
 

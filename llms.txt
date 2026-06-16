@@ -12,7 +12,7 @@ Five services with explicit ownership boundaries:
 
 1. **Web App** (React) — Product UI
 2. **Gateway** (Hono/TypeScript) — Auth, middleware, routing
-3. **Agent** (Mastra/TypeScript) — LLM orchestration, verdict synthesis
+3. **Agent** (TypeScript, Vercel AI SDK) — LLM orchestration, verdict synthesis
 4. **Compliance Core** (FastAPI/Python) — Deterministic validation engine
 5. **Data Platform** (FastAPI/Python) — Persistence, records, audits
 

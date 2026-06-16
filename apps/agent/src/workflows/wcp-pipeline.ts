@@ -9,7 +9,16 @@ import {
   safeVerdict,
 } from "../agents/trust-score.js";
 import { computeCostUsd } from "../observability/cost-tracking.js";
+import {
+  createWorkflow,
+  startStep,
+  completeStep,
+  completeWorkflow,
+  failWorkflow,
+} from "./registry.js";
 import type { ExtractedWCP, TrustScoredDecision } from "../types.js";
+
+const PIPELINE_STEPS = ["validate", "verdict", "trust", "persist"];
 
 export async function runWCPPipeline(
   text: string,
@@ -28,14 +37,47 @@ export async function runPipelineFromExtracted(
   const pipelineStart = Date.now();
   const jobId = extracted.job_id;
 
+  createWorkflow(jobId, PIPELINE_STEPS);
+
+  try {
+    return await runTrackedPipeline(
+      extracted,
+      jobId,
+      pipelineStart,
+      promptVersion,
+      traceHeaders
+    );
+  } catch (err) {
+    failWorkflow(jobId, err instanceof Error ? err.message : "pipeline failed");
+    throw err;
+  }
+}
+
+async function runTrackedPipeline(
+  extracted: ExtractedWCP,
+  jobId: string,
+  pipelineStart: number,
+  promptVersion?: string,
+  traceHeaders?: Record<string, string>
+): Promise<TrustScoredDecision> {
+  startStep(jobId, "validate");
   const validateStart = Date.now();
   const deterministic = await validateTool(extracted, traceHeaders);
   const validateEnd = Date.now();
+  completeStep(jobId, "validate");
 
+  startStep(jobId, "verdict");
   const verdictStart = Date.now();
-  const llmVerdict = await runVerdictAgent(extracted, deterministic, promptVersion);
+  const llmVerdict = await runVerdictAgent(
+    extracted,
+    deterministic,
+    promptVersion,
+    traceHeaders
+  );
   const verdictEnd = Date.now();
+  completeStep(jobId, "verdict");
 
+  startStep(jobId, "trust");
   const trustStart = Date.now();
   const components = computeTrustComponents(deterministic, llmVerdict);
   const trustScore = computeTrustScore(components);
@@ -43,6 +85,7 @@ export async function runPipelineFromExtracted(
   const finalVerdict = safeVerdict(deterministic, llmVerdict);
   const requiresHumanReview = trustBand === "require_human_review";
   const trustEnd = Date.now();
+  completeStep(jobId, "trust");
 
   const violationCount = deterministic.violation_count;
   const warningCount = deterministic.warning_count;
@@ -85,9 +128,12 @@ export async function runPipelineFromExtracted(
     created_at: new Date().toISOString(),
   };
 
-  await persistTool(decision, traceHeaders);
+  startStep(jobId, "persist");
+  const { decision_id } = await persistTool(decision, traceHeaders);
   const persistEnd = Date.now();
   decision.step_latencies!.persist_ms = persistEnd - persistStart;
+  completeStep(jobId, "persist");
+  completeWorkflow(jobId, decision_id);
 
   return decision;
 }

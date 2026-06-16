@@ -32,8 +32,11 @@ export default function Contracts() {
   const [formName, setFormName] = useState("");
   const [formContractor, setFormContractor] = useState("");
   const [formLocality, setFormLocality] = useState("");
+  const [formStartDate, setFormStartDate] = useState("");
+  const [formEndDate, setFormEndDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const { data, isLoading, refetch } = useQuery<PaginatedContracts>({
     queryKey: ["contracts"],
@@ -53,25 +56,40 @@ export default function Contracts() {
     e.preventDefault();
     setCreating(true);
     setCreateSuccess(null);
+    setCreateError(null);
 
-    // Simulate API registration call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      await apiClient.post("/api/v1/contracts", {
+        contract_number: formNumber,
+        project_name: formName,
+        contractor_name: formContractor,
+        locality: formLocality,
+        start_date: formStartDate || today,
+        end_date: formEndDate || undefined,
+      });
 
-    // Append to local storage mock/simulation or show success state
-    setCreateSuccess(`Contract ${formNumber} ("${formName}") successfully registered for auditing!`);
-    setCreating(false);
-    
-    // Clear forms
-    setFormNumber("");
-    setFormName("");
-    setFormContractor("");
-    setFormLocality("");
+      setCreateSuccess(`Contract ${formNumber} ("${formName}") successfully registered for auditing!`);
 
-    setTimeout(() => {
-      setIsCreateOpen(false);
-      setCreateSuccess(null);
-      refetch();
-    }, 1800);
+      // Clear form
+      setFormNumber("");
+      setFormName("");
+      setFormContractor("");
+      setFormLocality("");
+      setFormStartDate("");
+      setFormEndDate("");
+
+      await refetch();
+
+      setTimeout(() => {
+        setIsCreateOpen(false);
+        setCreateSuccess(null);
+      }, 1800);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Failed to register contract");
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -335,7 +353,7 @@ export default function Contracts() {
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">Locality (City, State)</label>
-                    <Input 
+                    <Input
                       placeholder="e.g. Boston, MA"
                       value={formLocality}
                       onChange={(e) => setFormLocality(e.target.value)}
@@ -343,6 +361,32 @@ export default function Contracts() {
                       className="bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-purple-500/50 focus:ring-purple-500/20 h-10.5 rounded-lg transition-all text-xs"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">Start Date</label>
+                      <Input
+                        type="date"
+                        value={formStartDate}
+                        onChange={(e) => setFormStartDate(e.target.value)}
+                        required
+                        className="bg-black/40 border-white/10 text-white focus:border-purple-500/50 focus:ring-purple-500/20 h-10.5 rounded-lg transition-all text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">End Date (optional)</label>
+                      <Input
+                        type="date"
+                        value={formEndDate}
+                        onChange={(e) => setFormEndDate(e.target.value)}
+                        className="bg-black/40 border-white/10 text-white focus:border-purple-500/50 focus:ring-purple-500/20 h-10.5 rounded-lg transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {createError && (
+                    <p className="text-xs text-red-400 font-medium">{createError}</p>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3 pt-3">
                     <Button 

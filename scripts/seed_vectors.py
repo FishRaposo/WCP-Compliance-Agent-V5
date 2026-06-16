@@ -7,6 +7,7 @@ Usage:
 """
 import argparse
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -66,7 +67,11 @@ REGULATION_CHUNKS = [
 def post_chunk(base_url: str, chunk: dict) -> bool:
     url = f"{base_url}/internal/search/index"
     data = json.dumps(chunk).encode()
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"}
+    token = os.environ.get("INTERNAL_SERVICE_TOKEN")
+    if token:
+        headers["X-Internal-Token"] = token
+    req = urllib.request.Request(url, data=data, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             ok = resp.status in (200, 201)

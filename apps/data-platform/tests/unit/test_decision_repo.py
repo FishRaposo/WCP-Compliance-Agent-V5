@@ -1,9 +1,42 @@
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from wcp_data.models.schemas import DecisionCreate
-from wcp_data.repositories.decision_repo import get_decision, list_decisions, persist_decision
+from wcp_data.repositories.decision_repo import (
+    get_decision,
+    list_decisions,
+    override_decision,
+    persist_decision,
+)
+
+
+def _decision_mapping(**overrides: object) -> dict[str, object]:
+    base: dict[str, object] = {
+        "id": "dec-001",
+        "job_id": "job-001",
+        "verdict": "approved",
+        "trust_score": 0.95,
+        "trust_band": "auto_approve",
+        "requires_human_review": True,
+        "violation_count": 0,
+        "warning_count": 0,
+        "reasoning_summary": "Pass",
+        "citations": [],
+        "cost_usd": 0.01,
+        "latency_ms": 500,
+        "phoenix_trace_id": "trace-123",
+        "contract_id": None,
+        "tenant_id": "default",
+        "review_status": None,
+        "reviewed_by": None,
+        "review_note": None,
+        "reviewed_at": None,
+        "created_at": datetime(2025, 1, 1),
+    }
+    base.update(overrides)
+    return base
 
 
 @pytest.mark.unit
@@ -75,9 +108,92 @@ async def test_list_decisions_with_contract_id_filter():
 
 
 @pytest.mark.unit
-async def test_get_decision_returns_populated_row():
-    from datetime import datetime
+async def test_override_decision_persists_and_appends_audit():
+    session = AsyncMock()
+    session.commit = AsyncMock()
 
+    # RETURNING yields the post-update row, so the mapping carries the new values.
+    update_row = MagicMock()
+    update_row._mapping = _decision_mapping(
+        review_status="approved",
+        reviewed_by="auditor@wcp.dev",
+        review_note="Verified payroll manually",
+    )
+    update_result = MagicMock()
+    update_result.first.return_value = update_row
+
+    audit_result = MagicMock()  # INSERT into audit_events — return value unused
+
+    session.execute = AsyncMock(side_effect=[update_result, audit_result])
+
+    result = await override_decision(
+        session,
+        "dec-001",
+        review_status="approved",
+        reviewed_by="auditor@wcp.dev",
+        review_note="Verified payroll manually",
+    )
+
+    assert result is not None
+    assert result.id == "dec-001"
+    # The returned row reflects the persisted review fields supplied to update().
+    assert result.review_status == "approved"
+    assert result.reviewed_by == "auditor@wcp.dev"
+    assert result.review_note == "Verified payroll manually"
+    # update() + audit insert run in a single committed transaction.
+    assert session.execute.await_count == 2
+    assert session.commit.await_count == 1
+
+
+@pytest.mark.unit
+async def test_override_decision_returns_none_when_not_found():
+    session = AsyncMock()
+    session.commit = AsyncMock()
+
+    update_result = MagicMock()
+    update_result.first.return_value = None
+    session.execute = AsyncMock(return_value=update_result)
+
+    result = await override_decision(
+        session,
+        "missing-id",
+        review_status="rejected",
+        reviewed_by="auditor@wcp.dev",
+    )
+
+    assert result is None
+    # No audit insert and no commit when the decision does not exist.
+    assert session.execute.await_count == 1
+    assert session.commit.await_count == 0
+
+
+@pytest.mark.unit
+async def test_override_decision_scopes_to_tenant():
+    session = AsyncMock()
+    session.commit = AsyncMock()
+
+    update_row = MagicMock()
+    update_row._mapping = _decision_mapping(tenant_id="acme")
+    update_result = MagicMock()
+    update_result.first.return_value = update_row
+    audit_result = MagicMock()
+    session.execute = AsyncMock(side_effect=[update_result, audit_result])
+
+    result = await override_decision(
+        session,
+        "dec-001",
+        review_status="overridden",
+        reviewed_by="admin@acme.dev",
+        tenant_id="acme",
+    )
+
+    assert result is not None
+    assert result.tenant_id == "acme"
+    assert session.commit.await_count == 1
+
+
+@pytest.mark.unit
+async def test_get_decision_returns_populated_row():
     session = AsyncMock()
     mock_row = MagicMock()
     mock_row._mapping = {

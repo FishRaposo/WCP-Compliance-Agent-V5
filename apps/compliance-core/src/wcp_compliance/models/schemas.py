@@ -36,6 +36,7 @@ class EmployeeRecord(BaseModel):
     trade_classification: str
     hours_worked: float
     overtime_hours: float = 0.0
+    overtime_rate: float = 0.0
     hourly_wage: float
     fringe_benefits: float = 0.0
     gross_earnings: float
@@ -57,6 +58,14 @@ class ExtractedWCP(BaseModel):
     artifact_id: str | None = None
 
 
+class Citation(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    regulation: str
+    section: str = ""
+    text: str = ""
+
+
 class ComplianceCheck(BaseModel):
     model_config = ConfigDict(strict=False)
 
@@ -68,6 +77,7 @@ class ComplianceCheck(BaseModel):
     actual_value: float | None = None
     variance: float | None = None
     regulation_cite: str = ""
+    citation_refs: list[str] = Field(default_factory=list)
     message: str = ""
 
 
@@ -94,15 +104,8 @@ class DeterministicReport(BaseModel):
     warning_count: int
     passed_count: int | None = None
     dbwd_rates_used: list[DBWDRateRecord] = Field(default_factory=list)
+    citations: list[Citation] = Field(default_factory=list)
     confidence_inputs: dict[str, float] | None = None
-
-
-class Citation(BaseModel):
-    model_config = ConfigDict(strict=False)
-
-    regulation: str
-    section: str = ""
-    text: str = ""
 
 
 class TokenUsage(BaseModel):

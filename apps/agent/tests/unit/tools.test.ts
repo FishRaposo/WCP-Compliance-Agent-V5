@@ -52,11 +52,25 @@ describe("agent tools", () => {
     expect(result.rate).toBe(51.69);
   });
 
-  it("searchTool sends query to compliance core", async () => {
-    mockPost.mockResolvedValueOnce({ results: [], total: 0 });
+  it("searchTool unwraps results from the compliance core response", async () => {
+    mockPost.mockResolvedValueOnce({
+      query: "test query",
+      results: [{ chunk_id: "reg-1", text: "prevailing wage", score: 1.2 }],
+      total: 1,
+    });
     const { searchTool } = await import("../../src/tools/search.js");
     const result = await searchTool("test query", "Electrician", "Washington, DC");
-    expect(result.results).toEqual([]);
+    // searchTool returns the bare results array, not the wrapper object.
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.chunk_id).toBe("reg-1");
+  });
+
+  it("searchTool returns [] when the response has no results", async () => {
+    mockPost.mockResolvedValueOnce({ query: "q", results: [], total: 0 });
+    const { searchTool } = await import("../../src/tools/search.js");
+    const result = await searchTool("q");
+    expect(result).toEqual([]);
   });
 
   it("tools propagate trace headers", async () => {

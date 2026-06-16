@@ -58,6 +58,7 @@ export const EmployeeRecordSchema = z.object({
   trade_classification: z.string(),
   hours_worked: z.number(),
   overtime_hours: z.number().default(0),
+  overtime_rate: z.number().default(0),
   hourly_wage: z.number(),
   fringe_benefits: z.number().default(0),
   gross_earnings: z.number(),
@@ -86,6 +87,7 @@ export const ComplianceCheckSchema = z.object({
   actual_value: z.number().nullable().optional(),
   variance: z.number().nullable().optional(),
   regulation_cite: z.string().default(""),
+  citation_refs: z.array(z.string()).default([]),
   message: z.string().default(""),
 });
 export type ComplianceCheck = z.infer<typeof ComplianceCheckSchema>;
@@ -110,6 +112,7 @@ export const DeterministicReportSchema = z.object({
   warning_count: z.number().int(),
   passed_count: z.number().int().nullable().optional(),
   dbwd_rates_used: z.array(DBWDRateRecordSchema).default([]),
+  citations: z.array(CitationSchema).default([]),
   confidence_inputs: z.record(z.number()).nullable().optional(),
 });
 export type DeterministicReport = z.infer<typeof DeterministicReportSchema>;

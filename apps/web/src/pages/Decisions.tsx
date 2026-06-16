@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useDecisions } from "../hooks/useDecisions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +64,8 @@ export default function Decisions() {
       )}
       <div className="space-y-2">
         {filtered?.map((d) => (
-          <Card key={d.decision_id}>
+          <Card key={d.decision_id} className="transition-colors hover:border-white/20">
+            <Link to={`/decisions/${d.decision_id}`} className="block">
             <CardContent className="py-3 px-4 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <Badge variant={d.verdict === "approved" ? "default" : d.verdict === "rejected" ? "destructive" : "secondary"} className="capitalize">
@@ -77,6 +79,7 @@ export default function Decisions() {
                 <span>{new Date(d.created_at).toLocaleDateString()}</span>
               </div>
             </CardContent>
+            </Link>
           </Card>
         ))}
       </div>

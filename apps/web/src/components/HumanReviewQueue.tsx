@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiClient } from "../utils/api-client";
 import { useDecisions } from "../hooks/useDecisions";
 import TrustScoreBadge from "./TrustScoreBadge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,25 +26,40 @@ export default function HumanReviewQueue() {
   const [justification, setJustification] = useState("");
   const [submittingAction, setSubmittingAction] = useState<"approve" | "reject" | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleOverride = async (verdict: "approve" | "reject") => {
     if (!selectedDecision) return;
     setSubmittingAction(verdict);
     setActionSuccess(null);
-    
-    // Simulate API call to persist the override verdict and auditor notes
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    
-    setActionSuccess(`Decision successfully updated! Marked Job ${selectedDecision.job_id.slice(0, 8)} as OVERRIDE_${verdict.toUpperCase()}.`);
-    setSubmittingAction(null);
-    setJustification("");
-    
-    // Auto-close details drawer and refetch data to update list
-    setTimeout(() => {
-      setSelectedDecision(null);
-      setActionSuccess(null);
-      refetch();
-    }, 1800);
+    setActionError(null);
+
+    const reviewStatus = verdict === "approve" ? "approved" : "rejected";
+
+    try {
+      // Persist the override + audit event via the gateway (reviewer identity and
+      // tenant are taken from the authenticated session server-side).
+      await apiClient.post(`/api/v1/decisions/${selectedDecision.decision_id}/override`, {
+        review_status: reviewStatus,
+        review_note: justification.trim(),
+      });
+
+      setActionSuccess(
+        `Decision successfully updated! Marked Job ${selectedDecision.job_id.slice(0, 8)} as OVERRIDE_${verdict.toUpperCase()}.`,
+      );
+      setJustification("");
+
+      // Auto-close details drawer and refetch data to update list
+      setTimeout(() => {
+        setSelectedDecision(null);
+        setActionSuccess(null);
+        refetch();
+      }, 1800);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to persist override.");
+    } finally {
+      setSubmittingAction(null);
+    }
   };
 
   if (isLoading) {
@@ -283,6 +299,13 @@ export default function HumanReviewQueue() {
                   disabled={submittingAction !== null || actionSuccess !== null}
                 />
               </div>
+
+              {actionError && (
+                <div className="p-4 bg-rose-950/20 border border-rose-500/20 rounded-xl flex items-center gap-3 animate-in fade-in duration-300">
+                  <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <p className="text-xs text-rose-300 font-semibold leading-relaxed">{actionError}</p>
+                </div>
+              )}
 
               {actionSuccess ? (
                 <div className="p-4 bg-emerald-950/20 border border-emerald-500/20 rounded-xl flex items-center gap-3 animate-in fade-in duration-300">

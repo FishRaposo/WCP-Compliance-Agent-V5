@@ -1,12 +1,12 @@
 import { Hono } from "hono";
-import { config } from "../config.js";
 import { agentClient } from "../clients/agent-client.js";
 import { complianceClient } from "../clients/compliance-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { requireRole } from "../middleware/rbac.js";
 
 export const analyzePdfRoutes = new Hono();
 
-analyzePdfRoutes.post("/api/v1/analyze/pdf", async (c) => {
+analyzePdfRoutes.post("/api/v1/analyze/pdf", requireRole("admin", "auditor"), async (c) => {
   try {
     const form = await c.req.formData();
     const file = form.get("file");

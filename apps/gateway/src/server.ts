@@ -17,6 +17,7 @@ import { contractsRoutes } from "./routes/contracts.js";
 import { payrollsRoutes } from "./routes/payrolls.js";
 import { ingestionRoutes } from "./routes/ingestion.js";
 import { analyticsRoutes } from "./routes/analytics.js";
+import { workflowsRoutes } from "./routes/workflows.js";
 
 const app = new Hono();
 
@@ -31,10 +32,16 @@ app.route("/", authRoutes);
 app.use("/api/v1/analyze", authMiddleware);
 app.use("/api/v1/analyze/pdf", authMiddleware);
 app.use("/api/v1/decisions", authMiddleware);
+app.use("/api/v1/decisions/:id/override", authMiddleware);
 app.use("/api/v1/contracts", authMiddleware);
+app.use("/api/v1/contracts/:id", authMiddleware);
 app.use("/api/v1/payrolls", authMiddleware);
+app.use("/api/v1/payrolls/:id", authMiddleware);
 app.use("/api/v1/ingestion", authMiddleware);
+app.use("/api/v1/ingestion/jobs", authMiddleware);
+app.use("/api/v1/ingestion/jobs/:id", authMiddleware);
 app.use("/api/v1/analytics", authMiddleware);
+app.use("/api/v1/workflows", authMiddleware);
 
 app.route("/", analyzeRoutes);
 app.route("/", analyzePdfRoutes);
@@ -44,6 +51,7 @@ app.route("/", contractsRoutes);
 app.route("/", payrollsRoutes);
 app.route("/", ingestionRoutes);
 app.route("/", analyticsRoutes);
+app.route("/", workflowsRoutes);
 
 if (process.env.NODE_ENV !== "test") {
   serve({ fetch: app.fetch, port: config.PORT }, () => {

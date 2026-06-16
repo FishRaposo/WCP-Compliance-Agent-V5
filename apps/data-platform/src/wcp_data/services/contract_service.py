@@ -29,8 +29,10 @@ async def create_contract(session: AsyncSession, data: ContractCreate) -> Contra
     return await _create(session, data)
 
 
-async def get_contract(session: AsyncSession, contract_id: str) -> ContractResponse | None:
-    return await _get(session, contract_id)
+async def get_contract(
+    session: AsyncSession, contract_id: str, tenant_id: str | None = None
+) -> ContractResponse | None:
+    return await _get(session, contract_id, tenant_id=tenant_id)
 
 
 async def update_contract(
@@ -44,8 +46,9 @@ async def list_contracts(
     filters: ContractFilters,
     page: int = 1,
     per_page: int = 25,
+    tenant_id: str | None = None,
 ) -> PaginatedContracts:
-    items, total = await _list(session, filters, page, per_page)
+    items, total = await _list(session, filters, page, per_page, tenant_id=tenant_id)
     return PaginatedContracts(
         items=items,
         total=total,

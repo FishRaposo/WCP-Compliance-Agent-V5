@@ -1,6 +1,12 @@
 """Event schemas for Redis Streams publishing."""
 
-from pydantic import BaseModel
+from datetime import datetime, timezone
+
+from pydantic import BaseModel, Field
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class DecisionEvent(BaseModel):
@@ -14,6 +20,15 @@ class DecisionEvent(BaseModel):
     violation_count: int = 0
     warning_count: int = 0
     trace_id: str = ""
+    created_at: str = Field(default_factory=_now_iso)
+
+    def to_stream_fields(self) -> dict[str, str]:
+        """Render a Redis Stream entry the gateway SSE bridge understands.
+
+        The bridge keys on a ``type`` discriminator and an ``event`` field that
+        carries the full JSON payload (a DecisionSummary-compatible object).
+        """
+        return {"type": "decision.created", "event": self.model_dump_json()}
 
 
 class PayrollIngestedEvent(BaseModel):

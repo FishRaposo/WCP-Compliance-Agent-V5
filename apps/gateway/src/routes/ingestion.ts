@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { dataPlatformClient } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { requireRole } from "../middleware/rbac.js";
 
 export const ingestionRoutes = new Hono();
 
@@ -14,7 +15,7 @@ const CreateIngestionJobRequest = z.object({
   config: z.record(z.any()).optional(),
 });
 
-ingestionRoutes.post("/api/v1/ingestion/jobs", async (c) => {
+ingestionRoutes.post("/api/v1/ingestion/jobs", requireRole("admin", "auditor"), async (c) => {
   try {
     const body = await c.req.json();
     const parsed = CreateIngestionJobRequest.safeParse(body);

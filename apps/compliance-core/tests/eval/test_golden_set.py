@@ -78,6 +78,22 @@ async def test_golden_example(example: dict):
     if "expected_warnings_min" in example:
         assert report.warning_count >= example["expected_warnings_min"]
 
+    # Citation gate: every flagged check must be traceable to grounded regulation
+    # text ("no loss of required citations" — design doc §14 golden-set gates).
+    flagged = [
+        c for c in report.checks
+        if c.status in ("fail", "warning") and c.regulation_cite
+    ]
+    if flagged:
+        assert report.citations, (
+            f"{example['id']}: flagged checks present but report carries no citations"
+        )
+        for check in flagged:
+            assert check.citation_refs, (
+                f"{example['id']}: check {check.check_id} "
+                f"({check.regulation_cite}) was not grounded to a citation"
+            )
+
 
 @pytest.mark.asyncio
 async def test_regression_against_baseline():

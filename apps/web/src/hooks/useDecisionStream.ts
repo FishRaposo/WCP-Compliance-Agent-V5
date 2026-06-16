@@ -39,7 +39,7 @@ export function useDecisionStream() {
       retryRef.current = 0;
     };
 
-    es.onmessage = (event) => {
+    const handleDecision = (event: MessageEvent) => {
       try {
         const decision: DecisionSummary = JSON.parse(event.data);
         setLatestDecision(decision);
@@ -48,6 +48,11 @@ export function useDecisionStream() {
         // ignore malformed events
       }
     };
+
+    // The gateway SSE bridge emits named "decision.created" events; also handle
+    // unnamed messages as a fallback.
+    es.addEventListener("decision.created", handleDecision);
+    es.onmessage = handleDecision;
 
     const scheduleReconnect = () => {
       const delay = Math.min(1000 * 2 ** retryRef.current, 30_000);

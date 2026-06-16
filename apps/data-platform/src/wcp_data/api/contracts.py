@@ -1,6 +1,6 @@
 from typing import Any, Literal, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_data.db.session import get_session
@@ -33,6 +33,7 @@ async def list_contracts_endpoint(
     order: str = Query(default="desc"),
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=25, ge=1, le=100),
+    tenant_id: str | None = Header(default=None, alias="X-Tenant-Id"),
     session: AsyncSession = Depends(get_session),
 ) -> PaginatedContracts:
     filters = ContractFilters(
@@ -42,7 +43,7 @@ async def list_contracts_endpoint(
         sort=sort,
         order=cast(Literal["asc", "desc"], order),
     )
-    return await list_contracts(session, filters, page, per_page)
+    return await list_contracts(session, filters, page, per_page, tenant_id=tenant_id)
 
 
 @router.post("", response_model=ContractResponse, status_code=201)
@@ -59,9 +60,10 @@ async def create_contract_endpoint(
 @router.get("/{contract_id}", response_model=ContractResponse)
 async def get_contract_endpoint(
     contract_id: str,
+    tenant_id: str | None = Header(default=None, alias="X-Tenant-Id"),
     session: AsyncSession = Depends(get_session),
 ) -> ContractResponse:
-    result = await get_contract(session, contract_id)
+    result = await get_contract(session, contract_id, tenant_id=tenant_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Contract not found")
     return result

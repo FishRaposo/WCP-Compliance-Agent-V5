@@ -1,13 +1,13 @@
-import { generateObject } from "ai";
 import { z } from "zod";
 
 import { isMockMode, config } from "../config.js";
 import { promptRegistry } from "../prompts/registry.js";
-import { searchTool } from "../tools/search.js";
+import { searchTool, type SearchResult } from "../tools/search.js";
 import { createTrace, logGeneration } from "../observability/tracing.js";
 import { computeCostUsd } from "../observability/cost-tracking.js";
 import { llmRouter, type RoutingContext } from "../model-router/llm-router.js";
 import type {
+  Citation,
   DeterministicReport,
   ExtractedWCP,
   LLMVerdict,
@@ -59,7 +59,9 @@ function mockVerdict(
     job_id: jobId,
     verdict,
     reasoning,
-    citations: [],
+    // Mock mode still emits real, grounded citations from the deterministic
+    // report so the offline demo is fully traceable.
+    citations: deterministic.citations ?? [],
     confidence,
     referenced_check_ids: deterministic.checks.map((c) => c.check_id),
     rag_context_used: false,
@@ -70,7 +72,10 @@ function mockVerdict(
   };
 }
 
-async function buildRagContext(extracted: ExtractedWCP): Promise<string> {
+async function retrieveRagChunks(
+  extracted: ExtractedWCP,
+  headers?: Record<string, string>
+): Promise<SearchResult[]> {
   const trades = [
     ...new Set(extracted.employees.map((e) => e.trade_classification)),
   ];
@@ -82,16 +87,56 @@ async function buildRagContext(extracted: ExtractedWCP): Promise<string> {
 
   const results = await Promise.all(
     queries.map((q) =>
-      searchTool(q, undefined, locality).catch(() => [])
+      searchTool(q, undefined, locality, headers).catch(() => [])
     )
   );
 
-  const chunks = results.flat();
-  if (chunks.length === 0) return "No RAG context retrieved.";
+  return results.flat();
+}
 
+function buildRagContextText(chunks: SearchResult[]): string {
+  if (chunks.length === 0) return "No RAG context retrieved.";
   return chunks
     .map((c, i: number) => `[${i + 1}] ${c.text || c.chunk_id || ""}`)
     .join("\n");
+}
+
+/**
+ * Ground the LLM's citations against authoritative sources. Deterministic
+ * report citations (already grounded against the regulation corpus) are always
+ * included so no required citation is lost; LLM-surfaced citations are kept and
+ * enriched with retrieved regulation text when the model omitted it.
+ */
+function groundCitations(
+  llmCitations: Citation[],
+  deterministic: DeterministicReport,
+  ragChunks: SearchResult[]
+): Citation[] {
+  const result: Citation[] = [];
+  const seen = new Set<string>();
+
+  const add = (c: Citation): void => {
+    const key = `${c.regulation}|${c.section}`.toLowerCase().trim();
+    if (!c.regulation || seen.has(key)) return;
+    seen.add(key);
+    result.push(c);
+  };
+
+  for (const c of deterministic.citations ?? []) add(c);
+
+  for (const c of llmCitations) {
+    let text = c.text;
+    if (!text) {
+      const needle = (c.section || c.regulation).toLowerCase();
+      const match = ragChunks.find((r) =>
+        (r.text || "").toLowerCase().includes(needle)
+      );
+      text = match?.text ?? "";
+    }
+    add({ regulation: c.regulation, section: c.section, text });
+  }
+
+  return result;
 }
 
 function interpolatePrompt(
@@ -104,7 +149,8 @@ function interpolatePrompt(
 export async function runVerdictAgent(
   extracted: ExtractedWCP,
   deterministic: DeterministicReport,
-  promptVersion?: string
+  promptVersion?: string,
+  traceHeaders?: Record<string, string>
 ): Promise<LLMVerdict> {
   const jobId = extracted.job_id;
 
@@ -116,9 +162,11 @@ export async function runVerdictAgent(
   const trace = await createTrace(jobId, promptVersion ?? "v1");
   const traceId = trace.id;
 
+  let ragChunks: SearchResult[] = [];
   let ragContext: string;
   try {
-    ragContext = await buildRagContext(extracted);
+    ragChunks = await retrieveRagChunks(extracted, traceHeaders);
+    ragContext = buildRagContextText(ragChunks);
   } catch {
     ragContext = "RAG context unavailable.";
   }
@@ -134,29 +182,25 @@ export async function runVerdictAgent(
     complianceCritical: deterministic.violation_count > 0,
   };
 
-  const selectedConfig = llmRouter.selectProvider(routingContext);
-  const model = llmRouter.createModel(selectedConfig);
   let output: LLMOutput;
   let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-  const activeModel = selectedConfig.model;
+  let activeModel = llmRouter.selectProvider(routingContext).model;
 
   try {
-    const result = await generateObject({
-      model,
-      schema: LLMOutputSchema,
-      prompt: filledPrompt,
-    });
-
+    // Generate with provider fallback: a single provider outage degrades to a
+    // fallback model rather than an immediate needs_review.
+    const result = await llmRouter.generateObjectWithFallback(
+      LLMOutputSchema,
+      filledPrompt,
+      routingContext
+    );
     output = result.object;
-    usage = {
-      promptTokens: result.usage?.promptTokens ?? 0,
-      completionTokens: result.usage?.completionTokens ?? 0,
-      totalTokens: result.usage?.totalTokens ?? 0,
-    };
+    usage = result.usage;
+    activeModel = result.model;
   } catch {
     output = {
       verdict: "needs_review",
-      reasoning: "LLM generation failed; decision requires human review.",
+      reasoning: "LLM generation failed across all providers; decision requires human review.",
       citations: [],
       confidence: 0.0,
       referenced_check_ids: deterministic.checks.map((c) => c.check_id),
@@ -184,10 +228,10 @@ export async function runVerdictAgent(
     job_id: jobId,
     verdict: output.verdict,
     reasoning: output.reasoning,
-    citations: output.citations,
+    citations: groundCitations(output.citations, deterministic, ragChunks),
     confidence: output.confidence,
     referenced_check_ids: output.referenced_check_ids,
-    rag_context_used: ragContext.length > 0 && !ragContext.startsWith("No RAG"),
+    rag_context_used: ragChunks.length > 0,
     model: activeModel,
     prompt_version: promptVersion ?? "v1",
     langfuse_trace_id: traceId,

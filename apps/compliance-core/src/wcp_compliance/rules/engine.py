@@ -8,6 +8,7 @@ from wcp_compliance.checks.overtime_check import check_overtime
 from wcp_compliance.checks.signature_check import check_signature
 from wcp_compliance.checks.total_check import check_totals
 from wcp_compliance.checks.wage_check import check_wage
+from wcp_compliance.citations.registry import attach_citations
 from wcp_compliance.dbwd_matching.rate_lookup import get_dbwd_rate
 from wcp_compliance.models.enums import CheckStatus, CheckType, OverallStatus, VerdictStatus
 from wcp_compliance.models.schemas import (
@@ -77,6 +78,12 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
 
     checks.append(check_signature(extracted))
 
+    # Ground every check's regulation_cite against the bundled regulation corpus.
+    # This sets each check's citation_refs and yields the deduped report-level
+    # citations — so every decision is traceable to real regulation text,
+    # even in offline/mock mode.
+    report_citations = attach_citations(checks)
+
     violation_count = sum(1 for c in checks if c.status == CheckStatus.FAIL)
     warning_count = sum(1 for c in checks if c.status == CheckStatus.WARNING)
     passed_count = sum(1 for c in checks if c.status == CheckStatus.PASS)
@@ -98,6 +105,7 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
         warning_count=warning_count,
         passed_count=passed_count,
         dbwd_rates_used=dbwd_rates,
+        citations=report_citations,
     )
 
 
@@ -241,13 +249,33 @@ def _check_minimum_wage_sanity(employee: EmployeeRecord) -> ComplianceCheck:
     )
 
 
+def compute_classification_score(deterministic: DeterministicReport) -> float:
+    """Confidence that trade classifications resolved to a DBWD rate.
+
+    Classification checks are only emitted when a DBWD rate lookup fails (an
+    unmatched trade or ambiguous locality). A FAIL counts as a full miss, a
+    WARNING (ambiguous locality) as a half miss. When every classification
+    resolved cleanly (no classification checks), confidence is 1.0.
+    """
+    classification_checks = [
+        c for c in deterministic.checks if c.check_type == CheckType.CLASSIFICATION
+    ]
+    if not classification_checks:
+        return 1.0
+
+    fails = sum(1 for c in classification_checks if c.status == CheckStatus.FAIL)
+    warnings = sum(1 for c in classification_checks if c.status == CheckStatus.WARNING)
+    miss_ratio = (fails + 0.5 * warnings) / len(classification_checks)
+    return max(0.0, 1.0 - miss_ratio)
+
+
 def compute_trust_components(
     deterministic: DeterministicReport,
     llm_verdict: LLMVerdict,
 ) -> dict[str, float]:
     violation_ratio = deterministic.violation_count / max(len(deterministic.checks), 1)
     deterministic_score = 1.0 - violation_ratio
-    classification_score = 0.95
+    classification_score = compute_classification_score(deterministic)
     llm_score = llm_verdict.confidence
     agreement_score = _compute_agreement(deterministic, llm_verdict)
 

@@ -28,13 +28,15 @@ authRoutes.post("/api/v1/auth/login", async (c) => {
       valid: boolean;
       user_id: string | null;
       role: string | null;
+      tenant_id: string | null;
     }>("/internal/auth/validate", parsed.data);
 
     if (!result.valid || !result.user_id || !result.role) {
       return c.json({ error: "Invalid email or password" }, 401);
     }
 
-    const token = await signToken(result.user_id, parsed.data.email, result.role);
+    const tenantId = result.tenant_id ?? "default";
+    const token = await signToken(result.user_id, parsed.data.email, result.role, tenantId);
 
     setCookie(c, "wcp_token", token, {
       path: "/",
@@ -47,6 +49,7 @@ authRoutes.post("/api/v1/auth/login", async (c) => {
     return c.json({
       user_id: result.user_id,
       role: result.role,
+      tenant_id: tenantId,
     });
   } catch {
     return c.json({ error: "Authentication service error" }, 500);

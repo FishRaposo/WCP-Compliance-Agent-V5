@@ -5,11 +5,13 @@ from wcp_data.events.schemas import DecisionEvent
 from wcp_data.models.schemas import (
     AuditEventCreate,
     DecisionCreate,
+    DecisionOverrideRequest,
     DecisionResponse,
 )
 from wcp_data.repositories.audit_repo import append_audit_event
 from wcp_data.repositories.decision_repo import get_decision as _get_decision
 from wcp_data.repositories.decision_repo import list_decisions as _list_decisions
+from wcp_data.repositories.decision_repo import override_decision as _override_decision
 from wcp_data.repositories.decision_repo import persist_decision
 
 
@@ -72,8 +74,12 @@ async def create_decision(
     return result
 
 
-async def get_decision(session: AsyncSession, decision_id: str) -> DecisionResponse | None:
-    return await _get_decision(session, decision_id)
+async def get_decision(
+    session: AsyncSession,
+    decision_id: str,
+    tenant_id: str | None = None,
+) -> DecisionResponse | None:
+    return await _get_decision(session, decision_id, tenant_id=tenant_id)
 
 
 async def list_decisions(
@@ -82,5 +88,24 @@ async def list_decisions(
     verdict: str | None = None,
     limit: int = 50,
     offset: int = 0,
+    tenant_id: str | None = None,
 ) -> list[DecisionResponse]:
-    return await _list_decisions(session, contract_id, verdict, limit, offset)
+    return await _list_decisions(
+        session, contract_id, verdict, limit, offset, tenant_id=tenant_id
+    )
+
+
+async def override_decision(
+    session: AsyncSession,
+    decision_id: str,
+    override: DecisionOverrideRequest,
+    tenant_id: str | None = None,
+) -> DecisionResponse | None:
+    return await _override_decision(
+        session,
+        decision_id,
+        review_status=override.review_status,
+        reviewed_by=override.reviewed_by,
+        review_note=override.review_note,
+        tenant_id=tenant_id,
+    )

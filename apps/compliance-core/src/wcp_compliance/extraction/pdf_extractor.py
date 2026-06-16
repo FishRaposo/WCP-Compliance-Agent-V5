@@ -232,6 +232,14 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     # Issue 8: total hours calculation for arithmetic checks
     total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
 
+    overtime_rate = (
+        _extract_float(
+            block,
+            r"(?:overtime.?rate|ot.?rate)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)",
+        )
+        or 0.0
+    )
+
     wage = (
         _extract_float(
             block,
@@ -264,6 +272,7 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
         trade_classification=trade,
         hours_worked=total_hours,
         overtime_hours=overtime,
+        overtime_rate=overtime_rate,
         hourly_wage=wage,
         fringe_benefits=fringe,
         gross_earnings=gross,

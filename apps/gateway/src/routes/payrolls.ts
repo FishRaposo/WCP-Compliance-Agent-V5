@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { getPayrolls, bulkImportPayrolls } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { requireRole } from "../middleware/rbac.js";
 
 export const payrollsRoutes = new Hono();
 
@@ -39,7 +40,7 @@ payrollsRoutes.get("/api/v1/payrolls", async (c) => {
   }
 });
 
-payrollsRoutes.post("/api/v1/payrolls/bulk", async (c) => {
+payrollsRoutes.post("/api/v1/payrolls/bulk", requireRole("admin", "auditor"), async (c) => {
   try {
     const body = await c.req.json();
     const parsed = BulkPayrollRequest.safeParse(body);

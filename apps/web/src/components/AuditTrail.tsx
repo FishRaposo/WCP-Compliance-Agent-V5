@@ -9,11 +9,16 @@ export default function AuditTrail({ citations, traceId }: Props) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Regulation Citations</p>
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         {citations.map((c) => (
           <li key={`${c.regulation}:${c.section ?? ""}`} className="text-xs text-gray-600">
             <span className="font-mono bg-gray-100 px-1 rounded">{c.regulation}</span>
-            {c.section && <span className="ml-1 text-gray-400">&sect; {c.section}</span>}
+            {c.section && c.section !== c.regulation && (
+              <span className="ml-1 text-gray-400">&sect; {c.section}</span>
+            )}
+            {c.text && (
+              <p className="mt-0.5 text-gray-500 leading-relaxed">{c.text}</p>
+            )}
           </li>
         ))}
       </ul>

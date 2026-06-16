@@ -107,8 +107,31 @@ def test_trust_components_no_violations_llm_approved():
     comps = compute_trust_components(det, ver)
     assert comps["deterministic"] == 0.35
     assert comps["agreement"] == 0.20
-    assert comps["classification"] == 0.2375
+    # No classification checks present -> full classification confidence (0.25 * 1.0).
+    assert comps["classification"] == 0.25
     assert comps["llm_self"] == 0.19
+
+
+def test_trust_components_classification_failure_lowers_score():
+    det = _make_deterministic(
+        violation_count=1,
+        warning_count=0,
+        overall_status=OverallStatus.FAIL,
+        checks=[
+            ComplianceCheck(
+                check_id="classification_welder",
+                check_type="classification",
+                employee_name="_multiple_",
+                status=CheckStatus.FAIL,
+                regulation_cite="29 C.F.R. § 5.5(a)(3)(i)",
+                message="Trade 'Welder' not found in DBWD corpus",
+            ),
+        ],
+    )
+    ver = _make_verdict(verdict=VerdictStatus.NEEDS_REVIEW, confidence=0.5)
+    comps = compute_trust_components(det, ver)
+    # A failed classification check drives the classification factor to 0.
+    assert comps["classification"] == 0.0
 
 
 def test_trust_components_with_violations_llm_rejects():

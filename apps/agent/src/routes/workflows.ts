@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { config } from "../config.js";
 import { runWCPPipeline, runPipelineFromExtracted } from "../workflows/wcp-pipeline.js";
+import { getWorkflow } from "../workflows/registry.js";
 import { ExtractedWCPSchema } from "../types.js";
 
 export const workflowRoutes = new Hono();
@@ -89,5 +90,9 @@ workflowRoutes.post("/wcp-pipeline-from-extracted", async (c) => {
 
 workflowRoutes.get("/:workflowId/status", async (c) => {
   const workflowId = c.req.param("workflowId");
-  return c.json({ workflow_id: workflowId, status: "completed" });
+  const record = getWorkflow(workflowId);
+  if (!record) {
+    return c.json({ error: "Workflow not found", workflow_id: workflowId }, 404);
+  }
+  return c.json(record);
 });

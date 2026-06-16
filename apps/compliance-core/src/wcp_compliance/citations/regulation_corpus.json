@@ -1,0 +1,128 @@
+[
+  {
+    "chunk_id": "reg-wage-rate",
+    "citation": "40 U.S.C. § 3142",
+    "regulation": "Davis-Bacon Act",
+    "section": "40 U.S.C. § 3142",
+    "category": "prevailing_wage",
+    "source": "40 U.S.C. § 3142",
+    "text": "Every contract in excess of $2,000 for the construction, alteration, or repair of public buildings or public works of the Federal Government must contain a provision stating the minimum wages to be paid to laborers and mechanics. The minimum wages shall be based on the wages the Secretary of Labor determines to be prevailing for the corresponding classes of laborers and mechanics employed on projects of a character similar to the contract work in the civil subdivision of the State in which the work is to be performed. Each laborer or mechanic must be paid not less than the prevailing wage so determined for the classification of work actually performed."
+  },
+  {
+    "chunk_id": "reg-fringe",
+    "citation": "40 U.S.C. § 3141(2)(B)",
+    "regulation": "Davis-Bacon Act",
+    "section": "40 U.S.C. § 3141(2)(B)",
+    "category": "fringe_benefits",
+    "source": "40 U.S.C. § 3141(2)(B)",
+    "text": "The term 'wages', 'scale of wages', 'wage rates', 'minimum wages', and 'prevailing wages' includes the basic hourly rate of pay and the amount of the rate of contribution irrevocably made by a contractor or subcontractor to a trustee or to a third person under a fund, plan, or program; and the rate of costs to the contractor or subcontractor that may be reasonably anticipated in providing bona fide fringe benefits to laborers and mechanics pursuant to an enforceable commitment to carry out a financially responsible plan or program. The total of the basic hourly rate plus fringe benefits must at least equal the prevailing wage determination for the classification."
+  },
+  {
+    "chunk_id": "reg-overtime",
+    "citation": "29 C.F.R. § 5.32",
+    "regulation": "Davis-Bacon and Related Acts / CWHSSA",
+    "section": "29 C.F.R. § 5.32",
+    "category": "overtime",
+    "source": "29 C.F.R. § 5.32",
+    "text": "The Contract Work Hours and Safety Standards Act requires that laborers and mechanics employed on covered contracts be paid not less than one and one-half times their basic rate of pay for all hours worked in excess of forty hours in a workweek. The overtime premium is computed on the basic hourly rate of pay; the fringe benefit amount is excluded from the half-time premium calculation. Failure to pay the one and one-half times premium for hours over forty is a violation subject to back-wage liability and liquidated damages."
+  },
+  {
+    "chunk_id": "reg-totals",
+    "citation": "29 C.F.R. § 5.5(a)(3)(i)",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.5(a)(3)(i)",
+    "category": "payroll_arithmetic",
+    "source": "29 C.F.R. § 5.5(a)(3)(i)",
+    "text": "Payrolls and basic records relating thereto shall be maintained by the contractor during the course of the work and preserved for a period of three years thereafter for all laborers and mechanics working at the site of the work. Such records shall contain the name, address, and social security number of each such worker, his or her correct classification, hourly rates of wages paid (including rates of contributions or costs anticipated for bona fide fringe benefits), daily and weekly number of hours worked, deductions made, and actual wages paid. The reported gross and net amounts must be arithmetically consistent with the recorded hours, rates, and deductions."
+  },
+  {
+    "chunk_id": "reg-signature",
+    "citation": "29 C.F.R. § 5.5(a)(3)(ii)(B)",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.5(a)(3)(ii)(B)",
+    "category": "certification",
+    "source": "29 C.F.R. § 5.5(a)(3)(ii)(B)",
+    "text": "Each weekly payroll submitted shall be accompanied by a 'Statement of Compliance', signed by the contractor or subcontractor or an authorized officer or employee who supervises the payment of wages. The statement of compliance certifies that the payroll is correct and complete, that each laborer or mechanic has been paid not less than the applicable wage rates and fringe benefits for the classification of work performed, and that no rebates or deductions have been made other than those permitted. The certification must bear a valid, non-future date and identify the payroll number and week ending date."
+  },
+  {
+    "chunk_id": "reg-recordkeeping",
+    "citation": "29 C.F.R. § 5.5(a)(3)(ii)",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.5(a)(3)(ii)",
+    "category": "payroll_reporting",
+    "source": "29 C.F.R. § 5.5(a)(3)(ii)",
+    "text": "The contractor shall submit weekly, for each week in which any contract work is performed, a copy of all payrolls to the contracting agency. The payrolls shall set out accurately and completely all of the information required to be maintained, including each worker's correct classification, hourly rates of wages paid, daily and weekly hours worked, deductions made, and actual wages paid. Information that is internally inconsistent or facially impossible (for example, negative hours, hours exceeding the hours in a week, or deductions exceeding gross pay) indicates a data-integrity defect in the certified payroll."
+  },
+  {
+    "chunk_id": "reg-minimum-wage",
+    "citation": "29 U.S.C. § 206(a)(1)",
+    "regulation": "Fair Labor Standards Act",
+    "section": "29 U.S.C. § 206(a)(1)",
+    "category": "minimum_wage",
+    "source": "29 U.S.C. § 206(a)(1)",
+    "text": "Every employer shall pay to each of its employees who in any workweek is engaged in commerce wages at a rate not less than the federal minimum wage. Where an applicable Davis-Bacon prevailing wage determination does not exist, no laborer or mechanic may be paid below the federal minimum wage floor. A reported hourly wage below this statutory floor is presumptively non-compliant."
+  },
+  {
+    "chunk_id": "reg-classification",
+    "citation": "29 C.F.R. § 5.5(a)(1)",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.5(a)(1)(i)",
+    "category": "classification",
+    "source": "29 C.F.R. § 5.5(a)(1)",
+    "text": "All laborers and mechanics employed upon the site of the work shall be paid unconditionally not less often than once a week the full amount of wages and bona fide fringe benefits due at the time of payment computed at rates not less than those contained in the wage determination of the Secretary of Labor for the classification of work actually performed. Laborers or mechanics performing work in more than one classification may be compensated at the rate specified for each classification only when accurate records are maintained reflecting the time actually worked in each classification."
+  },
+  {
+    "chunk_id": "reg-act-coverage",
+    "citation": "40 U.S.C. § 3141",
+    "regulation": "Davis-Bacon Act",
+    "section": "40 U.S.C. § 3141",
+    "category": "coverage",
+    "source": "40 U.S.C. § 3141",
+    "text": "The Davis-Bacon Act applies to contractors and subcontractors performing on federally funded or assisted contracts in excess of $2,000 for the construction, alteration, or repair of public buildings or public works. Covered workers must be paid locally prevailing wages and fringe benefits as determined by the Department of Labor for the corresponding classes of laborers and mechanics."
+  },
+  {
+    "chunk_id": "reg-cwhssa-overtime",
+    "citation": "40 U.S.C. § 3702(a)",
+    "regulation": "Contract Work Hours and Safety Standards Act",
+    "section": "40 U.S.C. § 3702(a)",
+    "category": "overtime",
+    "source": "40 U.S.C. § 3702(a)",
+    "text": "Each laborer or mechanic employed on covered contract work whose standard workweek is more than forty hours shall be compensated for the hours worked in excess of forty hours in the workweek at a rate not less than one and one-half times the basic rate of pay. Violations subject the contractor to liability for unpaid wages and to liquidated damages for each calendar day on which an affected employee was required or permitted to work in excess of forty hours without payment of the required overtime wages."
+  },
+  {
+    "chunk_id": "reg-apprentice",
+    "citation": "29 C.F.R. § 5.5(a)(4)",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.5(a)(4)",
+    "category": "apprentice_rates",
+    "source": "29 C.F.R. § 5.5(a)(4)",
+    "text": "Apprentices and trainees may be paid less than the predetermined journeyman wage rate only when they are individually registered in a bona fide apprenticeship or training program registered with the U.S. Department of Labor, Office of Apprenticeship, or with a State Apprenticeship Agency recognized by the Office. The allowable apprentice rate is the percentage of the journeyman rate specified in the registered program."
+  },
+  {
+    "chunk_id": "reg-prevailing-survey",
+    "citation": "29 C.F.R. § 1.3",
+    "regulation": "Davis-Bacon Wage Determination Procedures",
+    "section": "29 C.F.R. § 1.3",
+    "category": "prevailing_wage",
+    "source": "29 C.F.R. § 1.3",
+    "text": "Prevailing wage determinations are based on wage and fringe benefit data obtained from surveys of wages paid to workers in a specific geographic area for a specific type of construction (building, residential, highway, or heavy). The Wage and Hour Division compiles the surveyed rates by classification and locality to issue the wage determination that governs the contract."
+  },
+  {
+    "chunk_id": "reg-enforcement-debarment",
+    "citation": "40 U.S.C. § 3144",
+    "regulation": "Davis-Bacon Act",
+    "section": "40 U.S.C. § 3144",
+    "category": "enforcement",
+    "source": "40 U.S.C. § 3144",
+    "text": "Amounts withheld from a contractor for underpayment of wages shall be used to pay laborers and mechanics the difference between the wages required to be paid and the wages actually paid. Contractors or subcontractors found to have disregarded their obligations to employees may be debarred from receiving future Federal contracts for a period of up to three years."
+  },
+  {
+    "chunk_id": "reg-withholding",
+    "citation": "29 C.F.R. § 5.9",
+    "regulation": "Davis-Bacon Contract Provisions",
+    "section": "29 C.F.R. § 5.9",
+    "category": "enforcement",
+    "source": "29 C.F.R. § 5.9",
+    "text": "So much of the accrued payments due on the contract or on any other federally assisted contract subject to Davis-Bacon prevailing wage requirements may be withheld as is considered necessary to pay laborers and mechanics the full amount of wages required by the contract. Withholding is the principal enforcement mechanism to recover back wages identified through certified payroll review."
+  }
+]

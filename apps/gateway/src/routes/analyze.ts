@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { agentClient } from "../clients/agent-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { requireRole } from "../middleware/rbac.js";
 
 export const analyzeRoutes = new Hono();
 
@@ -10,7 +11,7 @@ const AnalyzeRequest = z.object({
   job_id: z.string().optional(),
 });
 
-analyzeRoutes.post("/api/v1/analyze", async (c) => {
+analyzeRoutes.post("/api/v1/analyze", requireRole("admin", "auditor"), async (c) => {
   const body = await c.req.json();
   const parsed = AnalyzeRequest.safeParse(body);
   if (!parsed.success) {

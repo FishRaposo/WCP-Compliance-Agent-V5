@@ -36,6 +36,16 @@ export interface DecisionSummary {
   created_at: string;
 }
 
+export interface DecisionDetail extends TrustScoredDecision {
+  decision_id?: string;
+  id?: string;
+  contract_id?: string;
+  review_status?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  review_note?: string;
+}
+
 export interface JobStatus {
   job_id: string;
   status: "pending" | "processing" | "complete" | "failed";

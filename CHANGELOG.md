@@ -1,5 +1,44 @@
 # Changelog
 
+## [5.0.2] - 2026-06-15 — Vision hardening
+
+Closed the gap between the design docs and the implementation: several
+centerpiece systems were scaffolded but hollow, and are now real and tested.
+
+### Citations & Retrieval (RAG)
+- Bundled `citations/regulation_corpus.json` auto-loaded at startup; backs both
+  citation grounding and BM25 retrieval (single source of truth).
+- New `citations/registry.py` grounds every deterministic check's `regulation_cite`
+  to real regulation text; `DeterministicReport.citations` is now populated.
+- Mock-mode decisions carry grounded citations (offline, no LLM).
+- Added `POST /internal/search/index`; fixed the agent `searchTool` response-shape
+  bug (was reading `SearchResult[]` from a `{results}` envelope) and `seed_vectors.py`.
+- Decision-detail page `/decisions/:id` renders the report, grounded citations, and trace metadata.
+
+### Real-time & observability
+- Fixed the Redis decision-event envelope so the gateway SSE bridge and web live
+  feed receive real events (`{type, event}` with `created_at`).
+- Real workflow-status registry (replaces the hardcoded `"completed"` stub) with
+  per-step progress + gateway passthrough at `/api/v1/workflows/:id/status`.
+- `trace_id` now flows into the DecisionRecord, audit events, and the Redis event.
+- OpenTelemetry `setup_tracing`/`instrument_app` wired into both FastAPI lifespans,
+  gated to a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+
+### Compliance correctness
+- Overtime check now verifies the reported OT rate is ≥ 1.5× base (FAIL on underpay,
+  WARNING when no OT rate is reported); extractor parses `OT Rate`.
+- Trust-score classification factor is computed from classification checks (was a
+  hardcoded `0.95`), identical in TS and Python.
+- Verdict synthesis uses `generateObjectWithFallback` (provider fallback chain).
+
+### Tooling
+- Contract registration UI calls the real `POST /api/v1/contracts` (was a `setTimeout`);
+  gateway maps `location` → `locality`. Web mock layer is now HTTP-method-aware.
+- Added a working ESLint flat config + deps; `pnpm -r run lint` passes clean.
+- Test suite: 373 passing (0 failures) across all six packages.
+
+---
+
 ## [5.0.1] - 2026-06-03
 
 ### Security Fixes

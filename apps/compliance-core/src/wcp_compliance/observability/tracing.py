@@ -1,13 +1,34 @@
-"""OpenTelemetry tracing setup for WCP Compliance Core."""
+"""OpenTelemetry tracing setup for WCP Compliance Core.
+
+Fully gated: every entry point is a no-op unless ``OTEL_EXPORTER_OTLP_ENDPOINT``
+(``settings.otel_exporter_endpoint``) is configured, so offline / mock mode never
+attempts a network export.
+"""
 
 import logging
+from collections.abc import Generator
+from typing import Any
 
 from wcp_compliance.config import settings
 
 logger = logging.getLogger(__name__)
 
+_TRACING_ENABLED = False
+
+
+def _otel_endpoint() -> str | None:
+    return getattr(settings, "otel_exporter_endpoint", None) or None
+
 
 def setup_tracing() -> None:
+    """Configure the OTLP exporter when an endpoint is set; otherwise no-op."""
+    global _TRACING_ENABLED
+
+    endpoint = _otel_endpoint()
+    if not endpoint:
+        logger.debug("OTEL endpoint not configured; tracing disabled")
+        return
+
     try:
         from opentelemetry import trace
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -21,23 +42,33 @@ def setup_tracing() -> None:
         })
 
         provider = TracerProvider(resource=resource)
-        exporter = OTLPSpanExporter(
-            endpoint=settings.otel_exporter_endpoint or "http://localhost:4318/v1/traces"
-        )
+        exporter = OTLPSpanExporter(endpoint=endpoint)
         provider.add_span_processor(BatchSpanProcessor(exporter))
         trace.set_tracer_provider(provider)
+        _TRACING_ENABLED = True
 
-        logger.info("OpenTelemetry tracing initialized")
+        logger.info("OpenTelemetry tracing initialized (endpoint=%s)", endpoint)
     except Exception:
         logger.info("OpenTelemetry unavailable, tracing disabled")
 
 
-from typing import Any, Generator
+def instrument_app(app: Any) -> None:
+    """Auto-instrument the FastAPI app when tracing is enabled and libs present."""
+    if not _TRACING_ENABLED:
+        return
+    try:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+        FastAPIInstrumentor.instrument_app(app)
+        logger.info("FastAPI instrumentation enabled")
+    except Exception:
+        logger.debug("FastAPI instrumentation unavailable", exc_info=True)
 
 
 def get_tracer(name: str = "wcp-compliance-core") -> Any:
     try:
         from opentelemetry import trace
+
         return trace.get_tracer(name)
     except Exception:
         return None

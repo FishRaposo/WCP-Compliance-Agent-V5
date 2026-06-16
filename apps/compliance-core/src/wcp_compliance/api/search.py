@@ -1,8 +1,10 @@
 import logging
+from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 
+from wcp_compliance.citations.registry import get_corpus
 from wcp_compliance.retrieval.hybrid import hybrid_searcher
 
 logger = logging.getLogger(__name__)
@@ -18,8 +20,13 @@ class SearchRequest(BaseModel):
 
 class SearchResult(BaseModel):
     query: str
-    results: list[dict[str, str]]
+    results: list[dict[str, Any]]
     total: int
+
+
+class IndexResponse(BaseModel):
+    indexed: int
+    total_corpus: int
 
 
 @router.get("/", response_model=SearchResult)
@@ -48,3 +55,18 @@ async def search_post(body: SearchRequest) -> SearchResult:
         top_k=body.top_k,
     )
     return SearchResult(query=body.query, results=results, total=len(results))
+
+
+@router.post("/index", response_model=IndexResponse)
+async def search_index(request: Request) -> IndexResponse:
+    """Add regulation chunk(s) to the retrieval/grounding corpus.
+
+    Accepts either a single chunk object or a list of chunks. Each chunk may use
+    the corpus shape (``chunk_id``/``citation``/``section``) or the legacy seed
+    shape (``id``/``source``/``category``); both are normalized.
+    """
+    payload = await request.json()
+    chunks: list[dict[str, Any]] = payload if isinstance(payload, list) else [payload]
+    added = hybrid_searcher.add_chunks(chunks)
+    logger.info("Indexed %d new regulation chunk(s)", added)
+    return IndexResponse(indexed=added, total_corpus=len(get_corpus()))

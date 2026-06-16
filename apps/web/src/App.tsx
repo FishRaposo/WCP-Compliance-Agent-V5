@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
 import Decisions from "./pages/Decisions";
+import DecisionDetail from "./pages/DecisionDetail";
 import ReviewQueue from "./pages/ReviewQueue";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
@@ -72,6 +73,7 @@ export default function App() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/analyze" element={<Analyze />} />
                     <Route path="/decisions" element={<Decisions />} />
+                    <Route path="/decisions/:id" element={<DecisionDetail />} />
                     <Route path="/review" element={<ReviewQueue />} />
                     <Route path="/contracts" element={<Contracts />} />
                     <Route path="/payrolls" element={<Payrolls />} />

@@ -44,7 +44,23 @@ class DecisionResponse(BaseModel):
     latency_ms: int | None = None
     phoenix_trace_id: str | None = None
     contract_id: str | None = None
+    tenant_id: str | None = None
+    review_status: str | None = None
+    reviewed_by: str | None = None
+    review_note: str | None = None
+    reviewed_at: datetime | None = None
     created_at: datetime
+
+
+ReviewStatus = Literal["approved", "rejected", "overridden"]
+
+
+class DecisionOverrideRequest(BaseModel):
+    """Human-review override of a decision (persisted to the review columns)."""
+
+    review_status: ReviewStatus
+    reviewed_by: str = Field(default="reviewer", min_length=1)
+    review_note: str = ""
 
 
 class AuditEventCreate(BaseModel):

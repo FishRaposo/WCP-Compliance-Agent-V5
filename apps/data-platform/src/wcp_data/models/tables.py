@@ -34,6 +34,11 @@ decisions_table = Table(
     Column("latency_ms", Integer(), nullable=True),
     Column("phoenix_trace_id", Text(), nullable=True),
     Column("contract_id", Text(), nullable=True),
+    Column("tenant_id", Text(), nullable=False, server_default="default"),
+    Column("review_status", Text(), nullable=True),
+    Column("reviewed_by", Text(), nullable=True),
+    Column("review_note", Text(), nullable=True),
+    Column("reviewed_at", DateTime(timezone=True), nullable=True),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
@@ -47,6 +52,7 @@ audit_events_table = Table(
     Column("payload", JSONB(), nullable=True, server_default="{}"),
     Column("regulation_references", ARRAY(Text()), nullable=True, server_default="{}"),
     Column("trace_id", Text(), nullable=True),
+    Column("tenant_id", Text(), nullable=False, server_default="default"),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
@@ -67,6 +73,7 @@ contracts_table = Table(
     Column("source", Text(), nullable=False, server_default="manual"),
     Column("source_reference", Text(), nullable=True),
     Column("metadata", JSONB(), nullable=False, server_default="{}"),
+    Column("tenant_id", Text(), nullable=False, server_default="default"),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
@@ -116,6 +123,7 @@ ingestion_jobs_table = Table(
     Column("error_details", JSONB(), nullable=False, server_default="[]"),
     Column("started_at", DateTime(timezone=True), nullable=True),
     Column("completed_at", DateTime(timezone=True), nullable=True),
+    Column("tenant_id", Text(), nullable=False, server_default="default"),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
@@ -140,5 +148,6 @@ users_table = Table(
     Column("email", Text(), nullable=False, unique=True),
     Column("password_hash", Text(), nullable=False),
     Column("role", Text(), nullable=False, server_default="analyst"),
+    Column("tenant_id", Text(), nullable=False, server_default="default"),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
