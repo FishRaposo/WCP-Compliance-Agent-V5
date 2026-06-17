@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { dataPlatformClient, getDecisions, getDecision } from "../clients/data-platform-client.js";
+import { dataPlatformClient } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { getInternalHeaders } from "../lib/request-headers.js";
 
 export const decisionsRoutes = new Hono();
 
@@ -16,7 +17,9 @@ decisionsRoutes.get("/api/v1/decisions", async (c) => {
   if (trust_band) params.trust_band = trust_band;
 
   try {
-    const data = await getDecisions(params);
+    const query = new URLSearchParams(params).toString();
+    const path = query ? `/internal/decisions?${query}` : "/internal/decisions";
+    const data = await dataPlatformClient.get<unknown[]>(path, getInternalHeaders(c));
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
@@ -29,7 +32,7 @@ decisionsRoutes.get("/api/v1/decisions", async (c) => {
 decisionsRoutes.get("/api/v1/decisions/:id", async (c) => {
   const id = c.req.param("id");
   try {
-    const data = await getDecision(id);
+    const data = await dataPlatformClient.get<unknown>(`/internal/decisions/${id}`, getInternalHeaders(c));
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {

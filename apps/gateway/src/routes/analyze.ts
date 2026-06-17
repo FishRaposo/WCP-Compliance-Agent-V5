@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { agentClient } from "../clients/agent-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { getInternalHeaders } from "../lib/request-headers.js";
 
 export const analyzeRoutes = new Hono();
 
@@ -21,7 +22,11 @@ analyzeRoutes.post("/api/v1/analyze", async (c) => {
   }
 
   try {
-    const decision = await agentClient.post("/internal/workflows/wcp-pipeline", parsed.data);
+    const decision = await agentClient.post(
+      "/internal/workflows/wcp-pipeline",
+      parsed.data,
+      getInternalHeaders(c),
+    );
     return c.json(decision, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {

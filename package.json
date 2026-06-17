@@ -14,6 +14,10 @@
     "test:gateway:integration": "cd apps/gateway && pnpm test integration"
   },
   "devDependencies": {
-    "turbo": "^2.3.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.5.0",
+    "globals": "^17.6.0",
+    "turbo": "^2.3.0",
+    "typescript-eslint": "^8.61.0"
   }
 }

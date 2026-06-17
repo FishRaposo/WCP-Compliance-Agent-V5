@@ -14,10 +14,15 @@ import type { ExtractedWCP, TrustScoredDecision } from "../types.js";
 export async function runWCPPipeline(
   text: string,
   promptVersion?: string,
-  traceHeaders?: Record<string, string>
+  traceHeaders?: Record<string, string>,
+  jobId?: string,
 ): Promise<TrustScoredDecision> {
   const extracted = await extractTool(text, traceHeaders);
-  return runPipelineFromExtracted(extracted, promptVersion, traceHeaders);
+  return runPipelineFromExtracted(
+    jobId ? { ...extracted, job_id: jobId } : extracted,
+    promptVersion,
+    traceHeaders,
+  );
 }
 
 export async function runPipelineFromExtracted(

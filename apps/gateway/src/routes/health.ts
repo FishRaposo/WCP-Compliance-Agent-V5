@@ -10,6 +10,8 @@ let version = "5.0.0";
 try {
   const pkg = JSON.parse(readFileSync(join(__dirname, "../../package.json"), "utf-8"));
   version = pkg.version ?? "5.0.0";
-} catch {}
+} catch {
+  // Keep the default version when package metadata is unavailable.
+}
 
 healthRoutes.get("/health", (c) => c.json({ status: "ok", version, service: "gateway" }));

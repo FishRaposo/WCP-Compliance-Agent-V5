@@ -57,6 +57,38 @@ describe("types", () => {
     });
   });
 
+  describe("DeterministicReportSchema", () => {
+    it("parses a deterministic report", () => {
+      const report = DeterministicReportSchema.parse({
+        job_id: "job-001",
+        overall_status: "pass",
+        checks: [],
+        violation_count: 0,
+        warning_count: 0,
+      });
+      expect(report.overall_status).toBe("pass");
+    });
+  });
+
+  describe("LLMVerdictSchema", () => {
+    it("parses an LLM verdict", () => {
+      const verdict = LLMVerdictSchema.parse({
+        job_id: "job-001",
+        verdict: "approved",
+        reasoning: "All checks passed",
+        citations: [],
+        confidence: 0.95,
+        referenced_check_ids: ["total"],
+        rag_context_used: false,
+        model: "mock",
+        prompt_version: "mock",
+        langfuse_trace_id: "",
+        token_usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+      });
+      expect(verdict.verdict).toBe("approved");
+    });
+  });
+
   describe("TrustScoredDecisionSchema", () => {
     it("parses valid decision", () => {
       const data = {

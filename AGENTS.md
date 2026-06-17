@@ -14,18 +14,21 @@ V5 is a monorepo with five services, managed by Turborepo + pnpm workspaces.
 
 Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 
-## Test Tally: 253 tests, 0 failures
+## Verification Tally
 
-| Service | Tests | Framework |
-|---|---|---|
-| Compliance Core | 75 unit | pytest |
-| Data Platform | 56 unit | pytest |
-| Agent | 55 | vitest |
-| Gateway | 22 | vitest |
-| Web | 28 | vitest |
+| Layer | Count | Framework |
+|---|---:|---|
+| Compliance Core unit | 75 | pytest |
+| Data Platform unit | 60 | pytest |
+| Agent unit | 57 | vitest |
+| Gateway unit | 22 | vitest |
+| Web unit | 29 | vitest |
 | Contracts | 17 | vitest |
+| **Unit-test total** | **260** | pytest + vitest |
+| Data Platform integration | 24 | pytest |
+| Golden-set eval examples | 92 | pytest parametrization |
 
-**Note:** 4 DuckDB tests skipped (require external dependencies). 73 eval tests not run in this cycle.
+**Current local verification:** direct Vitest package runs pass for Agent, Gateway, Web, and Contracts (125 tests). Python pytest suites require Poetry/CI dependencies; Android/Termux cannot build some native Python packages cleanly. E2E Docker flow is not yet fully covered.
 
 ## Commands
 

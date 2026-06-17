@@ -10,8 +10,16 @@ from wcp_compliance.api.validate import router as validate_router
 router = APIRouter()
 
 router.include_router(health_router, tags=["health"])
-router.include_router(extract_router, tags=["extraction"])
-router.include_router(validate_router, tags=["validation"])
+router.include_router(
+    extract_router,
+    tags=["extraction"],
+    dependencies=[Depends(verify_internal_token)],
+)
+router.include_router(
+    validate_router,
+    tags=["validation"],
+    dependencies=[Depends(verify_internal_token)],
+)
 router.include_router(
     dbwd_router,
     prefix="/internal/dbwd",

@@ -1,6 +1,6 @@
 # V5 Known Gaps
 
-**Last updated:** 2026-05-29
+**Last updated:** 2026-06-16
 
 This document tracks known limitations, edge cases, and deferred features. V5 is functionally complete — these are quality hardening items, not blockers.
 
@@ -27,7 +27,7 @@ These are extraction regex gaps, not rule engine bugs. All 8 have documented gol
 
 ## Integration Tests
 
-Unit test infrastructure complete (271 tests). Cross-service integration tests require Docker runtime.
+Unit test infrastructure is complete as a source-collected suite: 260 unit tests plus 24 Data Platform integration tests. Golden-set evaluation is tracked separately as 92 parametrized examples. Cross-service E2E tests still require a live Docker runtime.
 
 | Test | Status |
 |---|---|
@@ -35,8 +35,8 @@ Unit test infrastructure complete (271 tests). Cross-service integration tests r
 | Data Platform decision lifecycle | ✅ `tests/integration/test_decision_lifecycle.py` |
 | Data Platform analytics endpoints | ✅ `tests/integration/test_analytics_endpoints.py` |
 | Redis cache layer | ✅ `tests/integration/test_redis_cache.py` |
-| Gateway → Agent → Compliance Core pipeline | Requires live Docker stack |
-| SSE stream with Redis | Requires live Docker stack |
+| Gateway → Agent → Compliance Core pipeline | Not yet fully covered; requires live Docker stack |
+| SSE stream with Redis | Not yet fully covered; requires live Docker stack |
 
 Test infra: `infra/docker-compose.test.yml` (ports 5433/6380).
 

@@ -1,4 +1,4 @@
-from pydantic import field_validator, ValidationInfo
+from pydantic import ValidationInfo, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,6 +38,12 @@ class Settings(BaseSettings):
                 f"{info.field_name} must not point to localhost in production."
             )
         return v
+
+    @model_validator(mode="after")
+    def _validate_production_secrets(self) -> "Settings":
+        if self.environment == "production" and not self.internal_service_token:
+            raise ValueError("internal_service_token is required in production.")
+        return self
 
 
 settings = Settings()

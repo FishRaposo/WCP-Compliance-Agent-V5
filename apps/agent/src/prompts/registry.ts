@@ -41,7 +41,9 @@ export const promptRegistry = {
             description: `Langfuse prompt ${name}:${targetVersion}`,
           };
         }
-      } catch {}
+      } catch {
+        // Fall back to the local prompt registry when Langfuse is unavailable.
+      }
     }
 
     const local = LOCAL_REGISTRY[targetVersion];

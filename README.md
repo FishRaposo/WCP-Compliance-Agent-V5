@@ -1,10 +1,10 @@
 # WCP Compliance Agent V5
 
-**Automated WH-347 certified payroll compliance validation for Davis-Bacon Act contractors.**
+**Production-ready WH-347 certified payroll compliance platform for Davis-Bacon Act contractors.**
 
 > A five-service monorepo where every service has a single responsibility, a distinct failure mode, and a clear reason to change. Upload a WH-347 payroll PDF and watch it flow through extraction, deterministic validation, LLM verdict synthesis, trust scoring, and auditable persistence — all with distributed tracing.
 
-**253 tests, 0 failures.** Mock mode works with zero dependencies.
+**Current verification target:** 260 source-collected unit tests, 24 integration tests, and 92 golden-set evaluation examples. Mock mode works with zero external services.
 
 ---
 
@@ -67,22 +67,29 @@ Upload WH-347 (PDF or text)
   └─ 5. PERSIST ─── Data Platform creates DecisionRecord + AuditEvent atomically
 ```
 
-## Testing
+## Current verification state
 
-| Service | Tests | Framework | What's Covered |
-|---|---|---|---|
-| Compliance Core | 75 | pytest | Checks, extraction, rules, trust score, DBWD lookup |
-| Data Platform | 56 | pytest | Repositories, services, API endpoints |
-| Agent | 55 | vitest | Pipeline, tools, router, prompts, cost tracking, types |
-| Gateway | 22 | vitest | Middleware, routes, auth, config |
-| Web | 28 | vitest | Components, API client, mock data, routing |
-| Contracts | 17 | vitest | JSON schema validation across all boundaries |
-| **Total** | **253** | | **0 failures** |
+| Layer | Current count | Runner | Status |
+|---|---:|---|---|
+| Compliance Core unit tests | 75 | pytest | Source-collected; run with Poetry/CI |
+| Data Platform unit tests | 60 | pytest | Source-collected; run with Poetry/CI |
+| Agent unit tests | 57 | vitest | Passed locally |
+| Gateway unit tests | 22 | vitest | Passed locally |
+| Web unit tests | 29 | vitest | Passed locally |
+| Contracts tests | 17 | vitest | Passed locally |
+| **Unit-test total** | **260** | pytest + vitest | TypeScript subset 125/125 passed locally |
+| Data Platform integration tests | 24 | pytest | Require DB/runtime fixtures |
+| Golden-set eval examples | 92 | pytest parametrization | Regression suite, not counted as unit tests |
+| End-to-end Docker flow | — | Docker Compose | Not yet fully covered; gateway→agent→core and Redis SSE require live stack |
 
 ```bash
-pnpm test                               # All TypeScript tests
-poetry run pytest tests/unit -v         # Python unit tests
-poetry run pytest tests/eval -v         # Golden-set evaluation (73 examples)
+pnpm test                               # All TypeScript tests via Turborepo on supported platforms
+cd apps/agent && pnpm test              # 57 vitest tests
+cd apps/gateway && pnpm test            # 22 vitest tests
+cd apps/web && pnpm test                # 29 vitest tests
+cd packages/contracts && pnpm test      # 17 vitest tests
+cd apps/compliance-core && poetry run pytest tests/unit tests/eval -v
+cd apps/data-platform && poetry run pytest tests/unit tests/integration -v
 ```
 
 ## Key Design Decisions

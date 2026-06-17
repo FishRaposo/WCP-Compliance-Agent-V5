@@ -58,7 +58,12 @@ workflowRoutes.post("/wcp-pipeline", async (c) => {
   }
 
   try {
-    const decision = await runWCPPipeline(parsed.data.text, parsed.data.prompt_version, getTraceHeaders(c));
+    const decision = await runWCPPipeline(
+      parsed.data.text,
+      parsed.data.prompt_version,
+      getTraceHeaders(c),
+      parsed.data.job_id,
+    );
     return c.json(decision, 200);
   } catch (err) {
     console.error("Pipeline failed:", err);

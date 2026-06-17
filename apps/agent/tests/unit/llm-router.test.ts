@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { LLMRouter, type RoutingContext } from "../../src/model-router/llm-router.js";
 
 describe("LLMRouter", () => {

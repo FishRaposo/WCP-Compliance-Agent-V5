@@ -60,10 +60,11 @@ export class ServiceClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const { signal, clear } = this.createTimeout();
+    const { "Content-Type": _contentType, ...defaultHeaders } = this.defaultHeaders;
     try {
       const res = await fetch(url, {
         method: "POST",
-        headers: { ...headers },
+        headers: { ...defaultHeaders, ...headers },
         body: formData,
         signal,
       });

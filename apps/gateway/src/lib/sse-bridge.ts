@@ -4,7 +4,7 @@
  * Allows clients to subscribe to real-time events via SSE endpoint.
  */
 
-import type { StreamConfig, StreamMessageHandler, ensureConsumerGroup, readStreamMessages } from "./redis-streams.js";
+import type { StreamConfig, StreamMessageHandler } from "./redis-streams.js";
 
 const logger = {
   info: (msg: string, meta?: Record<string, unknown>) => console.log(`[SSE] ${msg}`, meta ? JSON.stringify(meta) : ""),

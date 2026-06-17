@@ -1,6 +1,5 @@
 """SAM.gov WDOL API client for DBWD wage determination retrieval."""
 
-import aiohttp
 import logging
 import os
 from datetime import datetime, timezone
@@ -17,7 +16,7 @@ class SamGovError(Exception):
 
 class SamGovClient:
     # PERF-06: Persistent session to avoid TCP+TLS handshake per request
-    _session: aiohttp.ClientSession | None = None
+    _session: Any | None = None
 
     def __init__(self, api_key: str | None = None, base_url: str = DEFAULT_BASE_URL) -> None:
         self.api_key = api_key or os.environ.get("SAM_GOV_API_KEY")
@@ -25,8 +24,10 @@ class SamGovClient:
         if not self.api_key:
             logger.warning("SAM.gov API key not provided; API calls will fail")
 
-    async def _get_session(self) -> aiohttp.ClientSession:
+    async def _get_session(self) -> Any:
         """Get or create a persistent aiohttp session (PERF-06)."""
+        import aiohttp
+
         if SamGovClient._session is None or SamGovClient._session.closed:
             SamGovClient._session = aiohttp.ClientSession()
         return SamGovClient._session
@@ -51,6 +52,8 @@ class SamGovClient:
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         try:
+            import aiohttp
+
             params: dict[str, str | int] = {
                 "limit": limit,
                 "constructionType": construction_type,
@@ -88,6 +91,8 @@ class SamGovClient:
 
     async def get_wage_determination(self, wd_number: str) -> dict[str, Any] | None:
         try:
+            import aiohttp
+
             session = await self._get_session()
             async with session.get(
                 f"{self.base_url}/wage-determinations/{wd_number}",

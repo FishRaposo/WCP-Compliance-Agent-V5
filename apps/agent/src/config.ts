@@ -40,6 +40,10 @@ if (raw.NODE_ENV === "production" && raw.LLM_MODE === "mock") {
   );
 }
 
+if (raw.NODE_ENV === "production" && !raw.INTERNAL_SERVICE_TOKEN) {
+  throw new Error("INTERNAL_SERVICE_TOKEN is required in production.");
+}
+
 export const config = raw;
 export type Config = typeof config;
 export const isMockMode = config.LLM_MODE === "mock";

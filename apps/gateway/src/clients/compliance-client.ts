@@ -3,7 +3,12 @@ import { config } from "../config.js";
 
 export const complianceClient = new ServiceClient({
   baseUrl: config.COMPLIANCE_CORE_URL,
-  headers: { "X-Service": "gateway" },
+  headers: {
+    "X-Service": "gateway",
+    ...(config.INTERNAL_SERVICE_TOKEN
+      ? { "X-Internal-Token": config.INTERNAL_SERVICE_TOKEN }
+      : {}),
+  },
 });
 
 export async function extractText(text: string) {

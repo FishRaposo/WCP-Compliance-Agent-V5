@@ -1,11 +1,10 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 
-import { isMockMode, config } from "../config.js";
+import { isMockMode } from "../config.js";
 import { promptRegistry } from "../prompts/registry.js";
 import { searchTool } from "../tools/search.js";
 import { createTrace, logGeneration } from "../observability/tracing.js";
-import { computeCostUsd } from "../observability/cost-tracking.js";
 import { llmRouter, type RoutingContext } from "../model-router/llm-router.js";
 import type {
   DeterministicReport,
@@ -112,7 +111,6 @@ export async function runVerdictAgent(
     return mockVerdict(jobId, deterministic);
   }
 
-  const startMs = Date.now();
   const trace = await createTrace(jobId, promptVersion ?? "v1");
   const traceId = trace.id;
 
@@ -171,14 +169,9 @@ export async function runVerdictAgent(
       activeModel,
       { promptTokens: usage.promptTokens, completionTokens: usage.completionTokens }
     );
-  } catch {}
-
-  const latencyMs = Date.now() - startMs;
-  const costUsd = computeCostUsd(
-    activeModel,
-    usage.promptTokens,
-    usage.completionTokens
-  );
+  } catch {
+    // Observability failure must not block compliance verdict generation.
+  }
 
   return {
     job_id: jobId,

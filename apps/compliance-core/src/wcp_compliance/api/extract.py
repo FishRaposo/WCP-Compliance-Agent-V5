@@ -26,6 +26,20 @@ async def extract_wcp(
 
     try:
         if file:
+            content_length = request.headers.get("content-length")
+            if content_length:
+                try:
+                    if int(content_length) > MAX_UPLOAD_SIZE:
+                        raise HTTPException(
+                            status_code=413,
+                            detail=(
+                                f"File too large: {content_length} bytes. "
+                                f"Max: {MAX_UPLOAD_SIZE}"
+                            ),
+                        )
+                except ValueError:
+                    raise HTTPException(status_code=400, detail="Invalid Content-Length header")
+
             # HIGH-06 Fix: Make content type check unconditional
             if not file.content_type or file.content_type not in ALLOWED_CONTENT_TYPES:
                 raise HTTPException(

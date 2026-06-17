@@ -53,10 +53,16 @@ describe("agent tools", () => {
   });
 
   it("searchTool sends query to compliance core", async () => {
-    mockPost.mockResolvedValueOnce({ results: [], total: 0 });
+    mockPost.mockResolvedValueOnce({ query: "test query", results: [], total: 0 });
     const { searchTool } = await import("../../src/tools/search.js");
     const result = await searchTool("test query", "Electrician", "Washington, DC");
-    expect(result.results).toEqual([]);
+    expect(result).toEqual([]);
+    expect(mockPost).toHaveBeenCalledWith("/internal/search/", {
+      query: "test query",
+      trade: "Electrician",
+      locality: "Washington, DC",
+      top_k: 5,
+    });
   });
 
   it("tools propagate trace headers", async () => {

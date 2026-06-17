@@ -27,4 +27,28 @@ describe("API types", () => {
     const c: Citation = { regulation: "40 U.S.C. § 3142", section: "3142", text: "Minimum wage" };
     expect(c.regulation).toBeTruthy();
   });
+
+  it("summary and analytics types are usable", () => {
+    const summary: DecisionSummary = {
+      decision_id: "dec-001",
+      job_id: "job-001",
+      verdict: "approved",
+      trust_score: 0.92,
+      trust_band: "auto_approve",
+      violation_count: 0,
+      warning_count: 0,
+      created_at: "2026-06-16T00:00:00Z",
+    };
+    const overview: AnalyticsOverview = {
+      total_decisions: 1,
+      approval_rate: 1,
+      avg_trust_score: 0.92,
+      total_violations: 0,
+      total_warnings: 0,
+      avg_cost_usd: 0.01,
+      avg_latency_ms: 250,
+    };
+    expect(summary.trust_band).toBe("auto_approve");
+    expect(overview.total_decisions).toBe(1);
+  });
 });

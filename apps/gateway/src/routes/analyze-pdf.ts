@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { config } from "../config.js";
 import { agentClient } from "../clients/agent-client.js";
 import { complianceClient } from "../clients/compliance-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { getInternalHeaders } from "../lib/request-headers.js";
 
 export const analyzePdfRoutes = new Hono();
 
@@ -17,9 +17,14 @@ analyzePdfRoutes.post("/api/v1/analyze/pdf", async (c) => {
     const backendForm = new FormData();
     backendForm.append("file", file, file.name);
 
-    const extracted = await complianceClient.postForm("/internal/extract/pdf", backendForm);
+    const headers = getInternalHeaders(c);
+    const extracted = await complianceClient.postForm("/internal/extract", backendForm, headers);
 
-    const decision = await agentClient.post("/internal/workflows/wcp-pipeline-from-extracted", extracted);
+    const decision = await agentClient.post(
+      "/internal/workflows/wcp-pipeline-from-extracted",
+      extracted,
+      headers,
+    );
 
     return c.json(decision, 200);
   } catch (err) {

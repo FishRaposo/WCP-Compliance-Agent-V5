@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.1] - 2026-06-16
+
+### Hardening
+- Propagated `X-Internal-Token`, `x-request-id`, and `x-trace-id` through Gateway → Agent → Compliance Core/Data Platform calls.
+- Added production guardrails so mock auth / missing internal service tokens cannot silently ship in production.
+- Added Content-Length preflight rejection for oversized Compliance Core uploads before reading request bodies.
+- Fixed Gateway PDF analysis route to call the actual `/internal/extract` endpoint and forward internal headers.
+- Fixed Agent search tool contract to consume the Compliance Core `SearchResult` envelope.
+
+### Documentation
+- Reconciled verification counts: 260 source-collected unit tests, 24 Data Platform integration tests, and 92 golden-set eval examples.
+- Added README “Current verification state” section separating unit tests, integration tests, eval examples, and E2E coverage.
+- Marked ADR 0007 as Accepted in the ADR index to match the ADR file.
+
+---
+
 ## [5.0.1] - 2026-06-03
 
 ### Security Fixes
@@ -39,7 +55,7 @@
 
 ### Changed
 - **Trust score weights aligned** — TypeScript now matches Python: 35/25/20/20 (was 40/15/25/20)
-- **Golden-set expanded** — 10 → 73 examples covering all check types, edge cases, and format variants
+- **Golden-set expanded** — 10 → 92 examples covering all check types, edge cases, and format variants
 - **Gateway SSE enhanced** — Redis Streams consumer with heartbeat fallback
 - **Compliance Core search** — hybrid RAG endpoint (BM25 + vector + cross-encoder) replaces stub
 - **Data Platform analytics** — 9 endpoints (overview, volume, approval-by-trade, trust-band-distribution, cost, compliance, wages, llm)
@@ -75,8 +91,8 @@
 - CONTRIBUTING.md, LICENSE (MIT), deployment guide
 
 ### Testing
-- 198 unit tests across all services (66 CC + 30 DP + 55 Agent + 20 Gateway + 10 Web + 17 Contracts)
-- 73 golden-set eval examples with regression detection
+- 260 source-collected unit tests across all services (75 CC + 60 DP + 57 Agent + 22 Gateway + 29 Web + 17 Contracts)
+- 92 golden-set eval examples with regression detection
 - 7/7 TypeScript packages typecheck clean
 - Both Python services: ruff + mypy + pytest clean
 
