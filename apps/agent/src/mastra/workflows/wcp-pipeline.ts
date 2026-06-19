@@ -48,7 +48,6 @@ function markStart(rc: RequestContext): void {
 
 /** Call a createTool tool directly from a workflow step (validated input/output). */
 async function callTool<T>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tool: { id: string; execute?: (input: any, ctx: any) => Promise<any> },
   input: unknown,
   requestContext: RequestContext,
@@ -183,8 +182,7 @@ const verdictStep = createStep({
       });
 
       requestContext.set("lat.verdict_ms", Date.now() - t0);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modelId = (result.response as any)?.modelId ?? "unknown";
+      const modelId = (result.response as { modelId?: string })?.modelId ?? "unknown";
       return {
         extracted,
         report,

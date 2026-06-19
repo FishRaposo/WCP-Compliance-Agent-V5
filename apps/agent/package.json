@@ -8,6 +8,7 @@
     "playground": "mastra dev --dir src/mastra",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
     "test": "vitest run"
   },
   "dependencies": {
