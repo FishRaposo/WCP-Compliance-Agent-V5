@@ -11,7 +11,7 @@
 ## Architecture
 
 ```
-Web (React 19) ──→ Gateway (Hono) ──→ Agent (Vercel AI SDK)
+Web (React 19) ──→ Gateway (Hono) ──→ Agent (Mastra)
                       │                     │
                       ├──→ Compliance Core (FastAPI) ── deterministic validation
                       │                     
@@ -22,7 +22,7 @@ Web (React 19) ──→ Gateway (Hono) ──→ Agent (Vercel AI SDK)
 |---|---|---|---|---|
 | **Web** | TypeScript/React 19 | 5173 | Upload flow, decision display, analytics, review queue | UI state management |
 | **Gateway** | TypeScript/Hono | 3000 | Auth, CORS, rate limiting, routing, SSE streaming | Single entry point, security boundary |
-| **Agent** | TypeScript/Vercel AI SDK | 3001 | LLM orchestration, verdict synthesis, trust scoring | LLM integration isolated from persistence |
+| **Agent** | TypeScript/Mastra | 3001 | LLM orchestration (agents, workflows, tools, RAG, memory, scorers), verdict synthesis, trust scoring | LLM integration isolated from persistence |
 | **Compliance Core** | Python/FastAPI | 8000 | Deterministic extraction, wage validation, DBWD lookup | Source of compliance truth |
 | **Data Platform** | Python/FastAPI + SQLAlchemy | 8001 | Decision persistence, audit events, contracts, payrolls, analytics | Single source of truth for all data |
 
@@ -116,7 +116,7 @@ cd apps/data-platform && poetry run pytest tests/unit tests/integration -v
 ├── apps/
 │   ├── web/              React 19 + Vite + Shadcn/ui
 │   ├── gateway/          Hono + Zod + jose
-│   ├── agent/            Vercel AI SDK + Langfuse
+│   ├── agent/            Mastra (agents, workflows, tools, RAG, memory, scorers) + Langfuse
 │   ├── compliance-core/  FastAPI + Pydantic v2 + pdfplumber
 │   └── data-platform/    FastAPI + SQLAlchemy + Alembic
 ├── packages/

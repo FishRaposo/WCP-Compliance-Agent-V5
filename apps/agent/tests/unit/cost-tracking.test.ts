@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeCostUsd } from "../../src/observability/cost-tracking.js";
+import { computeCostUsd } from "../../src/mastra/cost.js";
 
 describe("cost-tracking", () => {
   it("computes gpt-4o cost correctly", () => {

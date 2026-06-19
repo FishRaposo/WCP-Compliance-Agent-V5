@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
+  buildReasoningSummary,
   computeTrustComponents,
   computeTrustScore,
   determineTrustBand,
+  groundCitations,
   safeVerdict,
-} from "../../src/agents/trust-score.js";
+} from "../../src/mastra/trust.js";
 import type { DeterministicReport, LLMVerdict } from "../../src/types.js";
 
 function makeDeterministic(overrides: Partial<DeterministicReport> = {}): DeterministicReport {
@@ -143,10 +145,77 @@ describe("trust-score", () => {
       expect(safeVerdict(det, ver)).toBe("approved");
     });
 
-    it("passes through when verdict is needs_review", () => {
-      const det = makeDeterministic({ violation_count: 3 });
+    it("passes through needs_review when there are no violations", () => {
+      const det = makeDeterministic({ violation_count: 0 });
       const ver = makeVerdict({ verdict: "needs_review" });
       expect(safeVerdict(det, ver)).toBe("needs_review");
+    });
+
+    it("overrides needs_review to rejected when violations exist", () => {
+      const det = makeDeterministic({ violation_count: 2 });
+      const ver = makeVerdict({ verdict: "needs_review" });
+      expect(safeVerdict(det, ver)).toBe("rejected");
+    });
+  });
+
+  describe("computeAgreement (via components)", () => {
+    it("is full agreement when violations exist and the LLM also rejects", () => {
+      const det = makeDeterministic({ violation_count: 2 });
+      const ver = makeVerdict({ verdict: "rejected" });
+      expect(computeTrustComponents(det, ver).agreement).toBeCloseTo(0.2);
+    });
+
+    it("is zero when violations exist but the LLM only needs_review", () => {
+      const det = makeDeterministic({ violation_count: 2 });
+      const ver = makeVerdict({ verdict: "needs_review" });
+      expect(computeTrustComponents(det, ver).agreement).toBe(0);
+    });
+  });
+
+  describe("buildReasoningSummary", () => {
+    it("returns the LLM reasoning verbatim when the payroll is clean", () => {
+      const det = makeDeterministic({ violation_count: 0, warning_count: 0 });
+      expect(
+        buildReasoningSummary(det, { reasoning: "All good", verdict: "approved" }, "approved"),
+      ).toBe("All good");
+    });
+
+    it("leads with an override notice and demotes LLM prose when the verdict was overridden", () => {
+      const det = makeDeterministic({ violation_count: 2, warning_count: 0 });
+      const out = buildReasoningSummary(
+        det,
+        { reasoning: "Looks compliant to me", verdict: "approved" },
+        "rejected",
+      );
+      expect(out.startsWith("Overridden by deterministic checks")).toBe(true);
+      expect(out).toContain("LLM rationale");
+    });
+  });
+
+  describe("groundCitations", () => {
+    it("keeps LLM citations when there are no violations", () => {
+      const det = makeDeterministic({ violation_count: 0 });
+      const cites = [{ regulation: "29 CFR 5.5", section: "", text: "" }];
+      expect(groundCitations(det, cites)).toEqual(cites);
+    });
+
+    it("drops ungrounded citations on a violation and falls back to failed-check citations", () => {
+      const det = makeDeterministic({
+        violation_count: 1,
+        checks: [
+          {
+            check_id: "w1",
+            check_type: "wage_rate",
+            employee_name: "John",
+            status: "fail",
+            message: "Wage below prevailing rate",
+            regulation_cite: "29 CFR 5.5",
+          },
+        ],
+      });
+      const out = groundCitations(det, [{ regulation: "FAKE 999", section: "", text: "made up" }]);
+      expect(out.length).toBeGreaterThan(0);
+      expect(out[0].regulation).toBe("29 CFR 5.5");
     });
   });
 });
