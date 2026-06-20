@@ -6,49 +6,49 @@
 
 ## Context
 
-V5 has two implementations of the trust score calculation:
-- **Python** (Compliance Core): weights 35/25/20/20 (deterministic/classification/llm_self/agreement)
-- **TypeScript** (Agent): weights 40/15/25/20
+V5 originally had divergent trust-score weights between Python and TypeScript implementations:
 
-This divergence creates inconsistency — the same inputs produce different scores depending on which service computes them.
+- Python: 35/25/20/20 for deterministic, classification, LLM self-confidence, and agreement.
+- TypeScript: 40/15/25/20 for the same components.
+
+That divergence meant the same inputs could produce different scores depending on which service computed them.
 
 ## Decision
 
-**Adopt the Python weights (35/25/20/20) as the single source of truth.**
+Adopt 35/25/20/20 as the single V5 trust-score weighting model.
 
-### Rationale
+## Rationale
 
-1. **Compliance Core is the source of deterministic truth** (ADR 0004). The trust score is primarily a deterministic calculation, so it belongs in Compliance Core.
-2. **The Python weights give more weight to classification quality (25% vs 15%)** — this matters because trade classification accuracy directly affects which DBWD rate is used for validation.
-3. **The Python weights reduce the LLM self-assessment component (20% vs 25%)** — reducing over-reliance on LLM confidence scores.
-4. **Higher deterministic weight in TS (40% vs 35%) was an experiment** that penalized the deterministic component more heavily. The Python distribution is more balanced.
+1. Deterministic validation is the source of compliance truth.
+2. Classification quality deserves substantial weight because trade classification determines which DBWD rate applies.
+3. LLM self-confidence should be bounded and less influential than deterministic and classification evidence.
+4. Agreement between deterministic findings and LLM synthesis is important enough to remain an explicit component.
 
-### Component Breakdown
+## Component Breakdown
 
 | Component | Weight | Explanation |
-|---|---|---|
-| deterministic | 0.35 | 1.0 − (violations / total_checks) |
-| classification | 0.25 | Fixed 0.95 multiplier for trade classification accuracy |
-| llm_self | 0.20 | LLM's own confidence score (0.0–1.0) |
-| agreement | 0.20 | Does LLM agree with deterministic findings? 1.0/0.5/0.0 |
+|---|---:|---|
+| deterministic | 0.35 | Rule-engine outcome based on violations and warnings |
+| classification | 0.25 | Classification/input confidence component |
+| llm_self | 0.20 | LLM confidence, constrained to 0.0-1.0 |
+| agreement | 0.20 | Whether LLM verdict agrees with deterministic findings |
 
-### Safe Verdict Override
+## Safe Verdict Override
 
-Regardless of trust score, the `safeVerdict()` function overrides any LLM "approved" verdict to "rejected" when deterministic violations exist.
+Regardless of trust score, `safeVerdict()` overrides any non-rejected LLM verdict to `rejected` when deterministic violations exist.
 
 ## Consequences
 
-- TypeScript `computeTrustComponents()` weights must be aligned to 35/25/20/20
-- Golden-set baseline scores must be regenerated
-- Trust score band thresholds remain unchanged:
-  - `≥ 0.85` → auto_approve
-  - `≥ 0.60` → flag_for_review
-  - `< 0.60` → require_human_review
+- TypeScript trust scoring must stay aligned to 35/25/20/20.
+- Golden-set baselines should be regenerated when score logic changes.
+- Trust score band thresholds remain:
+  - `>= 0.85` -> `auto_approve`
+  - `>= 0.60` -> `flag_for_review`
+  - `< 0.60` -> `require_human_review`
 
 ## Status
 
-Accepted. Implemented in Phase 15. Both services confirmed using 35/25/20/20 weights:
-- TypeScript: `apps/agent/src/agents/trust-score.ts` `computeTrustComponents()`
-- Python: `apps/compliance-core/src/wcp_compliance/rules/engine.py` `compute_trust_components()`
+Accepted and implemented in the active Mastra Agent path:
 
-Band thresholds confirmed identical: `HIGH_BAND=0.85`, `REVIEW_THRESHOLD=0.60`.
+- TypeScript: `apps/agent/src/mastra/trust.ts` `computeTrustComponents()`
+- Python aggregate helper: `apps/compliance-core/src/wcp_compliance/rules/trust_score.py` `compute_trust_score()`

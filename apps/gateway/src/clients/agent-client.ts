@@ -10,11 +10,3 @@ export const agentClient = new ServiceClient({
       : {}),
   },
 });
-
-export async function startAnalysis(text: string, jobId?: string) {
-  return agentClient.post("/internal/workflows/wcp-pipeline", { text, job_id: jobId });
-}
-
-export async function getWorkflowStatus(workflowId: string) {
-  return agentClient.get(`/internal/workflows/${workflowId}/status`);
-}

@@ -270,7 +270,7 @@ const persistStep = createStep({
   outputSchema: TrustScoredDecisionSchema,
   execute: async ({ inputData, requestContext }) => {
     const t0 = Date.now();
-    await callTool<{ decision_id: string }>(persistTool, inputData, requestContext);
+    await callTool<{ id: string }>(persistTool, inputData, requestContext);
     const persist_ms = Date.now() - t0;
     const start = num(requestContext, START_KEY) || t0;
     return {

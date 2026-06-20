@@ -2,6 +2,8 @@
 
 **Status:** 76/88 V3 files ported (86%). All deliberate omissions documented.
 
+**Current snapshot (2026-06-19):** This audit is a historical V3/V4-to-V5 inventory. Current verification is 274 unit tests, 24 Data Platform integration tests, and 93 Compliance Core eval tests (92 examples plus one baseline regression). Current Agent orchestration uses Mastra workflows/tools and persists decisions only through Data Platform `/internal/decisions`.
+
 Generated from `_archive/WCP-Compliance-Agent-V3/` inventory.
 
 ## V5 Implementation Status by Category

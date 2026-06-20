@@ -2,170 +2,156 @@
 
 **Production-ready WH-347 certified payroll compliance platform for Davis-Bacon Act contractors.**
 
-> A five-service monorepo where every service has a single responsibility, a distinct failure mode, and a clear reason to change. Upload a WH-347 payroll PDF and watch it flow through extraction, deterministic validation, LLM verdict synthesis, trust scoring, and auditable persistence — all with distributed tracing.
+V5 is a five-service monorepo where each service has one clear responsibility. A payroll flows through extraction, deterministic validation, Mastra-based verdict synthesis, trust scoring, and audited persistence with request and trace IDs propagated across service boundaries.
 
-**Current verification target:** 260 source-collected unit tests, 24 integration tests, and 92 golden-set evaluation examples. Mock mode works with zero external services.
+**Current verification target:** 274 source-collected unit tests, 24 Data Platform integration tests, and 93 Compliance Core golden-set eval tests (92 examples plus one baseline regression). UI mock mode can run without backend services; Agent mock mode avoids LLM API keys while still exercising the Mastra workflow and internal service boundaries.
 
 ---
 
 ## Architecture
 
-```
-Web (React 19) ──→ Gateway (Hono) ──→ Agent (Mastra)
-                      │                     │
-                      ├──→ Compliance Core (FastAPI) ── deterministic validation
-                      │                     
-                      └──→ Data Platform (FastAPI + SQLAlchemy) ── persistence
+```text
+Web (React 19) -> Gateway (Hono) -> Agent (Mastra)
+                      |                |
+                      |                -> Compliance Core (FastAPI) for extraction/validation
+                      |
+                      -> Data Platform (FastAPI + SQLAlchemy) for persistence/querying
 ```
 
 | Service | Language | Port | Responsibility | Why It Exists |
-|---|---|---|---|---|
+|---|---|---:|---|---|
 | **Web** | TypeScript/React 19 | 5173 | Upload flow, decision display, analytics, review queue | UI state management |
 | **Gateway** | TypeScript/Hono | 3000 | Auth, CORS, rate limiting, routing, SSE streaming | Single entry point, security boundary |
-| **Agent** | TypeScript/Mastra | 3001 | LLM orchestration (agents, workflows, tools, RAG, memory, scorers), verdict synthesis, trust scoring | LLM integration isolated from persistence |
+| **Agent** | TypeScript/Mastra | 3001 | LLM orchestration, verdict synthesis, trust scoring, persistence handoff | LLM integration isolated from database writes |
 | **Compliance Core** | Python/FastAPI | 8000 | Deterministic extraction, wage validation, DBWD lookup | Source of compliance truth |
-| **Data Platform** | Python/FastAPI + SQLAlchemy | 8001 | Decision persistence, audit events, contracts, payrolls, analytics | Single source of truth for all data |
+| **Data Platform** | Python/FastAPI + SQLAlchemy | 8001 | Decision persistence, audit events, contracts, payrolls, analytics | Single source of truth for stored data |
 
-**Critical boundary rule:** The Agent never writes to the database. It returns `TrustScoredDecision` objects, and the Data Platform is the only service that persists them. Compliance Core never persists — it returns structured validation results.
+**Critical boundary rule:** The Agent never writes to the database directly. Its Mastra workflow submits `TrustScoredDecision` objects to the Data Platform via `/internal/decisions`, and the Data Platform is the only service that persists official decision records and audit events. Compliance Core never persists; it returns structured extraction and validation results.
 
 ## Quick Start
 
-### Mock Mode (no API keys, no database)
+### UI Mock Mode
 
 ```bash
 git clone <repo-url> && cd wcp-compliance-agent-v5
 pnpm install
 
-# Start everything in mock mode
-VITE_MOCK_API=true WCP_MOCK_AUTH=true LLM_MODE=mock pnpm dev
+VITE_MOCK_API=true WCP_MOCK_AUTH=true pnpm dev
+```
 
-# Start Python services
-cd apps/compliance-core && poetry install && poetry run uvicorn wcp_compliance.main:app --port 8000 &
-cd apps/data-platform && poetry install && poetry run uvicorn wcp_data.main:app --port 8001 &
+Open `http://localhost:5173`.
 
-# Open http://localhost:5173
+### Full Local Workflow Mock Mode
+
+`LLM_MODE=mock` avoids LLM API keys, but the Agent workflow still calls Compliance Core and Data Platform.
+
+```bash
+cd infra
+docker compose up -d postgres redis
+
+cd ../apps/compliance-core
+poetry install
+poetry run uvicorn wcp_compliance.main:app --port 8000
+
+cd ../data-platform
+poetry install
+poetry run alembic upgrade head
+poetry run uvicorn wcp_data.main:app --port 8001
+
+cd ../..
+LLM_MODE=mock WCP_MOCK_AUTH=true pnpm dev
 ```
 
 ### Real Mode
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d postgres redis
-cd apps/data-platform && poetry run alembic upgrade head
-cd ../.. && python infra/scripts/seed_database.py
+cd infra
+docker compose up -d postgres redis
+
+cd ../apps/data-platform
+poetry run alembic upgrade head
+
+cd ../..
 LLM_MODE=real OPENAI_API_KEY=sk-... pnpm dev
 ```
 
 ## Pipeline
 
-```
+```text
 Upload WH-347 (PDF or text)
-  │
-  ├─ 1. EXTRACT ─── Compliance Core parses into ExtractedWCP
-  ├─ 2. VALIDATE ── Rule engine runs 5+ checks per employee against DBWD rates
-  ├─ 3. VERDICT ─── LLM agent synthesizes verdict with RAG context + citations
-  ├─ 4. TRUST ───── 4-component weighted score (35/25/20/20)
-  └─ 5. PERSIST ─── Data Platform creates DecisionRecord + AuditEvent atomically
+  |
+  |- 1. EXTRACT  Compliance Core parses into ExtractedWCP
+  |- 2. VALIDATE Rule engine checks wages, overtime, fringe, signature, totals, classification
+  |- 3. VERDICT  Mastra Agent synthesizes verdict with RAG context and citations
+  |- 4. TRUST    Four-component weighted score (35/25/20/20)
+  `- 5. PERSIST  Data Platform creates DecisionRecord + AuditEvent atomically
 ```
 
-## Current verification state
+## Current Verification State
 
 | Layer | Current count | Runner | Status |
 |---|---:|---|---|
 | Compliance Core unit tests | 75 | pytest | Source-collected; run with Poetry/CI |
-| Data Platform unit tests | 60 | pytest | Source-collected; run with Poetry/CI |
-| Agent unit tests | 57 | vitest | Passed locally |
-| Gateway unit tests | 22 | vitest | Passed locally |
+| Data Platform unit tests | 63 | pytest | Source-collected; run with Poetry/CI |
+| Agent unit tests | 65 | vitest | Passed locally |
+| Gateway unit tests | 23 | vitest | Passed locally |
 | Web unit tests | 29 | vitest | Passed locally |
-| Contracts tests | 17 | vitest | Passed locally |
-| **Unit-test total** | **260** | pytest + vitest | TypeScript subset 125/125 passed locally |
-| Data Platform integration tests | 24 | pytest | Require DB/runtime fixtures |
-| Golden-set eval examples | 92 | pytest parametrization | Regression suite, not counted as unit tests |
-| End-to-end Docker flow | — | Docker Compose | Not yet fully covered; gateway→agent→core and Redis SSE require live stack |
+| Contracts tests | 19 | vitest | Passed locally |
+| **Unit-test total** | **274** | pytest + vitest | TypeScript subset 136/136 passed locally |
+| Data Platform integration tests | 24 | pytest | Passed locally with in-memory SQLite fixtures |
+| Golden-set eval tests | 93 | pytest parametrization | 92 examples plus one baseline regression; not counted as unit tests |
+| End-to-end Docker flow | - | Docker Compose | Not yet fully covered |
 
 ```bash
 pnpm test                               # All TypeScript tests via Turborepo on supported platforms
-cd apps/agent && pnpm test              # 57 vitest tests
-cd apps/gateway && pnpm test            # 22 vitest tests
+cd apps/agent && pnpm test              # 65 vitest tests
+cd apps/gateway && pnpm test            # 23 vitest tests
 cd apps/web && pnpm test                # 29 vitest tests
-cd packages/contracts && pnpm test      # 17 vitest tests
+cd packages/contracts && pnpm test      # 19 vitest tests
 cd apps/compliance-core && poetry run pytest tests/unit tests/eval -v
 cd apps/data-platform && poetry run pytest tests/unit tests/integration -v
 ```
 
 ## Key Design Decisions
 
-- **Deterministic validation is the source of compliance truth** — The LLM adds explanation and citations, not correctness
-- **Agent never writes to the database** — Returns `TrustScoredDecision`; Data Platform creates official records
-- **Every decision is traceable** — From input artifact through all 5 pipeline steps to persisted record with audit events
-- **All cross-service requests carry `x-request-id` and `x-trace-id`** — Request tracing across 16-step flow
-- **Mock mode requires zero dependencies** — `VITE_MOCK_API=true LLM_MODE=mock WCP_MOCK_AUTH=true` runs the full stack
-- **Safe verdict override** — LLM approval is overridden to "rejected" when deterministic violations exist
-
-## V2 → V5 Evolution
-
-| Version | Services | Key Lesson |
-|---|---|---|
-| **V2** | 1 (TypeScript monolith) | AI-assisted compliance validation can work, but LLM can't be trusted alone |
-| **V3** | 2 (Python + TypeScript) | Deterministic math checks belong in Python; LLM adds context, not correctness |
-| **V4** | 3 (Python monolith, TS agent, React) | "Data platform" doing everything is a monolith — unclear reason to change |
-| **V5** | 5 (by responsibility) | Each service has a distinct failure mode, test strategy, and scaling pattern |
+- **Deterministic validation is the source of compliance truth**: the LLM adds explanation and citations, not correctness.
+- **Agent never writes to the database directly**: its Mastra workflow submits `TrustScoredDecision`; Data Platform creates official records.
+- **Every decision is traceable**: `x-request-id` and `x-trace-id` propagate through the pipeline and persistence layer.
+- **Mock modes are scoped**: `VITE_MOCK_API=true` runs the UI without backend services; `LLM_MODE=mock` runs Agent workflows without LLM API keys.
+- **Safe verdict override**: LLM approval is overridden to `rejected` when deterministic violations exist.
 
 ## Project Structure
 
-```
-├── apps/
-│   ├── web/              React 19 + Vite + Shadcn/ui
-│   ├── gateway/          Hono + Zod + jose
-│   ├── agent/            Mastra (agents, workflows, tools, RAG, memory, scorers) + Langfuse
-│   ├── compliance-core/  FastAPI + Pydantic v2 + pdfplumber
-│   └── data-platform/    FastAPI + SQLAlchemy + Alembic
-├── packages/
-│   ├── contracts/        JSON schemas → codegen (TS + Python)
-│   ├── observability/    Trace context types
-│   ├── typescript-client/ ServiceClient with GET/POST/DELETE + timeout
-│   └── test-fixtures/    Sample WH-347 files
-├── infra/                Docker Compose (dev + prod)
-├── docs/
-│   ├── architecture/     Request flow, data ownership, data model, evolution, case study
-│   ├── adrs/             7 architecture decision records
-│   ├── planning/         Phase plans, implementation plan, porting audit, known gaps
-│   └── operations/       Deployment guide
-├── scripts/              Demo script, seed scripts
-├── tests/                E2E smoke test
-└── .github/workflows/    CI (3 parallel jobs) + weekly golden-set eval
-```
-
-## CI/CD
-
-| Pipeline | Trigger | Jobs |
-|---|---|---|
-| `ci.yml` | Push/PR to main | TypeScript (typecheck → lint → build → test), Compliance Core (ruff → mypy → pytest), Data Platform (ruff → mypy → pytest) |
-| `eval.yml` | Weekly (Monday) + manual | Golden-set evaluation with regression detection |
-
-## Commands
-
-```bash
-pnpm dev          # Start all TS services in parallel
-pnpm build        # Build all TS packages
-pnpm typecheck    # Type check all TS packages
-pnpm test         # Run all TS tests
-
-# Python
-cd apps/compliance-core && poetry run pytest tests/unit -v
-cd apps/data-platform && poetry run pytest tests/unit -v
+```text
+apps/
+  web/              React 19 + Vite + Shadcn/ui
+  gateway/          Hono + Zod + jose
+  agent/            Mastra + AI SDK v6 + Langfuse
+  compliance-core/  FastAPI + Pydantic v2 + pdfplumber
+  data-platform/    FastAPI + SQLAlchemy + Alembic
+packages/
+  contracts/        JSON schemas -> codegen (TS + Python)
+  observability/    Trace context types
+  typescript-client/ ServiceClient with GET/POST/DELETE + timeout
+  test-fixtures/    Sample WH-347 files
+docs/
+  architecture/     Request flow, data ownership, data model, evolution, case study
+  adrs/             Architecture decision records
+  planning/         Plans, porting audit, known gaps
+  operations/       Deployment guide
 ```
 
 ## Documentation
 
-- [Request Flow](docs/architecture/v5-request-flow.md) — 16-step sequence diagram
-- [Data Ownership](docs/architecture/v5-data-ownership.md) — 13-entity R/W matrix
-- [Data Model](docs/architecture/v5-data-model.md) — 7 tables with relationships
-- [V2→V5 Evolution](docs/architecture/v2-to-v5-evolution.md) — Version history and lessons
-- [Case Study](docs/architecture/case-study.md) — Problem, architecture, pipeline, RAG, lessons learned
-- [ADR Index](docs/adrs/README.md) — 7 architecture decisions
-- [Porting Audit](docs/planning/v5-porting-audit.md) — 76/88 V3 files ported
-- [Known Gaps](docs/planning/v5-known-gaps.md) — Documented limitations
-- [Deployment Guide](docs/operations/deployment.md) — Docker Compose, env vars, scaling
+- [Request Flow](docs/architecture/v5-request-flow.md)
+- [Service Boundaries](docs/architecture/v5-service-boundaries.md)
+- [Data Ownership](docs/architecture/v5-data-ownership.md)
+- [Data Model](docs/architecture/v5-data-model.md)
+- [V2 to V5 Evolution](docs/architecture/v2-to-v5-evolution.md)
+- [Case Study](docs/architecture/case-study.md)
+- [ADR Index](docs/adrs/README.md)
+- [Known Gaps](docs/planning/v5-known-gaps.md)
+- [Deployment Guide](docs/operations/deployment.md)
 
 ## License
 

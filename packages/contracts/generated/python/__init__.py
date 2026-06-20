@@ -4,16 +4,14 @@ from pydantic import BaseModel
 from typing import Any
 
 class AuditEvent(BaseModel):
-        event_id: str
-        decision_id: str
-        request_id: str | None = None
+        id: str
+        job_id: str
         event_type: str
-        timestamp: str
-        actor: str | None = None
+        actor: str = "system"
         payload: dict | None = None
         regulation_references: list | None = None
         trace_id: str | None = None
-        tenant_id: str | None = None
+        created_at: str
 
 class Contract(BaseModel):
         id: str | None = None
@@ -30,43 +28,45 @@ class Contract(BaseModel):
         created_at: str | None = None
         updated_at: str | None = None
 
-class DecisionDraft(BaseModel):
-        request_id: str
-        artifact_id: str
-        deterministic_report_id: str
-        verdict: str
-        summary: str
-        issues: list
-        trust_score: float
-        trust_band: str
-        llm_trace_id: str | None = None
-        model: str | None = None
-        prompt_version: str | None = None
-
-class DecisionRecord(BaseModel):
-        decision_id: str
-        request_id: str
-        artifact_id: str
-        tenant_id: str | None = None
-        contract_id: str | None = None
+class TrustScoredDecision(BaseModel):
+        job_id: str
         verdict: str
         trust_score: float
         trust_band: str
-        summary: str | None = None
-        issues: list | None = None
-        deterministic_report_id: str | None = None
-        llm_trace_id: str | None = None
-        model: str | None = None
-        prompt_version: str | None = None
+        requires_human_review: bool | None = None
+        violation_count: int | None = None
+        warning_count: int | None = None
+        llm_confidence: float | None = None
+        reasoning_summary: str | None = None
         citations: list | None = None
         cost_usd: float | None = None
         latency_ms: int | None = None
-        trace_id: str | None = None
+        step_latencies: dict | None = None
+        phoenix_trace_id: str | None = None
+        contract_id: str | None = None
+        created_at: str | None = None
+
+class DecisionRecord(BaseModel):
+        id: str
+        job_id: str
+        verdict: str
+        trust_score: float
+        trust_band: str
+        requires_human_review: bool
+        violation_count: int
+        warning_count: int
+        reasoning_summary: str | None = None
+        citations: list | None = None
+        cost_usd: float | None = None
+        latency_ms: int | None = None
+        phoenix_trace_id: str | None = None
+        contract_id: str | None = None
         created_at: str
 
 class DeterministicReport(BaseModel):
-        report_id: str
-        artifact_id: str
+        report_id: str | None = None
+        artifact_id: str | None = None
+        job_id: str | None = None
         checks: list
         overall_status: str
         violation_count: int

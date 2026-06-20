@@ -5,7 +5,7 @@ When Redis is not reachable, all cache functions silently return None/0.
 """
 import pytest
 
-pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
+pytestmark = pytest.mark.integration
 
 
 def test_cache_key_format():
@@ -30,6 +30,7 @@ def test_cache_key_is_lowercase():
     assert key == key.lower()
 
 
+@pytest.mark.asyncio
 async def test_cache_get_returns_none_when_redis_unavailable():
     """cache_get() returns None gracefully when Redis is not reachable."""
     from wcp_data.services.redis_cache import cache_get
@@ -37,12 +38,14 @@ async def test_cache_get_returns_none_when_redis_unavailable():
     assert result is None
 
 
+@pytest.mark.asyncio
 async def test_cache_set_does_not_raise_when_redis_unavailable():
     """cache_set() does not raise when Redis is not reachable."""
     from wcp_data.services.redis_cache import cache_set
     await cache_set("test:key:unreachable", {"v": 1}, ttl=10)
 
 
+@pytest.mark.asyncio
 async def test_cache_invalidate_pattern_does_not_raise_when_redis_unavailable():
     """cache_invalidate_pattern() returns 0 gracefully when Redis unavailable."""
     from wcp_data.services.redis_cache import cache_invalidate_pattern

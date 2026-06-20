@@ -1,3 +1,6 @@
+from uuid import uuid4
+from typing import Any
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -6,21 +9,40 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    JSON,
     MetaData,
     Numeric,
+    String,
     Table,
     Text,
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy.types import TypeEngine
 
 metadata = MetaData()
+
+
+def _new_id() -> str:
+    return str(uuid4())
+
+
+def _uuid_type() -> TypeEngine[Any]:
+    return PgUUID(as_uuid=False).with_variant(String(36), "sqlite")
+
+
+def _json_type() -> TypeEngine[Any]:
+    return JSONB().with_variant(JSON(), "sqlite")
+
+
+def _text_array_type() -> TypeEngine[Any]:
+    return ARRAY(Text()).with_variant(JSON(), "sqlite")
 
 decisions_table = Table(
     "decisions",
     metadata,
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", _uuid_type(), primary_key=True, default=_new_id),
     Column("job_id", Text(), nullable=False, unique=True),
     Column("verdict", Text(), nullable=False),
     Column("trust_score", Float(), nullable=False),
@@ -29,7 +51,7 @@ decisions_table = Table(
     Column("violation_count", Integer(), nullable=False, server_default="0"),
     Column("warning_count", Integer(), nullable=False, server_default="0"),
     Column("reasoning_summary", Text(), nullable=True),
-    Column("citations", JSONB(), nullable=True, server_default="[]"),
+    Column("citations", _json_type(), nullable=True, default=list),
     Column("cost_usd", Float(), nullable=True),
     Column("latency_ms", Integer(), nullable=True),
     Column("phoenix_trace_id", Text(), nullable=True),
@@ -40,12 +62,12 @@ decisions_table = Table(
 audit_events_table = Table(
     "audit_events",
     metadata,
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", _uuid_type(), primary_key=True, default=_new_id),
     Column("job_id", Text(), nullable=False),
     Column("event_type", Text(), nullable=False),
     Column("actor", Text(), nullable=False, server_default="system"),
-    Column("payload", JSONB(), nullable=True, server_default="{}"),
-    Column("regulation_references", ARRAY(Text()), nullable=True, server_default="{}"),
+    Column("payload", _json_type(), nullable=True, default=dict),
+    Column("regulation_references", _text_array_type(), nullable=True, default=list),
     Column("trace_id", Text(), nullable=True),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
@@ -53,7 +75,7 @@ audit_events_table = Table(
 contracts_table = Table(
     "contracts",
     metadata,
-    Column("id", Text(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", Text(), primary_key=True, default=_new_id),
     Column("contract_number", Text(), nullable=False, unique=True),
     Column("project_name", Text(), nullable=False),
     Column("contractor_name", Text(), nullable=False),
@@ -66,7 +88,7 @@ contracts_table = Table(
     Column("status", Text(), nullable=False, server_default="active"),
     Column("source", Text(), nullable=False, server_default="manual"),
     Column("source_reference", Text(), nullable=True),
-    Column("metadata", JSONB(), nullable=False, server_default="{}"),
+    Column("metadata", _json_type(), nullable=False, default=dict),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
@@ -74,7 +96,7 @@ contracts_table = Table(
 payroll_records_table = Table(
     "payroll_records",
     metadata,
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", _uuid_type(), primary_key=True, default=_new_id),
     Column("contract_id", Text(), ForeignKey("contracts.id"), primary_key=True),
     Column("employee_name", Text(), nullable=False),
     Column("employee_id_hash", Text(), nullable=True),
@@ -104,7 +126,7 @@ payroll_records_table = Table(
 ingestion_jobs_table = Table(
     "ingestion_jobs",
     metadata,
-    Column("id", Text(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", Text(), primary_key=True, default=_new_id),
     Column("type", Text(), nullable=False),
     Column("status", Text(), nullable=False, server_default="pending"),
     Column("source_type", Text(), nullable=False),
@@ -113,7 +135,7 @@ ingestion_jobs_table = Table(
     Column("total_records", Integer(), nullable=False, server_default="0"),
     Column("processed_records", Integer(), nullable=False, server_default="0"),
     Column("failed_records", Integer(), nullable=False, server_default="0"),
-    Column("error_details", JSONB(), nullable=False, server_default="[]"),
+    Column("error_details", _json_type(), nullable=False, default=list),
     Column("started_at", DateTime(timezone=True), nullable=True),
     Column("completed_at", DateTime(timezone=True), nullable=True),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
@@ -123,7 +145,7 @@ ingestion_jobs_table = Table(
 dbwd_rates_table = Table(
     "dbwd_rates",
     metadata,
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", _uuid_type(), primary_key=True, default=_new_id),
     Column("trade", Text(), nullable=False),
     Column("locality", Text(), nullable=False),
     Column("rate", Float(), nullable=False),
@@ -136,7 +158,7 @@ dbwd_rates_table = Table(
 users_table = Table(
     "users",
     metadata,
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("id", _uuid_type(), primary_key=True, default=_new_id),
     Column("email", Text(), nullable=False, unique=True),
     Column("password_hash", Text(), nullable=False),
     Column("role", Text(), nullable=False, server_default="analyst"),

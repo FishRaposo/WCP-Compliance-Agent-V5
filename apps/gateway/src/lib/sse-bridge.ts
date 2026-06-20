@@ -35,12 +35,34 @@ interface SSEConnection {
   controller: ReadableStreamDefaultController<Uint8Array>;
   streamName: string;
   isActive: boolean;
+  /** Stable key identifying the originating client (for per-client caps). */
+  clientKey: string;
+  /** Epoch ms of the last successful enqueue (event or heartbeat). */
+  lastActivity: number;
+  /** Per-connection heartbeat/idle timer. */
+  heartbeatTimer: ReturnType<typeof setInterval> | null;
 }
 
+/** Global cap across all clients. */
 const MAX_SSE_CONNECTIONS = 100;
+/** Per-client cap so a single client cannot exhaust the global budget. */
+const MAX_SSE_CONNECTIONS_PER_CLIENT = 5;
+/** How often a heartbeat comment is sent to keep the connection warm. */
+const SSE_HEARTBEAT_INTERVAL_MS = 30_000;
+/** Connections with no activity beyond this window are closed as stale. */
+const SSE_IDLE_TIMEOUT_MS = 120_000;
 
 /** Active SSE connections registry */
 const activeConnections = new Map<string, SSEConnection>();
+
+/** Counts active connections originating from a given client key. */
+const countConnectionsForClient = (clientKey: string): number => {
+  let count = 0;
+  for (const conn of activeConnections.values()) {
+    if (conn.clientKey === clientKey) count++;
+  }
+  return count;
+};
 
 /**
  * Formats data as SSE-compliant message
@@ -73,6 +95,7 @@ export const broadcastSSEEvent = (streamName: string, payload: SSEEventPayload):
     if (conn.isActive && conn.streamName === streamName) {
       try {
         conn.controller.enqueue(encoded);
+        conn.lastActivity = Date.now();
       } catch (err) {
         logger.error("Failed to enqueue SSE event", { connectionId: id, err });
         conn.isActive = false;
@@ -88,10 +111,14 @@ export const broadcastSSEEvent = (streamName: string, payload: SSEEventPayload):
 export const createSSEBridge = (
   connectionId: string,
   streamConfig: StreamConfig,
-  redisUrl: string
+  redisUrl: string,
+  clientKey: string = connectionId
 ): ReadableStream<Uint8Array> => {
   if (activeConnections.size >= MAX_SSE_CONNECTIONS) {
     throw new Error("Maximum SSE connections exceeded");
+  }
+  if (countConnectionsForClient(clientKey) >= MAX_SSE_CONNECTIONS_PER_CLIENT) {
+    throw new Error("Maximum SSE connections per client exceeded");
   }
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -105,6 +132,9 @@ export const createSSEBridge = (
         controller,
         streamName: streamConfig.streamName,
         isActive: true,
+        clientKey,
+        lastActivity: Date.now(),
+        heartbeatTimer: null,
       });
       logger.info("SSE bridge connected", { connectionId, stream: streamConfig.streamName });
 
@@ -116,6 +146,31 @@ export const createSSEBridge = (
         const conn = activeConnections.get(connectionId);
         if (conn) conn.isActive = false;
       }
+
+      // Periodic heartbeat keeps the connection warm and reaps idle/stale ones.
+      const timer = setInterval(() => {
+        const conn = activeConnections.get(connectionId);
+        if (!conn || !conn.isActive) {
+          closeSSEConnection(connectionId);
+          return;
+        }
+        if (Date.now() - conn.lastActivity > SSE_IDLE_TIMEOUT_MS) {
+          logger.info("Closing idle SSE connection", { connectionId });
+          closeSSEConnection(connectionId);
+          return;
+        }
+        try {
+          conn.controller.enqueue(heartbeat);
+          conn.lastActivity = Date.now();
+        } catch (err) {
+          logger.debug("SSE heartbeat enqueue failed", { connectionId, err });
+          closeSSEConnection(connectionId);
+        }
+      }, SSE_HEARTBEAT_INTERVAL_MS);
+      // Don't let the heartbeat timer keep the process alive on its own.
+      (timer as { unref?: () => void }).unref?.();
+      const conn = activeConnections.get(connectionId);
+      if (conn) conn.heartbeatTimer = timer;
     },
     async pull(controller) {
       const handler: StreamMessageHandler = async (messageId, fields) => {
@@ -128,6 +183,8 @@ export const createSSEBridge = (
         };
         const eventData = formatSSEEvent(payload);
         controller.enqueue(encodeToStream(eventData));
+        const conn = activeConnections.get(connectionId);
+        if (conn) conn.lastActivity = Date.now();
       };
 
       try {
@@ -151,6 +208,7 @@ export const createSSEBridge = (
       const conn = activeConnections.get(connectionId);
       if (conn) {
         conn.isActive = false;
+        if (conn.heartbeatTimer) clearInterval(conn.heartbeatTimer);
         activeConnections.delete(connectionId);
         logger.info("SSE bridge disconnected", { connectionId });
       }
@@ -199,6 +257,7 @@ export const closeSSEConnection = (connectionId: string): void => {
   const conn = activeConnections.get(connectionId);
   if (conn) {
     conn.isActive = false;
+    if (conn.heartbeatTimer) clearInterval(conn.heartbeatTimer);
     try {
       conn.controller.close();
     } catch (err) {

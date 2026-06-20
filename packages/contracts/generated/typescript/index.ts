@@ -3,16 +3,14 @@
 import { z } from "zod";
 
 export const AuditEventSchema = z.object({
-  event_id: z.string(),
-  decision_id: z.string(),
-  request_id: z.string().optional(),
+  id: z.string(),
+  job_id: z.string(),
   event_type: z.enum(["artifact_received", "extraction_complete", "validation_complete", "verdict_issued", "trust_scored", "decision_persisted", "human_review_queued", "human_review_complete"]),
-  timestamp: z.string(),
-  actor: z.string().optional(),
+  actor: z.string().optional().default("system"),
   payload: z.record(z.any()).optional(),
   regulation_references: z.array(z.any()).optional(),
   trace_id: z.string().optional(),
-  tenant_id: z.string().optional(),
+  created_at: z.string(),
 });
 export type AuditEvent = z.infer<typeof AuditEventSchema>;
 
@@ -27,53 +25,55 @@ export const ContractSchema = z.object({
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   total_value: z.number().optional(),
-  status: z.enum(["active", "completed", "terminated"]).optional(),
+  status: z.enum(["active", "completed", "terminated", "suspended"]).optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
 export type Contract = z.infer<typeof ContractSchema>;
 
-export const DecisionDraftSchema = z.object({
-  request_id: z.string(),
-  artifact_id: z.string(),
-  deterministic_report_id: z.string(),
-  verdict: z.enum(["approved", "rejected", "needs_review"]),
-  summary: z.string(),
-  issues: z.array(z.any()),
-  trust_score: z.number(),
-  trust_band: z.enum(["auto_approve", "flag_for_review", "require_human_review"]),
-  llm_trace_id: z.string().optional(),
-  model: z.string().optional(),
-  prompt_version: z.string().optional(),
-});
-export type DecisionDraft = z.infer<typeof DecisionDraftSchema>;
-
-export const DecisionRecordSchema = z.object({
-  decision_id: z.string(),
-  request_id: z.string(),
-  artifact_id: z.string(),
-  tenant_id: z.string().optional(),
-  contract_id: z.string().optional(),
+export const TrustScoredDecisionSchema = z.object({
+  job_id: z.string(),
   verdict: z.enum(["approved", "rejected", "needs_review"]),
   trust_score: z.number(),
   trust_band: z.enum(["auto_approve", "flag_for_review", "require_human_review"]),
-  summary: z.string().optional(),
-  issues: z.array(z.any()).optional(),
-  deterministic_report_id: z.string().optional(),
-  llm_trace_id: z.string().optional(),
-  model: z.string().optional(),
-  prompt_version: z.string().optional(),
+  requires_human_review: z.boolean().optional(),
+  violation_count: z.number().int().optional(),
+  warning_count: z.number().int().optional(),
+  llm_confidence: z.number().optional(),
+  reasoning_summary: z.string().optional(),
   citations: z.array(z.any()).optional(),
   cost_usd: z.number().optional(),
   latency_ms: z.number().int().optional(),
-  trace_id: z.string().optional(),
+  step_latencies: z.record(z.any()).optional(),
+  phoenix_trace_id: z.string().optional(),
+  contract_id: z.string().optional(),
+  created_at: z.string().optional(),
+});
+export type TrustScoredDecision = z.infer<typeof TrustScoredDecisionSchema>;
+
+export const DecisionRecordSchema = z.object({
+  id: z.string(),
+  job_id: z.string(),
+  verdict: z.enum(["approved", "rejected", "needs_review"]),
+  trust_score: z.number(),
+  trust_band: z.enum(["auto_approve", "flag_for_review", "require_human_review"]),
+  requires_human_review: z.boolean(),
+  violation_count: z.number().int(),
+  warning_count: z.number().int(),
+  reasoning_summary: z.string().optional(),
+  citations: z.array(z.any()).optional(),
+  cost_usd: z.number().optional(),
+  latency_ms: z.number().int().optional(),
+  phoenix_trace_id: z.string().optional(),
+  contract_id: z.string().optional(),
   created_at: z.string(),
 });
 export type DecisionRecord = z.infer<typeof DecisionRecordSchema>;
 
 export const DeterministicReportSchema = z.object({
-  report_id: z.string(),
-  artifact_id: z.string(),
+  report_id: z.string().optional(),
+  artifact_id: z.string().optional(),
+  job_id: z.string().optional(),
   checks: z.array(z.any()),
   overall_status: z.enum(["pass", "fail", "warnings"]),
   violation_count: z.number().int(),

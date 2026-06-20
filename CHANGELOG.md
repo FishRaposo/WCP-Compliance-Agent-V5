@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.2.0] - 2026-06-19
+
+### Agent → Mastra migration
+- Rebuilt the Agent service on **Mastra 1.45** (`@mastra/core`): `Agent` with structured output + dynamic model routing, `createTool` tools, a `createWorkflow`/`createStep` pipeline, an opt-in suspend/resume human-review workflow, `@mastra/rag`, `@mastra/memory`, scorers, and `@mastra/langfuse` observability. Removed the hand-rolled pipeline, model router, prompt registry, and Langfuse wiring. See [ADR 0008](docs/adrs/0008-agent-built-on-mastra.md).
+- Upgraded the agent's model layer to AI SDK v6 (`@ai-sdk/openai`/`anthropic` 3, `ollama-ai-provider-v2`) and `zod ^3.25`; removed three unused dependencies.
+- Preserved the gateway↔agent HTTP contract and mock mode (runs with zero external services/keys).
+
+### Hardening (review fixes)
+- `safeVerdict` now rejects any non-rejected verdict when deterministic violations exist; reasoning and citations are grounded in deterministic truth before persistence.
+- The verdict step degrades to the deterministic verdict on LLM failure; routes use a constant-time internal-token compare, an env-gated auth skip (fail closed), defensive JSON parsing (400 on malformed bodies), and resume-body validation.
+
+### Documentation
+- Added [CLAUDE.md](CLAUDE.md) and the AGENTS.md "Agent Layer (Mastra)" reference. Reconciled verification counts (274 unit tests; TypeScript subset 136).
+
+---
+
 ## [5.1.1] - 2026-06-16
 
 ### Hardening

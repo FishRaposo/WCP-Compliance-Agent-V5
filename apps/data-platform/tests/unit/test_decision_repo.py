@@ -29,7 +29,8 @@ async def test_list_decisions_returns_empty_list():
 @pytest.mark.unit
 async def test_persist_decision_returns_id():
     session = AsyncMock()
-    session.commit = AsyncMock()
+    session.flush = AsyncMock()
+    session.get_bind = MagicMock(return_value=None)
     mock_result = MagicMock()
     row_mock = MagicMock()
     row_mock.id = "decision-abc-123"
@@ -48,7 +49,8 @@ async def test_persist_decision_returns_id():
     )
     result = await persist_decision(session, decision)
     assert result == "decision-abc-123"
-    assert session.commit.called
+    # persist_decision no longer commits — the caller owns the transaction.
+    assert session.flush.called
 
 
 @pytest.mark.unit

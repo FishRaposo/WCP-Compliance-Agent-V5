@@ -21,7 +21,7 @@ def decision_volume(days: int = 30) -> list[dict[str, Any]]:
                 date_trunc('day', created_at)::DATE AS date,
                 COUNT(*) AS count,
                 AVG(trust_score) AS avg_trust
-            FROM decisions
+            FROM decisions_view
             WHERE created_at >= CURRENT_DATE - INTERVAL '{days} days'
             GROUP BY date_trunc('day', created_at)
             ORDER BY date DESC
@@ -40,7 +40,7 @@ def compliance_breakdown() -> list[dict[str, Any]]:
                 COUNT(*) AS count,
                 AVG(violation_count) AS avg_violations,
                 AVG(warning_count) AS avg_warnings
-            FROM decisions
+            FROM decisions_view
             GROUP BY verdict
         """)
     except Exception:
@@ -56,7 +56,7 @@ def wage_analytics() -> list[dict[str, Any]]:
                 COUNT(*) AS count,
                 AVG(trust_score) AS avg_trust,
                 SUM(violation_count) AS total_violations
-            FROM decisions
+            FROM decisions_view
             GROUP BY trust_band
             ORDER BY avg_trust DESC
         """)
@@ -74,7 +74,7 @@ def llm_analytics() -> list[dict[str, Any]]:
                 AVG(cost_usd) AS avg_cost,
                 AVG(latency_ms) AS avg_latency_ms,
                 AVG(trust_score) AS avg_trust_score
-            FROM decisions
+            FROM decisions_view
             WHERE cost_usd IS NOT NULL
             GROUP BY verdict
         """)
@@ -96,7 +96,7 @@ def query_wage_trends(months: int = 6) -> list[dict[str, Any]]:
                 COUNT(*) AS total_checked,
                 SUM(violation_count) AS total_violations,
                 AVG(trust_score) AS avg_trust
-            FROM decisions
+            FROM decisions_view
             WHERE created_at >= CURRENT_DATE - INTERVAL '{months} months'
             GROUP BY date_trunc('month', created_at)
             ORDER BY month DESC
@@ -116,7 +116,7 @@ def query_llm_cost_analytics() -> dict[str, Any]:
                 SUM(cost_usd) AS total_cost,
                 AVG(cost_usd) AS avg_cost,
                 AVG(latency_ms) AS avg_latency_ms
-            FROM decisions
+            FROM decisions_view
             WHERE cost_usd IS NOT NULL
             GROUP BY verdict
             ORDER BY total_cost DESC
@@ -126,7 +126,7 @@ def query_llm_cost_analytics() -> dict[str, Any]:
                 date_trunc('day', created_at)::DATE::TEXT AS date,
                 SUM(SUM(cost_usd)) OVER (ORDER BY date_trunc('day', created_at)) AS cumulative_cost,
                 COUNT(*) AS decisions
-            FROM decisions
+            FROM decisions_view
             WHERE cost_usd IS NOT NULL
             GROUP BY date_trunc('day', created_at)
             ORDER BY date DESC
@@ -144,7 +144,7 @@ def approval_rate() -> dict[str, Any]:
             SELECT
                 COUNT(*) AS total,
                 SUM(CASE WHEN verdict = 'approved' THEN 1 ELSE 0 END) AS approved
-            FROM decisions
+            FROM decisions_view
         """)
         if result:
             row = result[0]

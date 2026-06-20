@@ -28,13 +28,22 @@ app.route("/", healthRoutes);
 
 app.route("/", authRoutes);
 
-app.use("/api/v1/analyze", authMiddleware);
-app.use("/api/v1/analyze/pdf", authMiddleware);
-app.use("/api/v1/decisions", authMiddleware);
-app.use("/api/v1/contracts", authMiddleware);
-app.use("/api/v1/payrolls", authMiddleware);
-app.use("/api/v1/ingestion", authMiddleware);
-app.use("/api/v1/analytics", authMiddleware);
+// Auth must cover each protected resource AND its sub-paths. Hono matches a non-wildcard
+// path EXACTLY, so without the `/*` variants sub-paths (e.g. /decisions/:id,
+// /decisions/stream, all /analytics/* and /ingestion/* routes) would be unauthenticated.
+// /api/v1/auth/login stays public (authRoutes mounted above).
+const protectedResources = [
+  "/api/v1/analyze",
+  "/api/v1/decisions",
+  "/api/v1/contracts",
+  "/api/v1/payrolls",
+  "/api/v1/ingestion",
+  "/api/v1/analytics",
+];
+for (const resource of protectedResources) {
+  app.use(resource, authMiddleware);
+  app.use(`${resource}/*`, authMiddleware);
+}
 
 app.route("/", analyzeRoutes);
 app.route("/", analyzePdfRoutes);

@@ -61,7 +61,9 @@ Phase 6 (Data Platform)   Phase 7 (Observability)
 
 ## Critical Boundary Rules (Invariant Across All Phases)
 
-1. **Agent never writes to the database** — it returns DecisionDrafts.
+> Current Mastra migration note: the Agent never writes to the database directly. Its workflow submits `TrustScoredDecision` payloads to Data Platform APIs, and Data Platform creates official `DecisionRecord` and `AuditEvent` rows.
+
+1. **Agent never writes to the database directly** — it submits `TrustScoredDecision` payloads to Data Platform APIs.
 2. **Data Platform creates official DecisionRecords** — it's the only service that persists.
 3. **Compliance Core never persists** — it returns structured extraction/validation results.
 4. **Gateway never reasons** — it routes, validates, and authenticates.
@@ -73,7 +75,7 @@ Phase 6 (Data Platform)   Phase 7 (Observability)
 |---|---|---|---|---|
 | Web App | TypeScript | React 19 + Vite | 5173 | Product UI, upload flow, decisions, review, analytics |
 | Gateway | TypeScript | Hono + Zod | 3000 | Auth, CORS, rate limits, validation, uploads, routing |
-| Agent | TypeScript | Mastra + Vercel AI SDK | 3001 | LLM workflows, tool calls, verdict synthesis |
+| Agent | TypeScript | Mastra (AI SDK v6) | 3001 | LLM workflows, tool calls, verdict synthesis |
 | Compliance Core | Python | FastAPI + Pydantic v2 | 8000 | Deterministic extraction, validation, checks, reports |
 | Data Platform | Python | FastAPI + SQLAlchemy | 8001 | Persistence, contracts, payrolls, decisions, audits |
 

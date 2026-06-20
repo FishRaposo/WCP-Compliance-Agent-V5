@@ -11,11 +11,15 @@ class Citation(BaseModel):
     text: str = ""
 
 
+VerdictStatus = Literal["approved", "rejected", "needs_review"]
+TrustBand = Literal["auto_approve", "flag_for_review", "require_human_review"]
+
+
 class DecisionCreate(BaseModel):
     job_id: str = Field(min_length=1)
-    verdict: str
+    verdict: VerdictStatus
     trust_score: float = Field(ge=0.0, le=1.0)
-    trust_band: str
+    trust_band: TrustBand
     requires_human_review: bool = False
     violation_count: int = Field(default=0, ge=0)
     warning_count: int = Field(default=0, ge=0)
@@ -32,9 +36,9 @@ class DecisionResponse(BaseModel):
 
     id: str
     job_id: str
-    verdict: str
+    verdict: VerdictStatus
     trust_score: float
-    trust_band: str
+    trust_band: TrustBand
     requires_human_review: bool
     violation_count: int
     warning_count: int
@@ -47,9 +51,29 @@ class DecisionResponse(BaseModel):
     created_at: datetime
 
 
+class DecisionOverrideRequest(BaseModel):
+    """A human reviewer's override of a flagged decision."""
+
+    verdict: VerdictStatus
+    reviewer: str = Field(min_length=1)
+    note: str = ""
+
+
+AuditEventType = Literal[
+    "artifact_received",
+    "extraction_complete",
+    "validation_complete",
+    "verdict_issued",
+    "trust_scored",
+    "decision_persisted",
+    "human_review_queued",
+    "human_review_complete",
+]
+
+
 class AuditEventCreate(BaseModel):
     job_id: str = Field(min_length=1)
-    event_type: str = Field(min_length=1)
+    event_type: AuditEventType
     actor: str = "system"
     payload: dict[str, Any] = Field(default_factory=dict)
     regulation_references: list[str] = Field(default_factory=list)

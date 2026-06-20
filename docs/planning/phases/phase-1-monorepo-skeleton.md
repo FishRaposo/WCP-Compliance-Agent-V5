@@ -80,7 +80,7 @@
 | 1.5.13 | Payroll repository | `apps/data-platform/src/wcp_data/repositories/payroll_repo.py` | ✅ | Bulk import + partition creation |
 | 1.5.14 | DBWD repository | `apps/data-platform/src/wcp_data/repositories/dbwd_repo.py` | ✅ | Rate storage + retrieval |
 | 1.5.15 | Artifact repository (stub) | `apps/data-platform/src/wcp_data/repositories/artifact_repo.py` | ✅ | Placeholder |
-| 1.5.16 | Decision service | `apps/data-platform/src/wcp_data/services/decision_service.py` | ✅ | Creates DecisionRecord + AuditEvents from DecisionDraft |
+| 1.5.16 | Decision service | `apps/data-platform/src/wcp_data/services/decision_service.py` | ✅ | Creates DecisionRecord + AuditEvents from TrustScoredDecision |
 | 1.5.17 | Audit service | `apps/data-platform/src/wcp_data/services/audit_service.py` | ✅ | Audit trail management |
 | 1.5.18 | Contract service | `apps/data-platform/src/wcp_data/services/contract_service.py` | ✅ | Business logic with bulk import |
 | 1.5.19 | Payroll service | `apps/data-platform/src/wcp_data/services/payroll_service.py` | ✅ | Bulk import with partitioning |
@@ -119,7 +119,7 @@
 
 | # | Task | File | Status | Details |
 |---|---|---|---|---|
-| 1.7.1 | Package.json | `apps/agent/package.json` | ✅ | Mastra, Vercel AI SDK, Langfuse, workspace deps |
+| 1.7.1 | Package.json | `apps/agent/package.json` | ✅ | Mastra, AI SDK v6, Langfuse, workspace deps |
 | 1.7.2 | TypeScript config | `apps/agent/tsconfig.json` | ✅ | ES2022, strict, `@/*` alias |
 | 1.7.3 | Hono internal server | `apps/agent/src/server.ts` | ✅ | Health + workflow routes |
 | 1.7.4 | Zod-validated config | `apps/agent/src/config.ts` | ✅ | Multi-provider LLM, mock mode, Langfuse |

@@ -1,39 +1,49 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { dataPlatformClient } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
+import { logUpstreamError } from "../lib/error-log.js";
 
 export const analyticsRoutes = new Hono();
 
+const DaysSchema = z.coerce.number().int().min(1).max(365).catch(30);
+
 analyticsRoutes.get("/api/v1/analytics/overview", async (c) => {
-  const days = c.req.query("days") ?? "30";
+  const days = DaysSchema.parse(c.req.query("days"));
   try {
+    const query = new URLSearchParams({ days: String(days) }).toString();
     const data = await dataPlatformClient.get<unknown>(
-      `/internal/analytics/overview?days=${days}`,
+      `/internal/analytics/overview?${query}`,
       getInternalHeaders(c),
     );
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/overview", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch analytics overview" }, 500);
+    logUpstreamError(c, "analytics/overview", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
 analyticsRoutes.get("/api/v1/analytics/volume", async (c) => {
-  const days = c.req.query("days") ?? "30";
+  const days = DaysSchema.parse(c.req.query("days"));
   try {
+    const query = new URLSearchParams({ days: String(days) }).toString();
     const data = await dataPlatformClient.get<unknown>(
-      `/internal/analytics/volume?days=${days}`,
+      `/internal/analytics/volume?${query}`,
       getInternalHeaders(c),
     );
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/volume", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch decision volume" }, 500);
+    logUpstreamError(c, "analytics/volume", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -46,9 +56,11 @@ analyticsRoutes.get("/api/v1/analytics/approval-by-trade", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/approval-by-trade", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch approval by trade" }, 500);
+    logUpstreamError(c, "analytics/approval-by-trade", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -61,9 +73,11 @@ analyticsRoutes.get("/api/v1/analytics/trust-band-distribution", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/trust-band-distribution", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch trust band distribution" }, 500);
+    logUpstreamError(c, "analytics/trust-band-distribution", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -76,9 +90,11 @@ analyticsRoutes.get("/api/v1/analytics/cost", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/cost", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch cost analytics" }, 500);
+    logUpstreamError(c, "analytics/cost", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -91,9 +107,11 @@ analyticsRoutes.get("/api/v1/analytics/compliance", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/compliance", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch compliance analytics" }, 500);
+    logUpstreamError(c, "analytics/compliance", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -106,9 +124,11 @@ analyticsRoutes.get("/api/v1/analytics/wages", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/wages", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch wage analytics" }, 500);
+    logUpstreamError(c, "analytics/wages", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -121,8 +141,10 @@ analyticsRoutes.get("/api/v1/analytics/llm", async (c) => {
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analytics/llm", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch LLM analytics" }, 500);
+    logUpstreamError(c, "analytics/llm", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });

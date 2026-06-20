@@ -33,6 +33,8 @@ export interface DecisionSummary {
   requires_human_review: boolean;
   violation_count: number;
   warning_count: number;
+  reasoning_summary?: string | null;
+  citations?: Citation[];
   created_at: string;
 }
 

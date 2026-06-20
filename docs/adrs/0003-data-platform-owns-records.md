@@ -44,7 +44,7 @@ The following V4 capabilities are scaffolded but not implemented in the V5 MVP:
 - Prefect ETL flows (deferred)
 - Parquet archival (deferred)
 - Great Expectations validation (deferred)
-- Redis Streams event publishing (deferred)
+- Redis Streams decision-event publishing (implemented for decision persistence; broader event families deferred)
 - Enterprise connectors beyond SAM.gov stubs (deferred)
 
 These will be implemented in Phase 4 (V4 Data Platform Feature Migration).

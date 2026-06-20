@@ -1,5 +1,7 @@
 # WCP Compliance Platform V5 Rebuild Design Document
 
+> Current Mastra migration note (2026-06-19): this document is retained as a design-history artifact. The active implementation uses Mastra workflows under `apps/agent/src/mastra/`; Agent submits `TrustScoredDecision` payloads to Data Platform `/internal/decisions`, and Data Platform creates official `DecisionRecord` and `AuditEvent` rows. See `docs/architecture/v5-request-flow.md` and `docs/architecture/v5-service-boundaries.md` for the current flow.
+
 ## 1. Executive Summary
 
 WCP Compliance Platform V5 is a clean rebuild of the WCP Compliance Agent architecture around explicit production boundaries.
@@ -382,8 +384,8 @@ Supporting infrastructure:
 9. Compliance Core runs wage, overtime, fringe, signature, classification, and citation checks.
 10. Agent requests DBWD rate context from Data Platform or Compliance Core, depending on final ownership decision.
 11. Agent synthesizes human-readable verdict from deterministic report and source context.
-12. Agent returns DecisionDraft.
-13. Gateway sends DecisionDraft to Data Platform for persistence.
+12. Agent produces a `TrustScoredDecision`.
+13. Agent submits the `TrustScoredDecision` to Data Platform `/internal/decisions` for persistence.
 14. Data Platform creates DecisionRecord and AuditEvents.
 15. Gateway streams or returns final response to Web App.
 16. Web App displays trust score, citations, issues, audit trail, and next actions.
@@ -579,7 +581,7 @@ It plans, calls tools, synthesizes verdicts, and records prompt/model traces. It
 
 - TypeScript.
 - Mastra.
-- Vercel AI SDK.
+- AI SDK v6 (model providers, under Mastra).
 - Langfuse.
 - Phoenix or OpenTelemetry tracing.
 - Zod for structured outputs.
@@ -1454,7 +1456,7 @@ Deterministic validation remains the source of compliance truth.
 |---|---|---|
 | Web | React, Vite, TypeScript, Tailwind, TanStack Query | Product UI |
 | Gateway | TypeScript, Hono or Fastify, Zod | Middleware and client-facing API |
-| Agent | TypeScript, Mastra, Vercel AI SDK, Langfuse | LLM orchestration and verdict synthesis |
+| Agent | TypeScript, Mastra, AI SDK v6, Langfuse | LLM orchestration and verdict synthesis |
 | Compliance Core | Python, FastAPI, Pydantic, Pytest | Deterministic compliance validation |
 | Data Platform | Python, FastAPI, PostgreSQL, DuckDB, Redis, PyArrow, Prefect | Persistence, ingestion, analytics, audit records |
 | Observability | OpenTelemetry, Phoenix, Langfuse | Tracing, prompts, cost, latency |
@@ -1603,7 +1605,7 @@ Consequences:
 
 Decision:
 
-The Agent may produce DecisionDraft objects, but only the Data Platform creates official DecisionRecord objects.
+The Agent may produce `TrustScoredDecision` objects, but only the Data Platform creates official `DecisionRecord` objects.
 
 Rationale:
 

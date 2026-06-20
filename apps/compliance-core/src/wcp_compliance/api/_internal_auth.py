@@ -1,5 +1,6 @@
 """Internal service authentication for /internal/* routes."""
 import logging
+import secrets
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
@@ -30,7 +31,10 @@ async def verify_internal_token(request: Request) -> None:
             detail="Missing X-Internal-Token header",
         )
 
-    if token != settings.internal_service_token:
+    # Constant-time comparison to avoid leaking the token via timing side channels.
+    if not secrets.compare_digest(
+        token.encode("utf-8"), settings.internal_service_token.encode("utf-8")
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid internal service token",

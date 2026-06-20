@@ -1,88 +1,87 @@
-# V5 Request Flow — WH-347 Analysis
+# V5 Request Flow: WH-347 Analysis
 
 ## Full Sequence: 16 Steps
 
-```
-User (Browser)
-  │
-  │  POST /api/v1/analyze { text }
-  ▼
-┌──────────────────────────────────────────────────────────┐
-│ Gateway (3000)                                            │
-│ 1. authenticate (JWT verify / AUTH_DISABLED check)        │
-│ 2. attach x-request-id = UUID()                           │
-│ 3. rate limit check                                       │
-│ 4. forward to Agent                                       │
-└──────────────────┬───────────────────────────────────────┘
-                   │ POST /internal/workflows/wcp-pipeline  │
-                   ▼                                         │
-┌──────────────────────────────────────────────────────────┐
-│ Agent (3001)                                              │
-│ 5. extract: POST → Compliance Core /internal/extract      │
-│ 6. validate: POST → Compliance Core /internal/validate    │
-│ 7. search: POST → Compliance Core /internal/search (RAG)  │
-│ 8. verdict: LLM generation with prompt + RAG context      │
-│ 9. trust score: 4-component weighted computation          │
-│ 10. persist: POST → Data Platform /internal/decisions     │
-└──────┬──────────────────────────────┬────────────────────┘
-       │                              │
-       ▼                              ▼
-┌──────────────────┐    ┌──────────────────────────────────┐
-│ Compliance Core  │    │ Data Platform (8001)              │
-│ (8000)           │    │ 11. persist decision (INSERT)      │
-│ 5. extract text  │    │ 12. append audit event (INSERT)    │
-│ 6. run rule      │    │ 13. if human_review: flag event    │
-│    engine        │    │ 14. publish to Redis Streams       │
-│ 7. search RAG    │    │ 15. return DecisionResponse        │
-└──────────────────┘    └──────────────────────────────────┘
-                               │
-                   ┌───────────┘
-                   ▼
-┌──────────────────────────────────────────────────────────┐
-│ Agent → Gateway → User                                    │
-│ 16. Return TrustScoredDecision with verdict, trust score,  │
-│     citations, cost, latency, step timings                 │
-└──────────────────────────────────────────────────────────┘
+```text
+User browser
+  |
+  | POST /api/v1/analyze { text, job_id? }
+  v
+Gateway (3000)
+  1. authenticate request
+  2. attach x-request-id and x-trace-id
+  3. rate-limit and validate request body
+  4. POST /internal/workflows/wcp-pipeline -> Agent
+  |
+  v
+Agent (3001, Mastra)
+  5. extract step: POST /internal/extract -> Compliance Core
+  6. validate step: POST /internal/validate -> Compliance Core
+  7. optional RAG/search/tool context lookup
+  8. verdict step: LLM generation or deterministic mock fallback
+  9. trust step: score, safe verdict, grounded citations
+ 10. persist step: POST /internal/decisions -> Data Platform
+  |
+  v
+Data Platform (8001)
+ 11. insert DecisionRecord
+ 12. append decision_created AuditEvent
+ 13. append human_review_flagged AuditEvent when needed
+ 14. publish decision event to Redis Streams
+ 15. return DecisionResponse { id, job_id, verdict, ... }
+  |
+  v
+Agent -> Gateway -> User
+ 16. return TrustScoredDecision with verdict, trust score, citations, cost, latency, and step timings
 ```
 
 ## Cross-Service Headers
 
 Every internal request carries:
-- `x-request-id`: UUID generated at Gateway, propagated unchanged
-- `x-trace-id`: OpenTelemetry trace context (or falls back to request-id)
+
+- `x-request-id`: UUID generated at Gateway and propagated unchanged
+- `x-trace-id`: trace correlation ID, falling back to request ID when absent
+
+Data Platform accepts `x-trace-id` on decision creation and uses it for audit/event records.
 
 ## PDF Upload Flow
 
-```
-User → POST /api/v1/analyze/pdf (multipart)
-  │
-  ▼
-Gateway → POST /internal/extract (multipart) → Compliance Core
-  │          returns ExtractedWCP
-  ▼
-Gateway → POST /internal/workflows/wcp-pipeline-from-extracted → Agent
-  │          skips extraction step, proceeds with validate → verdict → trust → persist
-  ▼
+```text
+User -> POST /api/v1/analyze/pdf (multipart)
+  |
+  v
+Gateway -> POST /internal/extract (multipart) -> Compliance Core
+  |
+  v
+Gateway -> POST /internal/workflows/wcp-pipeline-from-extracted -> Agent
+  |
+  v
+Agent validates, synthesizes verdict, scores trust, persists through Data Platform
+  |
+  v
 TrustScoredDecision returned to User
 ```
 
 ## SSE Streaming Flow
 
-```
+```text
 Gateway: GET /api/v1/decisions/stream
-  │
-  ├─ heartbeat: every 15s {"timestamp":"..."}
-  │
-  └─ Redis: XREAD wcp.decisions (poll every 3s)
-       │
-       └─ event: decision { decision_id, job_id, verdict, trust_score, ... }
+  |
+  |- initial heartbeat comment
+  |
+  `- Redis Streams consumer group: wcp.decisions
+       |
+       `- event: decision.created { decision_id, job_id, verdict, trust_score, ... }
 ```
+
+If Redis is unavailable, the SSE endpoint still opens and emits the initial heartbeat, while Redis consumer setup/read errors are logged.
 
 ## Error Boundaries
 
-- **Gateway → Agent failure**: 502 with structured error
-- **Agent → Compliance Core failure**: pipeline continues with partial results, LLM handles gracefully
-- **Agent → Data Platform failure**: pipeline completes but decision is not persisted (logged warning)
-- **Redis unavailable**: SSE falls back to heartbeat-only mode
-- **PostgreSQL unavailable**: Data Platform returns 503
-- **LLM API failure**: falls back through provider chain (openai → anthropic → ollama), mock mode always works
+- **Gateway -> Agent failure**: Gateway returns 502 for `ServiceClientError` or 500 for unexpected route errors.
+- **Agent -> Compliance Core extraction/validation failure**: the Mastra pipeline fails because extraction and deterministic validation are required inputs.
+- **Agent verdict LLM failure in real mode**: the verdict step degrades to deterministic fallback.
+- **Agent -> Data Platform persistence failure**: the Mastra pipeline fails because official persistence did not complete.
+- **Redis unavailable**: Data Platform persistence still succeeds; decision event publish is best-effort. Gateway SSE logs Redis errors and keeps the stream open when possible.
+- **PostgreSQL unavailable**: Data Platform persistence/query endpoints fail through the database session path.
+- **Mock mode**: `LLM_MODE=mock` skips LLM calls but still runs the Mastra workflow and internal service calls.

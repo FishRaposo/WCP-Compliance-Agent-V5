@@ -88,7 +88,7 @@
 
 | # | Test Category | File | Count | Details |
 |---|---|---|---|---|
-| 5.6.1 | Gateway → Agent | `apps/gateway/tests/contract/gateway-agent.test.ts` | 2 | Analyze request/response shape matches DecisionDraft |
+| 5.6.1 | Gateway → Agent | `apps/gateway/tests/contract/gateway-agent.test.ts` | 2 | Analyze request/response shape matches TrustScoredDecision |
 | 5.6.2 | Agent → Compliance Core | `apps/agent/tests/contract/agent-compliance.test.ts` | 2 | Extract request/response shape matches ExtractedWCP, validate matches DeterministicReport |
 | 5.6.3 | Agent → Data Platform | `apps/agent/tests/contract/agent-data-platform.test.ts` | 3 | Persist decision shape, get decisions shape, audit event shape |
 | 5.6.4 | Gateway → Data Platform | `apps/gateway/tests/contract/gateway-data-platform.test.ts` | 2 | Contracts list shape, contract detail shape |

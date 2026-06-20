@@ -8,6 +8,8 @@ import {
   dataPlatformClient,
 } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { logUpstreamError } from "../lib/error-log.js";
+import { getInternalHeaders } from "../lib/request-headers.js";
 
 export const contractsRoutes = new Hono();
 
@@ -53,13 +55,15 @@ contractsRoutes.get("/api/v1/contracts", async (c) => {
   if (offset) params.offset = offset;
 
   try {
-    const data = await getContracts(params);
+    const data = await getContracts(c, params);
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "contracts/list", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch contracts" }, 500);
+    logUpstreamError(c, "contracts/list", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -71,26 +75,30 @@ contractsRoutes.post("/api/v1/contracts", async (c) => {
   }
 
   try {
-    const data = await createContract(parsed.data);
+    const data = await createContract(c, parsed.data);
     return c.json(data, 201);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "contracts/create", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to create contract" }, 500);
+    logUpstreamError(c, "contracts/create", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
 contractsRoutes.get("/api/v1/contracts/:id", async (c) => {
   const id = c.req.param("id");
   try {
-    const data = await getContract(id);
+    const data = await getContract(c, id);
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "contracts/get", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch contract" }, 500);
+    logUpstreamError(c, "contracts/get", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -103,13 +111,15 @@ contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
   }
 
   try {
-    const data = await patchContract(id, parsed.data);
+    const data = await patchContract(c, id, parsed.data);
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "contracts/patch", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to update contract" }, 500);
+    logUpstreamError(c, "contracts/patch", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -120,12 +130,18 @@ contractsRoutes.post("/api/v1/contracts/bulk", async (c) => {
     if (!parsed.success) {
       return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
     }
-    const data = await dataPlatformClient.post<unknown>("/internal/contracts/bulk", parsed.data);
+    const data = await dataPlatformClient.post<unknown>(
+      "/internal/contracts/bulk",
+      parsed.data,
+      getInternalHeaders(c),
+    );
     return c.json(data, 202);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "contracts/bulk", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to bulk import contracts" }, 500);
+    logUpstreamError(c, "contracts/bulk", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });

@@ -9,3 +9,4 @@
 | 0005 | DBWD Rate Ownership | Accepted | DBWD rates are stored in Data Platform (dbwd_rates table), but Compliance Core performs the in-memory matching and fuzzy lookup. Eventually, Compliance Core will query Data Platform for rates. |
 | 0006 | Monorepo with Turborepo | Accepted | Single monorepo managed by Turborepo + pnpm workspaces. Shared packages in `packages/`. Services in `apps/`. TypeScript and Python services co-exist with their own toolchains. |
 | 0007 | Trust Score Weights | Accepted | Adopt Python weights (35/25/20/20) as single source of truth. Align TypeScript implementation to match. Documented in golden-set evaluation. |
+| 0008 | Agent Built on Mastra | Accepted | Agent orchestration runs on Mastra 1.45 (agents, tools, workflows + suspend/resume, RAG, memory, scorers, observability) on AI SDK v6; replaces the hand-rolled pipeline/router/prompt-registry. HTTP contract and service boundaries unchanged. |

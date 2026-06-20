@@ -3,10 +3,11 @@
   "title": "DeterministicReport",
   "description": "Output of the deterministic rule engine for all compliance checks",
   "type": "object",
-  "required": ["report_id", "artifact_id", "checks", "overall_status", "violation_count", "warning_count"],
+  "required": ["checks", "overall_status", "violation_count", "warning_count"],
   "properties": {
     "report_id": { "type": "string" },
     "artifact_id": { "type": "string" },
+    "job_id": { "type": "string" },
     "checks": {
       "type": "array",
       "items": {

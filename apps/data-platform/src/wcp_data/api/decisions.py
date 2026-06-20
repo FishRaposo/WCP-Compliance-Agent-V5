@@ -1,9 +1,18 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_data.db.session import get_session
-from wcp_data.models.schemas import DecisionCreate, DecisionResponse
-from wcp_data.services.decision_service import create_decision, get_decision, list_decisions
+from wcp_data.models.schemas import (
+    DecisionCreate,
+    DecisionOverrideRequest,
+    DecisionResponse,
+)
+from wcp_data.services.decision_service import (
+    create_decision,
+    get_decision,
+    list_decisions,
+    override_decision,
+)
 
 router = APIRouter()
 
@@ -12,9 +21,10 @@ router = APIRouter()
 async def create_decision_endpoint(
     body: DecisionCreate,
     trace_id: str = Query(default=""),
+    x_trace_id: str = Header(default="", alias="x-trace-id"),
     session: AsyncSession = Depends(get_session),
 ) -> DecisionResponse:
-    return await create_decision(session, body, trace_id=trace_id)
+    return await create_decision(session, body, trace_id=x_trace_id or trace_id)
 
 
 @router.get("", response_model=list[DecisionResponse])
@@ -35,6 +45,19 @@ async def get_decision_endpoint(
 ) -> DecisionResponse:
     result = await get_decision(session, decision_id)
     if result is None:
-        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Decision not found")
+    return result
+
+
+@router.post("/{decision_id}/override", response_model=DecisionResponse)
+async def override_decision_endpoint(
+    decision_id: str,
+    body: DecisionOverrideRequest,
+    trace_id: str = Query(default=""),
+    x_trace_id: str = Header(default="", alias="x-trace-id"),
+    session: AsyncSession = Depends(get_session),
+) -> DecisionResponse:
+    result = await override_decision(session, decision_id, body, trace_id=x_trace_id or trace_id)
+    if result is None:
         raise HTTPException(status_code=404, detail="Decision not found")
     return result

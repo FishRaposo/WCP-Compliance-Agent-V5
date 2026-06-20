@@ -36,7 +36,7 @@ The V5 architecture enforces strict boundaries:
 |---|---|---|
 | **Web** | UI state, user interactions | Business logic, data access |
 | **Gateway** | Auth, routing, rate limiting | Reasoning, persistence |
-| **Agent** | LLM orchestration, verdict synthesis | Database writes, extraction |
+| **Agent** | LLM orchestration, verdict synthesis, persistence handoff | Direct database writes, extraction |
 | **Compliance Core** | Deterministic validation, DBWD lookup | Persistence, LLM reasoning |
 | **Data Platform** | Decision records, audit events, contracts, payrolls | Extraction, validation, verdicts |
 
@@ -50,6 +50,6 @@ The V5 architecture enforces strict boundaries:
 | Database | SQLite | PostgreSQL | PostgreSQL + pgvector | Same, partitioned |
 | Analytics | None | None | DuckDB + PostgreSQL | PostgreSQL (scalable) |
 | Ingestion | None | None | SFTP/CSV connectors | Connector registry |
-| Testing | ~40 tests | ~80 tests | ~120 tests | **205 tests** |
+| Testing | ~40 tests | ~80 tests | ~120 tests | **274 unit tests + 24 integration + 93 eval tests** |
 | Key weakness | LLM trusted alone | Fuzzy boundaries | Monolith backend | — |
 | Key strength | Proved concept | Separation worked | Full pipeline | **Clean boundaries** |

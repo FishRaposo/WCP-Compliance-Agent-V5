@@ -12,90 +12,68 @@ beforeEach(() => {
   mockFetch.mockReset();
 });
 
-describe("Gateway → Data Platform contract", () => {
-  it("GET /api/v1/decisions returns paginated decisions", async () => {
+describe("Gateway to Data Platform contract", () => {
+  it("GET /internal/decisions returns decision records", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: () =>
-        Promise.resolve({
-          items: [
-            {
-              id: "dec-001",
-              job_id: "job-001",
-              verdict: "approved",
-              trust_score: 0.92,
-              trust_band: "auto_approve",
-              requires_human_review: false,
-              violation_count: 0,
-              warning_count: 0,
-              created_at: new Date().toISOString(),
-            },
-          ],
-          total: 1,
-          page: 1,
-          per_page: 20,
-          pages: 1,
-        }),
+        Promise.resolve([
+          {
+            id: "dec-001",
+            job_id: "job-001",
+            verdict: "approved",
+            trust_score: 0.92,
+            trust_band: "auto_approve",
+            requires_human_review: false,
+            violation_count: 0,
+            warning_count: 0,
+            created_at: new Date().toISOString(),
+          },
+        ]),
     });
 
-    const res = await fetch(makeDataPlatformUrl("/api/v1/decisions?page=1&per_page=20"));
+    const res = await fetch(makeDataPlatformUrl("/internal/decisions?limit=20&offset=0"));
     const json = await res.json();
 
     expect(res.ok).toBe(true);
-    expect(json).toHaveProperty("items");
-    expect(Array.isArray(json.items)).toBe(true);
-    expect(json).toHaveProperty("total");
-    expect(json).toHaveProperty("page");
-    expect(json).toHaveProperty("per_page");
-    expect(json).toHaveProperty("pages");
-
-    if (json.items.length > 0) {
-      const decision = json.items[0];
-      expect(decision).toHaveProperty("id");
-      expect(decision).toHaveProperty("verdict");
-    }
+    expect(Array.isArray(json)).toBe(true);
+    expect(json[0]).toHaveProperty("id");
+    expect(json[0]).toHaveProperty("job_id");
+    expect(["approved", "rejected", "needs_review"]).toContain(json[0].verdict);
+    expect(["auto_approve", "flag_for_review", "require_human_review"]).toContain(
+      json[0].trust_band,
+    );
   });
 
-  it("GET /api/v1/contracts returns paginated contracts", async () => {
+  it("GET /internal/contracts returns contract records", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: () =>
-        Promise.resolve({
-          items: [
-            {
-              id: "contract-001",
-              contract_number: "C-2025-001",
-              project_name: "Bridge Repair",
-              contractor_name: "Test Corp",
-              locality: "Washington, DC",
-              status: "active",
-              decision_count: 3,
-              payroll_record_count: 12,
-              created_at: new Date().toISOString(),
-            },
-          ],
-          total: 1,
-          page: 1,
-          per_page: 20,
-          pages: 1,
-        }),
+        Promise.resolve([
+          {
+            id: "contract-001",
+            contract_number: "C-2025-001",
+            project_name: "Bridge Repair",
+            contractor_name: "Test Corp",
+            locality: "Washington, DC",
+            status: "active",
+            decision_count: 3,
+            payroll_record_count: 12,
+            created_at: new Date().toISOString(),
+          },
+        ]),
     });
 
-    const res = await fetch(makeDataPlatformUrl("/api/v1/contracts"));
+    const res = await fetch(makeDataPlatformUrl("/internal/contracts"));
     const json = await res.json();
 
     expect(res.ok).toBe(true);
-    expect(json).toHaveProperty("items");
-    expect(Array.isArray(json.items)).toBe(true);
-
-    if (json.items.length > 0) {
-      const contract = json.items[0];
-      expect(contract).toHaveProperty("contract_number");
-      expect(contract).toHaveProperty("project_name");
-      expect(contract).toHaveProperty("locality");
-      expect(["active", "completed", "terminated", "suspended"]).toContain(contract.status);
-    }
+    expect(Array.isArray(json)).toBe(true);
+    expect(json[0]).toHaveProperty("contract_number");
+    expect(json[0]).toHaveProperty("project_name");
+    expect(json[0]).toHaveProperty("locality");
+    expect(["active", "completed", "terminated", "suspended"]).toContain(json[0].status);
   });
 });

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "python3 generate.py",
+    "generate": "python generate.py",
     "test": "vitest run"
   },
   "devDependencies": {

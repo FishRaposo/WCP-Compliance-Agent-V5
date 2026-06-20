@@ -1,6 +1,6 @@
 # V5 Known Gaps
 
-**Last updated:** 2026-06-16
+**Last updated:** 2026-06-19
 
 This document tracks known limitations, edge cases, and deferred features. V5 is functionally complete — these are quality hardening items, not blockers.
 
@@ -27,7 +27,7 @@ These are extraction regex gaps, not rule engine bugs. All 8 have documented gol
 
 ## Integration Tests
 
-Unit test infrastructure is complete as a source-collected suite: 260 unit tests plus 24 Data Platform integration tests. Golden-set evaluation is tracked separately as 92 parametrized examples. Cross-service E2E tests still require a live Docker runtime.
+Unit test infrastructure is complete as a source-collected suite: 274 unit tests plus 24 Data Platform integration tests. Golden-set evaluation is tracked separately as 93 collected tests: 92 parametrized examples plus one baseline-regression test. Cross-service E2E tests still require a live Docker runtime.
 
 | Test | Status |
 |---|---|

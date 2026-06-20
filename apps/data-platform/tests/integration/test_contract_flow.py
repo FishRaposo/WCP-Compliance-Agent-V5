@@ -35,9 +35,9 @@ def test_decision_record_schema():
 
     decision_data = DecisionCreate(
         job_id="test-job-123",
-        verdict="compliant",
+        verdict="approved",
         trust_score=0.95,
-        trust_band="high",
+        trust_band="auto_approve",
         requires_human_review=False,
         violation_count=0,
         warning_count=0,
@@ -45,5 +45,5 @@ def test_decision_record_schema():
     )
 
     assert decision_data.job_id == "test-job-123"
-    assert decision_data.verdict == "compliant"
+    assert decision_data.verdict == "approved"
     assert 0 <= decision_data.trust_score <= 1

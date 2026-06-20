@@ -19,16 +19,16 @@ Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 | Layer | Count | Framework |
 |---|---:|---|
 | Compliance Core unit | 75 | pytest |
-| Data Platform unit | 60 | pytest |
+| Data Platform unit | 63 | pytest |
 | Agent (Mastra) | 65 | vitest |
-| Gateway unit | 22 | vitest |
+| Gateway unit | 23 | vitest |
 | Web unit | 29 | vitest |
-| Contracts | 17 | vitest |
-| **Unit-test total** | **268** | pytest + vitest |
+| Contracts | 19 | vitest |
+| **Unit-test total** | **274** | pytest + vitest |
 | Data Platform integration | 24 | pytest |
-| Golden-set eval examples | 92 | pytest parametrization |
+| Golden-set eval tests | 93 | pytest parametrization |
 
-**Current local verification:** direct Vitest package runs pass for Agent, Gateway, Web, and Contracts (133 tests). Python pytest suites require Poetry/CI dependencies; Android/Termux cannot build some native Python packages cleanly. E2E Docker flow is not yet fully covered.
+**Current local verification:** direct Vitest package runs pass for Agent, Gateway, Web, and Contracts (136 tests). Compliance Core pytest unit+eval passes (168 tests). Data Platform pytest unit+integration passes (83 passed, 4 skipped), with Ruff and mypy clean. E2E Docker flow is not yet fully covered.
 
 ## Commands
 
@@ -128,9 +128,9 @@ Golden-set evaluation runs weekly (Monday 6 AM) and on manual trigger.
 
 - **Gateway calls Agent, Compliance Core, and Data Platform** via internal HTTP routes prefixed with `/internal/`.
 - **Agent calls Compliance Core for extraction and validation** via `/internal/extract`, `/internal/validate`.
-- **Agent calls Data Platform for persistence** via `/internal/decisions`, `/internal/audit-events`.
+- **Agent calls Data Platform for persistence** via `/internal/decisions`.
 - **Compliance Core never writes to the database** — it returns structured data.
-- **Agent never writes to the database** — it returns DecisionDrafts.
+- **Agent never writes to the database directly** — its Mastra workflow submits TrustScoredDecision payloads to Data Platform.
 - **Data Platform is the only service that creates official DecisionRecords and AuditEvents.**
 - **Shared JSON schemas** in `packages/contracts/schemas/` define cross-service contracts.
 - **Codegen** produces TypeScript (Zod) and Python (Pydantic) types from JSON schemas.
@@ -183,7 +183,7 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 
 ### Golden-set eval
 
-`apps/compliance-core/tests/eval/golden_set/examples.json` (100 examples) is the shared source of truth. The Mastra `verdictAgreementScorer` runs over it (`apps/agent/tests/eval/golden-set.test.ts`); the full pipeline eval stays in compliance-core pytest + `eval.yml`.
+`apps/compliance-core/tests/eval/golden_set/examples.json` (92 examples) is the shared source of truth; Compliance Core also runs one baseline-regression eval test, for 93 collected eval tests. The Mastra `verdictAgreementScorer` runs over it (`apps/agent/tests/eval/golden-set.test.ts`); the full pipeline eval stays in compliance-core pytest + `eval.yml`.
 
 ## Environment
 
@@ -210,7 +210,7 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 | Gateway | `WCP_MOCK_AUTH=true` | Bypasses JWT verification |
 | Agent | `LLM_MODE=mock` | Returns deterministic verdicts |
 | Compliance Core | Always works locally | Uses in-memory DBWD corpus |
-| Data Platform | SQLite mode (future) | Uses in-memory DB adapter |
+| Data Platform | `SKIP_DB_STARTUP=true` for limited local starts | Skips startup migrations; persistence endpoints still require a configured database session |
 
 ## Documentation
 

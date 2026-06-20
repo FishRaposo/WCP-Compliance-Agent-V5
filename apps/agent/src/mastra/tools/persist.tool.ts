@@ -15,9 +15,9 @@ export const persistTool = createTool({
   description:
     "Hand a completed trust-scored compliance decision to the Data Platform for official, audited persistence.",
   inputSchema: TrustScoredDecisionSchema,
-  outputSchema: z.object({ decision_id: z.string() }),
+  outputSchema: z.object({ id: z.string() }),
   execute: async (inputData, { requestContext }) => {
-    return dataPlatformClient.post<{ decision_id: string }>(
+    return dataPlatformClient.post<{ id: string }>(
       "/internal/decisions",
       inputData,
       traceHeaders(requestContext),

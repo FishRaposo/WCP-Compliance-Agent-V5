@@ -41,4 +41,4 @@ The Agent in V5 is the reasoning layer. It owns Mastra agents, workflows, tool r
 | Service | Runtime | Framework |
 |---|---|---|
 | Gateway | TypeScript / Node 20 | Hono |
-| Agent | TypeScript / Node 20 | Hono (internal) + Mastra + Vercel AI SDK |
+| Agent | TypeScript / Node 20 | Hono (internal) + Mastra (AI SDK v6) |

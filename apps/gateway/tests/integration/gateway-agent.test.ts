@@ -1,48 +1,37 @@
-/** Integration test for Gateway → Agent flow.
- *
- * Tests that Gateway can successfully call Agent endpoints with proper request/response format.
- */
-
 import { describe, it, expect } from "vitest";
 
-describe("Gateway → Agent Integration", () => {
-  it("should validate request schema for Agent decision endpoint", () => {
+describe("Gateway to Agent Integration", () => {
+  it("validates the Agent workflow request payload shape", () => {
     const payload = {
+      text: "Sample WH-347 payroll certification text...",
       job_id: "test-job-123",
-      contract_id: "GS-001-2026",
-      payroll_data: [
-        {
-          employee_name: "John Doe",
-          trade: "Electrician",
-          hours_worked: 40,
-          hourly_rate: 51.69,
-          fringe_rate: 34.63,
-        },
-      ],
     };
 
+    expect(payload.text).toContain("WH-347");
     expect(payload.job_id).toBe("test-job-123");
-    expect(payload.payroll_data).toHaveLength(1);
-    expect(payload.payroll_data[0].trade).toBe("Electrician");
   });
 
-  it("should validate response schema from Agent decision endpoint", () => {
+  it("validates the Agent trust-scored decision response shape", () => {
     const response = {
       job_id: "test-job-123",
-      verdict: "compliant",
+      verdict: "approved",
       trust_score: 0.95,
-      trust_band: "high",
+      trust_band: "auto_approve",
       requires_human_review: false,
       violation_count: 0,
       warning_count: 0,
-      reasoning_summary: "All wage rates match DBWD requirements",
+      llm_confidence: 0.95,
+      reasoning_summary: "All wage rates match DBWD requirements.",
       citations: [],
       created_at: new Date().toISOString(),
     };
 
     expect(response.job_id).toBe("test-job-123");
-    expect(response.verdict).toBe("compliant");
+    expect(["approved", "rejected", "needs_review"]).toContain(response.verdict);
     expect(response.trust_score).toBeGreaterThanOrEqual(0);
     expect(response.trust_score).toBeLessThanOrEqual(1);
+    expect(["auto_approve", "flag_for_review", "require_human_review"]).toContain(
+      response.trust_band,
+    );
   });
 });

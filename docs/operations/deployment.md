@@ -69,13 +69,16 @@ curl http://localhost:8001/health
 | `VITE_API_URL` | — | No |
 | `VITE_MOCK_API` | `false` | No |
 
-## Mock Mode (Zero Dependencies)
+## Mock Modes
 
 ```bash
+# UI-only mock mode; no backend services required.
 VITE_MOCK_API=true WCP_MOCK_AUTH=true AUTH_DISABLED=true LLM_MODE=mock pnpm dev
 ```
 
-No PostgreSQL, Redis, or API keys needed. All 5 services run locally with deterministic mock data.
+`VITE_MOCK_API=true` lets the Web app run from fixtures without backend services.
+
+`LLM_MODE=mock` avoids LLM API keys in the Agent, but the Mastra workflow still calls Compliance Core and Data Platform. For full local workflow testing, run PostgreSQL, Redis, Compliance Core, and Data Platform as shown in the Docker Compose setup above.
 
 ## Scaling
 

@@ -162,6 +162,23 @@ def _extract_employees(text: str) -> list[EmployeeRecord]:
             deductions = float(match.group(7).replace(",", "")) if match.group(7) else 0.0
             net = float(match.group(8).replace(",", ""))
 
+            # Internal-consistency validation. Because the fringe and deductions
+            # groups are optional, the regex can misassign columns when they are
+            # absent (e.g. the value that should be `gross` lands in the fringe
+            # slot, shifting everything right so `gross`/`net` are wrong). Before
+            # trusting this row, sanity-check it against the arithmetic the
+            # numbers must satisfy; if it fails and a simpler interpretation does
+            # not reconcile, skip it and let the block-based fallback parse it.
+            if not _row_is_consistent(
+                hours=hours,
+                wage=wage,
+                fringe=fringe,
+                gross=gross,
+                deductions=deductions,
+                net=net,
+            ):
+                continue
+
             overtime_hours = max(0, hours - 40)
 
             employees.append(
@@ -184,6 +201,56 @@ def _extract_employees(text: str) -> list[EmployeeRecord]:
         employees = _extract_employees_simple(text)
 
     return employees
+
+
+# Relative tolerance for comparing parsed gross earnings against hours * wage.
+# Real WCP rows include fringe and overtime premiums, so the parsed gross can
+# legitimately sit above the straight hours * wage product; the check below only
+# rejects rows where the parsed gross is *implausibly low* (a strong signal that
+# the optional fringe/deductions groups swallowed the real gross/net columns).
+_GROSS_CONSISTENCY_TOLERANCE = 0.10
+
+
+def _row_is_consistent(
+    *,
+    hours: float,
+    wage: float,
+    fringe: float,
+    gross: float,
+    deductions: float,
+    net: float,
+) -> bool:
+    """Return True when a parsed employee row is internally consistent.
+
+    Guards against the optional fringe/deductions regex groups capturing the
+    gross/net columns by mistake. We deliberately keep this conservative: only
+    reject a row when the numbers are contradictory, so that well-formed rows
+    (including ones with overtime premiums or fringe rolled into gross) pass.
+    """
+    # Basic monetary sanity: no negative money columns, and net cannot exceed
+    # gross (net is gross minus deductions).
+    if min(hours, wage, fringe, gross, deductions, net) < 0:
+        return False
+    if net > gross + 1e-6:
+        return False
+
+    # If deductions were captured, net should reconcile with gross - deductions.
+    # A large discrepancy means the columns are misaligned.
+    if deductions > 0:
+        expected_net = gross - deductions
+        if abs(expected_net - net) > max(0.01 * gross, 1.0):
+            return False
+
+    # The parsed gross should be at least the straight hours * wage product
+    # (minus a small tolerance). If it is materially lower, an optional group
+    # almost certainly captured the true gross/net, leaving a smaller value
+    # (e.g. fringe or deductions) sitting in the gross slot. Reject so the
+    # fallback parser can re-derive the columns.
+    base_pay = hours * wage
+    if base_pay > 0 and gross < base_pay * (1.0 - _GROSS_CONSISTENCY_TOLERANCE):
+        return False
+
+    return True
 
 
 def _extract_employees_simple(text: str) -> list[EmployeeRecord]:

@@ -47,10 +47,10 @@ function NotFound() {
 }
 
 function isAuthenticated(): boolean {
-  // Check for auth cookie instead of localStorage
-  // The JWT token is stored in an httpOnly cookie set by the server
-  const cookies = document.cookie.split(";");
-  return cookies.some((cookie) => cookie.trim().startsWith("wcp_auth"));
+  // The JWT itself lives in an httpOnly cookie (set by the gateway) and is intentionally
+  // unreadable from JS. Track login state via the non-sensitive `wcp_user` marker that
+  // Login writes to localStorage (cleared on logout and on any 401 by the API client).
+  return Boolean(localStorage.getItem("wcp_user"));
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

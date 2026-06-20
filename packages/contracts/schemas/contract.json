@@ -15,7 +15,7 @@
     "start_date": { "type": "string", "format": "date" },
     "end_date": { "type": "string", "format": "date" },
     "total_value": { "type": "number" },
-    "status": { "type": "string", "enum": ["active", "completed", "terminated"] },
+    "status": { "type": "string", "enum": ["active", "completed", "terminated", "suspended"] },
     "created_at": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string", "format": "date-time" }
   }

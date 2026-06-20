@@ -17,3 +17,6 @@ coverage/
 *.lcov
 .turbo/
 _archive/
+.tmp-poetry/
+.poetry-cache/
+.pnpm-store/

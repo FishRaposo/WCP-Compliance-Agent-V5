@@ -7,8 +7,6 @@ import json
 import logging
 from typing import Any
 
-import redis.asyncio as aioredis
-
 from wcp_data.config import settings
 
 logger = logging.getLogger(__name__)
@@ -16,13 +14,15 @@ logger = logging.getLogger(__name__)
 DEFAULT_TTL = 86400  # 24 hours
 
 # HIGH-05 Fix: Module-level Redis connection pool to prevent connection leaks
-_redis_pool: aioredis.Redis | None = None
+_redis_pool: Any | None = None
 
 
-async def _get_redis() -> aioredis.Redis:
+async def _get_redis() -> Any:
     """Get or create the shared Redis connection pool."""
     global _redis_pool
     if _redis_pool is None:
+        import redis.asyncio as aioredis
+
         _redis_pool = aioredis.from_url(
             settings.redis_url,
             max_connections=10,
@@ -41,9 +41,18 @@ async def cache_get(key: str) -> dict[str, Any] | None:
         value = await r.get(key)
         if value:
             from typing import cast
-            return cast(dict[str, Any], json.loads(value))
+            try:
+                return cast(dict[str, Any], json.loads(value))
+            except json.JSONDecodeError:
+                # Corrupt entry — drop it so a future write can repopulate.
+                logger.warning("Corrupt JSON in cache key %s; deleting", key)
+                try:
+                    await r.delete(key)
+                except Exception:
+                    pass
+                return None
     except Exception:
-        logger.debug("Redis cache miss: %s", key)
+        logger.warning("Redis cache unavailable for key %s", key)
     return None
 
 

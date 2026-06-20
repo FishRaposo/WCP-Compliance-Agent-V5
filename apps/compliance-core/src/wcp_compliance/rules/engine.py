@@ -41,11 +41,12 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
             trade_to_rate[trade] = result
         else:
             error_msg = str(result)
-            is_locality_warning = (
-                "locality" in error_msg.lower()
-                or "/" in locality
-                or " or " in locality.lower()
-            )
+            # Decide WARNING vs FAIL purely from the error semantics, never from
+            # the shape of the locality string. A locality lookup miss is a
+            # warning (rates may simply be unmapped for that area); a
+            # trade-not-found error is a real compliance gap (wage/fringe checks
+            # are skipped for that employee) and must stay a FAIL.
+            is_locality_warning = "locality" in error_msg.lower()
             checks.append(
                 ComplianceCheck(
                     check_id=f"classification_{trade.lower().replace(' ', '_')}",
@@ -165,8 +166,18 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
         )
     )
 
-    # 4. Deductions check
-    deductions_ok = (employee.deductions or 0.0) <= employee.gross_earnings
+    # 4. Deductions check: must be non-negative AND not exceed gross earnings.
+    # Negative deductions would inflate net wages, so they are an integrity error.
+    deductions_value = employee.deductions or 0.0
+    deductions_negative = deductions_value < 0
+    deductions_exceed_gross = deductions_value > employee.gross_earnings
+    deductions_ok = not deductions_negative and not deductions_exceed_gross
+    if deductions_ok:
+        deductions_message = "Data integrity: deductions do not exceed gross earnings"
+    elif deductions_negative:
+        deductions_message = "Data integrity error: deductions cannot be negative"
+    else:
+        deductions_message = "Data integrity error: deductions exceed gross earnings"
     results.append(
         ComplianceCheck(
             check_id=f"integrity_deductions_{_slugify(employee.name)}",
@@ -177,10 +188,7 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             actual_value=employee.deductions,
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
-            message=(
-                "Data integrity: deductions do not exceed gross earnings" if deductions_ok
-                else "Data integrity error: deductions exceed gross earnings"
-            ),
+            message=deductions_message,
         )
     )
 
@@ -247,7 +255,7 @@ def compute_trust_components(
 ) -> dict[str, float]:
     violation_ratio = deterministic.violation_count / max(len(deterministic.checks), 1)
     deterministic_score = 1.0 - violation_ratio
-    classification_score = 0.95
+    classification_score = _compute_classification_score(deterministic)
     llm_score = llm_verdict.confidence
     agreement_score = _compute_agreement(deterministic, llm_verdict)
 
@@ -257,6 +265,32 @@ def compute_trust_components(
         "llm_self": 0.20 * llm_score,
         "agreement": 0.20 * agreement_score,
     }
+
+
+def _compute_classification_score(deterministic: DeterministicReport) -> float:
+    """Derive the classification confidence from the actual CLASSIFICATION and
+    DATA_INTEGRITY check outcomes (ratio passed) rather than a hardcoded constant.
+
+    A WARNING counts as a partial pass; only FAIL fully detracts. When no such
+    checks exist, fall back to a neutral-high default so this component does not
+    artificially penalize reports without classification/integrity checks.
+    """
+    relevant = [
+        c
+        for c in deterministic.checks
+        if c.check_type in (CheckType.CLASSIFICATION, CheckType.DATA_INTEGRITY)
+    ]
+    if not relevant:
+        return 0.95
+
+    weight = 0.0
+    for check in relevant:
+        if check.status == CheckStatus.PASS:
+            weight += 1.0
+        elif check.status == CheckStatus.WARNING:
+            weight += 0.5
+
+    return weight / len(relevant)
 
 
 def _compute_agreement(

@@ -11,7 +11,7 @@ async def test_create_and_retrieve_decision(db_session):
 
     payload = DecisionCreate(
         job_id="integ-job-001",
-        verdict="compliant",
+        verdict="approved",
         trust_score=0.88,
         trust_band="auto_approve",
         requires_human_review=False,
@@ -21,7 +21,7 @@ async def test_create_and_retrieve_decision(db_session):
     )
     record = await create_decision(db_session, payload)
     assert record.job_id == "integ-job-001"
-    assert record.verdict == "compliant"
+    assert record.verdict == "approved"
 
     fetched = await get_decision(db_session, str(record.id))
     assert fetched is not None
@@ -35,7 +35,7 @@ async def test_decision_trust_band_auto_approve(db_session):
 
     payload = DecisionCreate(
         job_id="integ-job-002",
-        verdict="compliant",
+        verdict="approved",
         trust_score=0.92,
         trust_band="auto_approve",
         requires_human_review=False,
@@ -55,7 +55,7 @@ async def test_decision_requires_human_review(db_session):
 
     payload = DecisionCreate(
         job_id="integ-job-003",
-        verdict="non_compliant",
+        verdict="rejected",
         trust_score=0.30,
         trust_band="require_human_review",
         requires_human_review=True,
@@ -75,7 +75,7 @@ async def test_decision_list_not_empty_after_create(db_session):
 
     payload = DecisionCreate(
         job_id="integ-job-004",
-        verdict="flagged",
+        verdict="needs_review",
         trust_score=0.60,
         trust_band="flag_for_review",
         requires_human_review=False,
@@ -88,23 +88,60 @@ async def test_decision_list_not_empty_after_create(db_session):
     assert len(records) >= 1
 
 
-async def test_duplicate_job_id_handling(db_session):
-    """Creating two decisions with the same job_id should raise or silently upsert."""
-    from wcp_data.services.decision_service import create_decision
+async def test_duplicate_job_id_is_idempotent(db_session):
+    """A repeated job_id upserts (returns the same decision id) instead of raising."""
+    from wcp_data.services.decision_service import create_decision, list_decisions
     from wcp_data.models.schemas import DecisionCreate
 
     payload = DecisionCreate(
         job_id="integ-job-dup",
-        verdict="compliant",
+        verdict="approved",
         trust_score=0.80,
         trust_band="auto_approve",
-        requires_human_review=False,
-        violation_count=0,
-        warning_count=0,
         reasoning_summary="Duplicate test.",
     )
-    await create_decision(db_session, payload)
-    try:
-        await create_decision(db_session, payload)
-    except Exception:
-        pass
+    first = await create_decision(db_session, payload)
+    second = await create_decision(db_session, payload)
+    assert first.id == second.id
+    matches = [d for d in await list_decisions(db_session, limit=50) if d.job_id == "integ-job-dup"]
+    assert len(matches) == 1
+
+
+async def test_override_decision_records_reviewer_verdict(db_session):
+    """A human override changes the verdict, clears the review flag, and records the reviewer."""
+    from wcp_data.services.decision_service import create_decision, override_decision
+    from wcp_data.models.schemas import DecisionCreate, DecisionOverrideRequest
+
+    created = await create_decision(db_session, DecisionCreate(
+        job_id="integ-job-override",
+        verdict="needs_review",
+        trust_score=0.40,
+        trust_band="require_human_review",
+        requires_human_review=True,
+        violation_count=1,
+        warning_count=0,
+        reasoning_summary="Flagged for review.",
+    ))
+
+    result = await override_decision(
+        db_session,
+        str(created.id),
+        DecisionOverrideRequest(verdict="approved", reviewer="auditor@example.com", note="cleared"),
+    )
+    assert result is not None
+    assert result.verdict == "approved"
+    assert result.requires_human_review is False
+    assert "auditor@example.com" in (result.reasoning_summary or "")
+
+
+async def test_override_unknown_decision_returns_none(db_session):
+    """Overriding a non-existent decision returns None (404 at the API layer)."""
+    from wcp_data.services.decision_service import override_decision
+    from wcp_data.models.schemas import DecisionOverrideRequest
+
+    result = await override_decision(
+        db_session,
+        "00000000-0000-0000-0000-000000000000",
+        DecisionOverrideRequest(verdict="rejected", reviewer="auditor@example.com"),
+    )
+    assert result is None

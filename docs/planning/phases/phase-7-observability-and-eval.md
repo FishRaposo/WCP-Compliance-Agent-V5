@@ -27,7 +27,7 @@
 |---|---|---|---|
 | 7.2.1 | Verify Langfuse client initialization | `apps/agent/src/observability/langfuse.ts` | Already scaffolded — verify with real keys |
 | 7.2.2 | Verify generation logging | `apps/agent/src/agents/wcp-verdict.ts` | Every LLM call logged to Langfuse with input/output/model/usage |
-| 7.2.3 | Add prompt version to decision metadata | `apps/agent/src/workflows/wcp-pipeline.ts` | Include `prompt_version` in DecisionDraft |
+| 7.2.3 | Add prompt version to decision metadata | `apps/agent/src/workflows/wcp-pipeline.ts` | Include `prompt_version` in TrustScoredDecision |
 | 7.2.4 | Verify prompt registry fetches from Langfuse | `apps/agent/src/prompts/registry.ts` | Hosted prompts take precedence over local |
 | 7.2.5 | Verify cost tracking integration | `apps/agent/src/observability/cost-tracking.ts` | Per-model cost logged to Langfuse |
 

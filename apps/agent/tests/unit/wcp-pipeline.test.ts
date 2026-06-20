@@ -41,7 +41,7 @@ function routeMocks(report: Record<string, unknown>) {
   mockPost.mockImplementation((path: string) => {
     if (path === "/internal/extract") return Promise.resolve(extracted);
     if (path === "/internal/validate") return Promise.resolve(report);
-    if (path === "/internal/decisions") return Promise.resolve({ decision_id: "dec-001" });
+    if (path === "/internal/decisions") return Promise.resolve({ id: "dec-001" });
     return Promise.resolve({});
   });
 }

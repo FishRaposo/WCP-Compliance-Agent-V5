@@ -22,6 +22,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
   RATE_LIMIT_PER_MIN: z.coerce.number().default(60),
+  TRUSTED_PROXY: z.enum(["true", "false"]).default("false"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

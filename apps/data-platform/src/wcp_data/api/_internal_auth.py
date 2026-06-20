@@ -1,4 +1,5 @@
 """Internal service authentication for /internal/* routes."""
+import hmac
 import logging
 from typing import Annotated
 
@@ -30,7 +31,7 @@ async def verify_internal_token(request: Request) -> None:
             detail="Missing X-Internal-Token header",
         )
     
-    if token != settings.internal_service_token:
+    if not hmac.compare_digest(token, settings.internal_service_token):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid internal service token",

@@ -20,8 +20,15 @@ def _duck(query: str) -> list[dict[str, Any]]:
         results = store.execute(query)
         return results if results is not None else []
     except Exception as exc:
-        logger.debug("DuckDB query failed, falling back to PG: %s", exc)
+        logger.warning("DuckDB query failed, falling back to PG: %s", exc)
         return []
+
+
+def _day_bucket(session: AsyncSession, column: Any) -> Any:
+    bind = session.get_bind()
+    if bind is not None and bind.dialect.name == "sqlite":
+        return func.date(column)
+    return func.date_trunc("day", column)
 
 
 @router.get("/overview")
@@ -32,7 +39,7 @@ async def analytics_overview(
         SELECT
             COUNT(*) AS total_decisions,
             AVG(trust_score) AS avg_trust_score
-        FROM decisions
+        FROM decisions_view
     """)
     if duck:
         row = duck[0]
@@ -45,11 +52,12 @@ async def analytics_overview(
     total_decisions = await session.execute(select(func.count()).select_from(decisions_table))
     total_contracts = await session.execute(select(func.count()).select_from(contracts_table))
     total_payrolls = await session.execute(select(func.count()).select_from(payroll_records_table))
+    avg_trust = await session.execute(select(func.avg(decisions_table.c.trust_score)))
     return {
         "total_decisions": total_decisions.scalar_one() or 0,
         "total_contracts": total_contracts.scalar_one() or 0,
         "total_payroll_records": total_payrolls.scalar_one() or 0,
-        "avg_trust_score": 0,
+        "avg_trust_score": float(avg_trust.scalar_one() or 0),
         "source": "postgres",
     }
 
@@ -69,7 +77,7 @@ async def analytics_volume(
             date_trunc('day', created_at)::DATE::TEXT AS date,
             COUNT(*) AS count,
             AVG(trust_score) AS avg_trust
-        FROM decisions
+        FROM decisions_view
         WHERE created_at >= CURRENT_DATE - INTERVAL '{days} days'
         GROUP BY date_trunc('day', created_at)
         ORDER BY date DESC
@@ -78,14 +86,15 @@ async def analytics_volume(
     if duck:
         return [{"date": r["date"], "count": int(r["count"]), "avg_trust": float(r["avg_trust"] or 0)} for r in duck]
 
+    bucket = _day_bucket(session, decisions_table.c.created_at)
     result = await session.execute(
         select(
-            func.date_trunc("day", decisions_table.c.created_at).label("date"),
+            bucket.label("date"),
             func.count().label("count"),
             func.avg(decisions_table.c.trust_score).label("avg_trust"),
         )
-        .group_by(func.date_trunc("day", decisions_table.c.created_at))
-        .order_by(func.date_trunc("day", decisions_table.c.created_at).desc())
+        .group_by(bucket)
+        .order_by(bucket.desc())
         .limit(days)
     )
     return [
@@ -103,7 +112,7 @@ async def analytics_approval_by_trade(
             COUNT(*) AS total,
             SUM(CASE WHEN verdict = 'approved' THEN 1 ELSE 0 END) AS approved,
             trust_band
-        FROM decisions
+        FROM decisions_view
         GROUP BY trust_band
     """)
     if duck:
@@ -144,7 +153,7 @@ async def analytics_trust_band_distribution(
 ) -> list[dict[str, Any]]:
     duck = _duck("""
         SELECT trust_band, COUNT(*) AS count
-        FROM decisions
+        FROM decisions_view
         GROUP BY trust_band
     """)
     if duck:
@@ -169,7 +178,7 @@ async def analytics_cost(
             SUM(cost_usd) AS total_cost,
             AVG(cost_usd) AS cost_per_decision,
             AVG(latency_ms) AS avg_latency_ms
-        FROM decisions
+        FROM decisions_view
         WHERE cost_usd IS NOT NULL
     """)
     if duck and duck[0]:
@@ -184,9 +193,28 @@ async def analytics_cost(
             "source": "duckdb",
         }
 
-    result = await session.execute(select(func.count()).select_from(decisions_table))
-    total = result.scalar_one() or 0
-    return {"summary": {"decisions": total, "total_cost": 0, "cost_per_decision": 0, "avg_latency_ms": 0}, "source": "postgres"}
+    result = await session.execute(
+        select(
+            func.count(decisions_table.c.cost_usd),
+            func.sum(decisions_table.c.cost_usd),
+            func.avg(decisions_table.c.cost_usd),
+        ).where(decisions_table.c.cost_usd.isnot(None))
+    )
+    cost_row = result.one()
+    latency_result = await session.execute(
+        select(func.avg(decisions_table.c.latency_ms)).where(
+            decisions_table.c.latency_ms.isnot(None)
+        )
+    )
+    return {
+        "summary": {
+            "decisions": cost_row[0] or 0,
+            "total_cost": float(cost_row[1] or 0),
+            "cost_per_decision": float(cost_row[2] or 0),
+            "avg_latency_ms": float(latency_result.scalar_one() or 0),
+        },
+        "source": "postgres",
+    }
 
 
 @router.get("/compliance")
@@ -199,7 +227,7 @@ async def analytics_compliance(
             COUNT(*) AS count,
             AVG(violation_count) AS avg_violations,
             AVG(warning_count) AS avg_warnings
-        FROM decisions
+        FROM decisions_view
         GROUP BY verdict
     """)
     total = sum(int(r.get("count") or 0) for r in duck_verdict) or 0
@@ -252,7 +280,7 @@ async def analytics_wages(
             date_trunc('day', created_at)::DATE::TEXT AS date,
             COUNT(*) AS total_checked,
             SUM(violation_count) AS violations
-        FROM decisions
+        FROM decisions_view
         WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
         GROUP BY date_trunc('day', created_at)
         ORDER BY date DESC
@@ -260,7 +288,7 @@ async def analytics_wages(
     """)
     duck_bands = _duck("""
         SELECT trust_band, COUNT(*) AS count, AVG(trust_score) AS avg_trust
-        FROM decisions
+        FROM decisions_view
         GROUP BY trust_band
     """)
 
@@ -291,7 +319,7 @@ async def analytics_llm(
             SUM(cost_usd) AS total_cost,
             AVG(cost_usd) AS cost_per_decision,
             AVG(latency_ms) AS avg_latency_ms
-        FROM decisions
+        FROM decisions_view
         WHERE cost_usd IS NOT NULL
     """)
     duck_daily = _duck("""
@@ -299,7 +327,7 @@ async def analytics_llm(
             date_trunc('day', created_at)::DATE::TEXT AS date,
             COUNT(*) AS decisions,
             AVG(cost_usd) AS cost_usd
-        FROM decisions
+        FROM decisions_view
         WHERE cost_usd IS NOT NULL
           AND created_at >= CURRENT_DATE - INTERVAL '14 days'
         GROUP BY date_trunc('day', created_at)

@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 describe("Agent → Data Platform contract", () => {
-  it("POST /internal/decisions persists a decision draft", async () => {
+  it("POST /internal/decisions persists a trust-scored decision", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 201,

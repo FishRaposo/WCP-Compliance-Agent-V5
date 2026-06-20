@@ -3,11 +3,10 @@
   "title": "AuditEvent",
   "description": "Immutable audit trail entry for a compliance decision",
   "type": "object",
-  "required": ["event_id", "decision_id", "event_type", "timestamp"],
+  "required": ["id", "job_id", "event_type", "created_at"],
   "properties": {
-    "event_id": { "type": "string", "format": "uuid" },
-    "decision_id": { "type": "string" },
-    "request_id": { "type": "string" },
+    "id": { "type": "string", "format": "uuid" },
+    "job_id": { "type": "string" },
     "event_type": {
       "type": "string",
       "enum": [
@@ -21,11 +20,10 @@
         "human_review_complete"
       ]
     },
-    "timestamp": { "type": "string", "format": "date-time" },
-    "actor": { "type": "string" },
+    "actor": { "type": "string", "default": "system" },
     "payload": { "type": "object" },
     "regulation_references": { "type": "array", "items": { "type": "string" } },
     "trace_id": { "type": "string" },
-    "tenant_id": { "type": "string" }
+    "created_at": { "type": "string", "format": "date-time" }
   }
 }

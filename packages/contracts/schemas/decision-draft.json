@@ -1,33 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "DecisionDraft",
-  "description": "Agent-produced decision draft before official record creation by Data Platform",
+  "title": "TrustScoredDecision",
+  "description": "Agent-produced trust-scored decision payload submitted to Data Platform for official persistence",
   "type": "object",
-  "required": ["request_id", "artifact_id", "deterministic_report_id", "verdict", "summary", "issues", "trust_score", "trust_band"],
+  "required": [
+    "job_id",
+    "verdict",
+    "trust_score",
+    "trust_band"
+  ],
   "properties": {
-    "request_id": { "type": "string" },
-    "artifact_id": { "type": "string" },
-    "deterministic_report_id": { "type": "string" },
+    "job_id": { "type": "string" },
     "verdict": { "type": "string", "enum": ["approved", "rejected", "needs_review"] },
-    "summary": { "type": "string" },
-    "issues": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["check_id", "severity", "finding"],
-        "properties": {
-          "check_id": { "type": "string" },
-          "severity": { "type": "string", "enum": ["high", "medium", "low"] },
-          "employee_ref": { "type": "string" },
-          "finding": { "type": "string" },
-          "citation_refs": { "type": "array", "items": { "type": "string" } }
-        }
-      }
-    },
     "trust_score": { "type": "number", "minimum": 0, "maximum": 1 },
     "trust_band": { "type": "string", "enum": ["auto_approve", "flag_for_review", "require_human_review"] },
-    "llm_trace_id": { "type": "string" },
-    "model": { "type": "string" },
-    "prompt_version": { "type": "string" }
+    "requires_human_review": { "type": "boolean" },
+    "violation_count": { "type": "integer", "minimum": 0 },
+    "warning_count": { "type": "integer", "minimum": 0 },
+    "llm_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "reasoning_summary": { "type": "string" },
+    "citations": { "type": "array", "items": { "type": "object" } },
+    "cost_usd": { "type": "number" },
+    "latency_ms": { "type": "integer" },
+    "step_latencies": { "type": "object" },
+    "phoenix_trace_id": { "type": "string" },
+    "contract_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
   }
 }

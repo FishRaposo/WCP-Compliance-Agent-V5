@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { getPayrolls, bulkImportPayrolls } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
+import { logUpstreamError } from "../lib/error-log.js";
 
 export const payrollsRoutes = new Hono();
 
@@ -29,13 +30,15 @@ payrollsRoutes.get("/api/v1/payrolls", async (c) => {
   if (contract_id) params.contract_id = contract_id;
 
   try {
-    const data = await getPayrolls(params);
+    const data = await getPayrolls(c, params);
     return c.json(data, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "payrolls/list", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to fetch payrolls" }, 500);
+    logUpstreamError(c, "payrolls/list", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });
 
@@ -46,12 +49,14 @@ payrollsRoutes.post("/api/v1/payrolls/bulk", async (c) => {
     if (!parsed.success) {
       return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
     }
-    const data = await bulkImportPayrolls(parsed.data);
+    const data = await bulkImportPayrolls(c, parsed.data);
     return c.json(data, 202);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "payrolls/bulk", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json({ error: "Failed to bulk import payrolls" }, 500);
+    logUpstreamError(c, "payrolls/bulk", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });

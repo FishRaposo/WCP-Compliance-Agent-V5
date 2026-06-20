@@ -18,6 +18,16 @@ import {
   Loader2
 } from "lucide-react";
 import type { DecisionSummary } from "../types/api";
+import { apiClient } from "../utils/api-client";
+
+function currentReviewer(): string {
+  try {
+    const u = JSON.parse(localStorage.getItem("wcp_user") || "null");
+    return u?.email || u?.user_id || "reviewer";
+  } catch {
+    return "reviewer";
+  }
+}
 
 export default function HumanReviewQueue() {
   const { data, isLoading, error, refetch } = useDecisions(50, 0, "require_human_review");
@@ -25,25 +35,35 @@ export default function HumanReviewQueue() {
   const [justification, setJustification] = useState("");
   const [submittingAction, setSubmittingAction] = useState<"approve" | "reject" | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const handleOverride = async (verdict: "approve" | "reject") => {
+  const handleOverride = async (action: "approve" | "reject") => {
     if (!selectedDecision) return;
-    setSubmittingAction(verdict);
+    const verdict = action === "approve" ? "approved" : "rejected";
+    setSubmittingAction(action);
     setActionSuccess(null);
-    
-    // Simulate API call to persist the override verdict and auditor notes
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    
-    setActionSuccess(`Decision successfully updated! Marked Job ${selectedDecision.job_id.slice(0, 8)} as OVERRIDE_${verdict.toUpperCase()}.`);
-    setSubmittingAction(null);
-    setJustification("");
-    
-    // Auto-close details drawer and refetch data to update list
-    setTimeout(() => {
-      setSelectedDecision(null);
-      setActionSuccess(null);
-      refetch();
-    }, 1800);
+    setActionError(null);
+
+    try {
+      // Persist via the gateway -> Data Platform (the only DB writer), which records a
+      // human_review_complete audit event atomically. Success is shown only once it resolves.
+      await apiClient.post(`/api/v1/decisions/${selectedDecision.decision_id}/review`, {
+        verdict,
+        reviewer: currentReviewer(),
+        note: justification.trim(),
+      });
+      setActionSuccess(`Decision recorded. Job ${selectedDecision.job_id.slice(0, 8)} overridden to ${verdict}.`);
+      setJustification("");
+      setTimeout(() => {
+        setSelectedDecision(null);
+        setActionSuccess(null);
+        refetch();
+      }, 1500);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to record the override. Please retry.");
+    } finally {
+      setSubmittingAction(null);
+    }
   };
 
   if (isLoading) {
@@ -189,19 +209,16 @@ export default function HumanReviewQueue() {
                     <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Identified Violations</h4>
                   </div>
                   {selectedDecision.violation_count > 0 ? (
-                    <div className="space-y-2">
-                      <div className="bg-rose-500/5 border border-rose-500/10 p-3 rounded-xl">
-                        <p className="text-xs font-bold text-rose-300">Underpayment Flagged</p>
+                    <div className="bg-rose-500/5 border border-rose-500/10 p-3 rounded-xl">
+                      <p className="text-xs font-bold text-rose-300">
+                        {selectedDecision.violation_count} deterministic violation
+                        {selectedDecision.violation_count !== 1 ? "s" : ""}
+                      </p>
+                      {selectedDecision.reasoning_summary && (
                         <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
-                          Actual wage rate ($38.50/hr) fell below the Boston, MA DBWD Electrician requirement ($51.69/hr).
+                          {selectedDecision.reasoning_summary}
                         </p>
-                      </div>
-                      <div className="bg-rose-500/5 border border-rose-500/10 p-3 rounded-xl">
-                        <p className="text-xs font-bold text-rose-300">Fringe Benefit Discrepancy</p>
-                        <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
-                          No fringe benefit payments logged under health & welfare columns.
-                        </p>
-                      </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs text-gray-500">No strict regulatory violations identified.</p>
@@ -214,13 +231,14 @@ export default function HumanReviewQueue() {
                     <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Warnings & Anomalies</h4>
                   </div>
                   {selectedDecision.warning_count > 0 ? (
-                    <div className="space-y-2">
-                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl">
-                        <p className="text-xs font-bold text-amber-300">Empty Overtime hours field</p>
-                        <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
-                          Total hours logged exceed 40.0 but no overtime premium calculation is present.
-                        </p>
-                      </div>
+                    <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl">
+                      <p className="text-xs font-bold text-amber-300">
+                        {selectedDecision.warning_count} warning
+                        {selectedDecision.warning_count !== 1 ? "s" : ""} raised
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                        Flagged for human review based on the deterministic report.
+                      </p>
                     </div>
                   ) : (
                     <p className="text-xs text-gray-500">No structural anomalies detected.</p>
@@ -234,28 +252,23 @@ export default function HumanReviewQueue() {
                   <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">Regulatory References</span>
                   <FileText className="w-4 h-4 text-gray-500" />
                 </div>
-                <div className="divide-y divide-white/5 space-y-2">
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-semibold text-gray-300">40 U.S.C. § 3142(b)</p>
-                      <p className="text-[9px] text-gray-500">Prevailing wage requirements for public works</p>
-                    </div>
-                    <a href="https://www.law.cornell.edu/uscode/text/40/3142" target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1">
-                      <span>US Code</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                {selectedDecision.citations && selectedDecision.citations.length > 0 ? (
+                  <div className="divide-y divide-white/5 space-y-2">
+                    {selectedDecision.citations.map((cit, i) => (
+                      <div key={i} className="pt-2 text-xs">
+                        <p className="font-semibold text-gray-300">
+                          {cit.regulation}
+                          {cit.section ? ` ${cit.section}` : ""}
+                        </p>
+                        {cit.text && (
+                          <p className="text-[9px] text-gray-500 mt-0.5 leading-relaxed">{cit.text}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-semibold text-gray-300">29 CFR 5.5(a)(1)</p>
-                      <p className="text-[9px] text-gray-500">Wage determination and benefit payment schedules</p>
-                    </div>
-                    <a href="https://www.ecfr.gov/current/title-29/subtitle-A/part-5/subpart-A/section-5.5" target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1">
-                      <span>eCFR Link</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No regulatory citations recorded for this decision.</p>
+                )}
               </div>
 
               {/* Phoenix Traces & Debug logs */}
@@ -283,6 +296,13 @@ export default function HumanReviewQueue() {
                   disabled={submittingAction !== null || actionSuccess !== null}
                 />
               </div>
+
+              {actionError && (
+                <div className="p-4 bg-rose-950/20 border border-rose-500/20 rounded-xl flex items-center gap-3">
+                  <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <p className="text-xs text-rose-300 font-semibold leading-relaxed">{actionError}</p>
+                </div>
+              )}
 
               {actionSuccess ? (
                 <div className="p-4 bg-emerald-950/20 border border-emerald-500/20 rounded-xl flex items-center gap-3 animate-in fade-in duration-300">

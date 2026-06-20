@@ -1,4 +1,5 @@
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
+import { getConnInfo } from "@hono/node-server/conninfo";
 import { config } from "../config.js";
 
 const requests = new Map<string, { count: number; resetAt: number }>();
@@ -40,26 +41,46 @@ export function stopCleanup(): void {
 
 /**
  * Get client IP address with spoofing protection.
- * In production behind a reverse proxy, the proxy should set x-real-ip.
- * Falls back to x-forwarded-for but only trusts the first IP (client IP).
+ *
+ * Proxy-set headers (x-real-ip / x-forwarded-for) are honored ONLY when a
+ * trusted proxy is configured (TRUSTED_PROXY === "true"). Without that, the
+ * headers are attacker-controlled and are ignored entirely in favor of the
+ * real socket remote address, so clients can't spoof their rate-limit key.
+ *
+ * When trusted, x-real-ip wins; otherwise the LAST comma-separated value of
+ * x-forwarded-for is used — the leftmost entry is the (untrusted) client, and
+ * the rightmost is the value appended by our own trusted proxy.
  */
-function getClientIP(c: { req: { header: (name: string) => string | undefined } }): string {
-  // x-real-ip is set by infrastructure (reverse proxy) - most trusted
-  const realIp = c.req.header("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-  
-  // x-forwarded-for can be spoofed, but we only take the first IP (client)
-  // which is set by the first trusted proxy in the chain
-  const forwardedFor = c.req.header("x-forwarded-for");
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(",")[0]?.trim();
-    if (firstIp) {
-      return firstIp;
+function getClientIP(c: Context): string {
+  if (config.TRUSTED_PROXY === "true") {
+    // x-real-ip is set by our trusted reverse proxy - most reliable
+    const realIp = c.req.header("x-real-ip")?.trim();
+    if (realIp) {
+      return realIp;
+    }
+
+    const forwardedFor = c.req.header("x-forwarded-for");
+    if (forwardedFor) {
+      const parts = forwardedFor.split(",").map((p) => p.trim()).filter(Boolean);
+      const lastIp = parts[parts.length - 1];
+      if (lastIp) {
+        return lastIp;
+      }
     }
   }
-  
+
+  // No trusted proxy (or headers absent): use the real socket address, which
+  // cannot be spoofed by the client. getConnInfo can throw when there's no
+  // underlying Node socket (e.g. unit tests using Hono's app.request()).
+  try {
+    const socketAddress = getConnInfo(c).remote.address;
+    if (socketAddress) {
+      return socketAddress;
+    }
+  } catch {
+    // fall through to the anonymous bucket
+  }
+
   return "anonymous";
 }
 

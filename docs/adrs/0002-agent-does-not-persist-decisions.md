@@ -6,7 +6,7 @@
 
 ## Decision
 
-The Agent Orchestration service may produce `DecisionDraft` objects, but only the Data Platform service creates official `DecisionRecord` objects. The Agent must never write directly to the database.
+The Agent Orchestration service produces `TrustScoredDecision` payloads, but only the Data Platform service creates official `DecisionRecord` objects. The Agent must never write directly to the database.
 
 ## Context
 
@@ -23,7 +23,7 @@ Official compliance decisions must be:
 3. **Governed** — Decision persistence follows explicit rules: validate the draft, create the record, append audit events, publish events.
 4. **Immutable** — Once created, decision records are append-only. Corrections are new decisions.
 
-The Data Platform service is the single authority for creating and storing these records. The Agent produces a `DecisionDraft` containing the verdict, trust score, citations, and issues. The Data Platform receives this draft, validates it, creates the official `DecisionRecord`, and appends `AuditEvent` entries.
+The Data Platform service is the single authority for creating and storing these records. The Agent produces a `TrustScoredDecision` containing the verdict, trust score, citations, violation/warning counts, timing, and trace metadata. The Data Platform receives this payload, validates it, creates the official `DecisionRecord`, and appends `AuditEvent` entries.
 
 This is the critical auditability boundary in V5.
 

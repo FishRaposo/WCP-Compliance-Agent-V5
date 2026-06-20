@@ -3,6 +3,7 @@ import { agentClient } from "../clients/agent-client.js";
 import { complianceClient } from "../clients/compliance-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
+import { logUpstreamError } from "../lib/error-log.js";
 
 export const analyzePdfRoutes = new Hono();
 
@@ -29,11 +30,10 @@ analyzePdfRoutes.post("/api/v1/analyze/pdf", async (c) => {
     return c.json(decision, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
-      return c.json({ error: err.message }, 502);
+      logUpstreamError(c, "analyze/pdf", err);
+      return c.json({ error: "Upstream service error" }, 502);
     }
-    return c.json(
-      { error: err instanceof Error ? err.message : "PDF analysis failed" },
-      500,
-    );
+    logUpstreamError(c, "analyze/pdf", err);
+    return c.json({ error: "Internal error" }, 500);
   }
 });

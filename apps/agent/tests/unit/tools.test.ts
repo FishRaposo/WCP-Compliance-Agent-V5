@@ -75,7 +75,7 @@ describe("agent tools (createTool)", () => {
     expect(result.overall_status).toBe("pass");
   });
 
-  it("persistTool posts the decision to the data platform", async () => {
+  it("persistTool accepts the data platform decision response", async () => {
     const decision = {
       job_id: "job-001",
       verdict: "approved",
@@ -88,10 +88,20 @@ describe("agent tools (createTool)", () => {
       reasoning_summary: "ok",
       citations: [],
     };
-    mockPost.mockResolvedValueOnce({ decision_id: "dec-001" });
+    mockPost.mockResolvedValueOnce({
+      id: "dec-001",
+      job_id: "job-001",
+      verdict: "approved",
+      trust_score: 0.95,
+      trust_band: "auto_approve",
+      requires_human_review: false,
+      violation_count: 0,
+      warning_count: 0,
+      created_at: new Date().toISOString(),
+    });
     const { persistTool } = await import("../../src/mastra/tools/persist.tool.js");
-    const result = (await persistTool.execute!(decision, ctx())) as { decision_id: string };
-    expect(result.decision_id).toBe("dec-001");
+    const result = (await persistTool.execute!(decision, ctx())) as { id: string };
+    expect(result.id).toBe("dec-001");
     expect(mockPost).toHaveBeenCalledWith("/internal/decisions", expect.objectContaining({ job_id: "job-001" }), {});
   });
 
