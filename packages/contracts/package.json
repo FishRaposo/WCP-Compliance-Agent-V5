@@ -3,14 +3,24 @@
   "version": "5.0.0",
   "private": true,
   "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
-    "generate": "python generate.py",
-    "test": "vitest run"
-  },
-  "devDependencies": {
-    "vitest": "^3.0.0"
+    "typecheck": "tsc --noEmit",
+    "openapi": "tsx src/openapi.ts",
+    "gen:pydantic": "datamodel-codegen --input generated/openapi.json --input-file-type openapi --output generated/python/models.py --output-model-type pydantic_v2.BaseModel --use-annotated --field-constraints --use-standard-collections",
+    "test": "vitest run",
+    "lint": "eslint src"
   },
   "dependencies": {
-    "zod": "^3.24.0"
+    "@ts-rest/core": "^3.52.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@ts-rest/open-api": "^3.52.1",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0",
+    "vitest": "^3.0.0",
+    "tsx": "^4.19.0"
   }
 }

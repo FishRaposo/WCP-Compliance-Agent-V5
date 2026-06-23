@@ -1,17 +1,11 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import { ReviewRequest } from "@wcp/contracts";
 import { dataPlatformClient } from "../clients/data-platform-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
 import { logUpstreamError } from "../lib/error-log.js";
 
 export const decisionsRoutes = new Hono();
-
-const ReviewRequest = z.object({
-  verdict: z.enum(["approved", "rejected", "needs_review"]),
-  reviewer: z.string().min(1),
-  note: z.string().optional(),
-});
 
 decisionsRoutes.get("/api/v1/decisions", async (c) => {
   const params: Record<string, string> = {};

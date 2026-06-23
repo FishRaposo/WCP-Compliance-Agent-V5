@@ -35,7 +35,9 @@ export default function DecisionCard({ decision }: Props) {
           </div>
           <div>
             <p className="text-muted-foreground">LLM Confidence</p>
-            <p className="font-semibold">{(decision.llm_confidence * 100).toFixed(0)}%</p>
+            <p className="font-semibold">
+              {decision.llm_confidence != null ? `${(decision.llm_confidence * 100).toFixed(0)}%` : "—"}
+            </p>
           </div>
         </div>
         {decision.reasoning_summary && (

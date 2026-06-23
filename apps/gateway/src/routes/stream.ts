@@ -9,12 +9,13 @@ streamRoutes.get("/api/v1/decisions/stream", async (c) => {
   const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
   // Identify the originating client so the per-client connection cap applies.
-  let clientKey: string = connectionId;
-  try {
-    clientKey = getConnInfo(c).remote.address ?? connectionId;
-  } catch {
-    clientKey = connectionId;
-  }
+  const clientKey = ((): string => {
+    try {
+      return getConnInfo(c).remote.address ?? connectionId;
+    } catch {
+      return connectionId;
+    }
+  })();
 
   const streamConfig = {
     streamName: "wcp.decisions",

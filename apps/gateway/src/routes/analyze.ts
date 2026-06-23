@@ -1,16 +1,11 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import { AnalyzeRequest } from "@wcp/contracts";
 import { agentClient } from "../clients/agent-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
 import { logUpstreamError } from "../lib/error-log.js";
 
 export const analyzeRoutes = new Hono();
-
-const AnalyzeRequest = z.object({
-  text: z.string().min(1),
-  job_id: z.string().optional(),
-});
 
 analyzeRoutes.post("/api/v1/analyze", async (c) => {
   const body = await c.req.json();

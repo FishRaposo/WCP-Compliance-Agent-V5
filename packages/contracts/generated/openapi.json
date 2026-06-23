@@ -1,0 +1,841 @@
+{
+  "openapi": "3.0.2",
+  "paths": {
+    "/api/v1/analyze": {
+      "post": {
+        "summary": "Analyze raw WH-347 payroll text end-to-end and return a trust-scored decision.",
+        "tags": [],
+        "parameters": [],
+        "operationId": "analyze",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "job_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "type": "string",
+                      "enum": [
+                        "approved",
+                        "rejected",
+                        "needs_review"
+                      ]
+                    },
+                    "trust_score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "trust_band": {
+                      "type": "string",
+                      "enum": [
+                        "auto_approve",
+                        "flag_for_review",
+                        "require_human_review"
+                      ]
+                    },
+                    "requires_human_review": {
+                      "type": "boolean"
+                    },
+                    "violation_count": {
+                      "type": "integer"
+                    },
+                    "warning_count": {
+                      "type": "integer"
+                    },
+                    "llm_confidence": {
+                      "type": "number"
+                    },
+                    "reasoning_summary": {
+                      "type": "string"
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "regulation": {
+                            "type": "string"
+                          },
+                          "section": {
+                            "default": "",
+                            "type": "string"
+                          },
+                          "text": {
+                            "default": "",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "regulation"
+                        ]
+                      }
+                    },
+                    "cost_usd": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "latency_ms": {
+                      "type": "integer",
+                      "nullable": true
+                    },
+                    "phoenix_trace_id": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "job_id",
+                    "verdict",
+                    "trust_score",
+                    "trust_band",
+                    "requires_human_review",
+                    "violation_count",
+                    "warning_count",
+                    "reasoning_summary",
+                    "citations"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions": {
+      "get": {
+        "summary": "List persisted decisions, newest first.",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "nullable": true
+            }
+          },
+          {
+            "name": "verdict",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "approved",
+                "rejected",
+                "needs_review"
+              ]
+            }
+          },
+          {
+            "name": "trust_band",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "auto_approve",
+                "flag_for_review",
+                "require_human_review"
+              ]
+            }
+          }
+        ],
+        "operationId": "listDecisions",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "decision_id": {
+                        "type": "string"
+                      },
+                      "job_id": {
+                        "type": "string"
+                      },
+                      "verdict": {
+                        "type": "string",
+                        "enum": [
+                          "approved",
+                          "rejected",
+                          "needs_review"
+                        ]
+                      },
+                      "trust_score": {
+                        "type": "number"
+                      },
+                      "trust_band": {
+                        "type": "string",
+                        "enum": [
+                          "auto_approve",
+                          "flag_for_review",
+                          "require_human_review"
+                        ]
+                      },
+                      "requires_human_review": {
+                        "type": "boolean"
+                      },
+                      "violation_count": {
+                        "type": "integer"
+                      },
+                      "warning_count": {
+                        "type": "integer"
+                      },
+                      "reasoning_summary": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "citations": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "regulation": {
+                              "type": "string"
+                            },
+                            "section": {
+                              "default": "",
+                              "type": "string"
+                            },
+                            "text": {
+                              "default": "",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "regulation"
+                          ]
+                        }
+                      },
+                      "created_at": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "decision_id",
+                      "job_id",
+                      "verdict",
+                      "trust_score",
+                      "trust_band",
+                      "requires_human_review",
+                      "violation_count",
+                      "warning_count",
+                      "created_at"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/{id}": {
+      "get": {
+        "summary": "Fetch a single decision by id.",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getDecision",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decision_id": {
+                      "type": "string"
+                    },
+                    "job_id": {
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "type": "string",
+                      "enum": [
+                        "approved",
+                        "rejected",
+                        "needs_review"
+                      ]
+                    },
+                    "trust_score": {
+                      "type": "number"
+                    },
+                    "trust_band": {
+                      "type": "string",
+                      "enum": [
+                        "auto_approve",
+                        "flag_for_review",
+                        "require_human_review"
+                      ]
+                    },
+                    "requires_human_review": {
+                      "type": "boolean"
+                    },
+                    "violation_count": {
+                      "type": "integer"
+                    },
+                    "warning_count": {
+                      "type": "integer"
+                    },
+                    "reasoning_summary": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "regulation": {
+                            "type": "string"
+                          },
+                          "section": {
+                            "default": "",
+                            "type": "string"
+                          },
+                          "text": {
+                            "default": "",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "regulation"
+                        ]
+                      }
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "decision_id",
+                    "job_id",
+                    "verdict",
+                    "trust_score",
+                    "trust_band",
+                    "requires_human_review",
+                    "violation_count",
+                    "warning_count",
+                    "created_at"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions/{id}/review": {
+      "post": {
+        "summary": "Apply a human reviewer's override to a flagged decision.",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "reviewDecision",
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "verdict": {
+                    "type": "string",
+                    "enum": [
+                      "approved",
+                      "rejected",
+                      "needs_review"
+                    ]
+                  },
+                  "reviewer": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "verdict",
+                  "reviewer"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decision_id": {
+                      "type": "string"
+                    },
+                    "job_id": {
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "type": "string",
+                      "enum": [
+                        "approved",
+                        "rejected",
+                        "needs_review"
+                      ]
+                    },
+                    "trust_score": {
+                      "type": "number"
+                    },
+                    "trust_band": {
+                      "type": "string",
+                      "enum": [
+                        "auto_approve",
+                        "flag_for_review",
+                        "require_human_review"
+                      ]
+                    },
+                    "requires_human_review": {
+                      "type": "boolean"
+                    },
+                    "violation_count": {
+                      "type": "integer"
+                    },
+                    "warning_count": {
+                      "type": "integer"
+                    },
+                    "reasoning_summary": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "regulation": {
+                            "type": "string"
+                          },
+                          "section": {
+                            "default": "",
+                            "type": "string"
+                          },
+                          "text": {
+                            "default": "",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "regulation"
+                        ]
+                      }
+                    },
+                    "created_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "decision_id",
+                    "job_id",
+                    "verdict",
+                    "trust_score",
+                    "trust_band",
+                    "requires_human_review",
+                    "violation_count",
+                    "warning_count",
+                    "created_at"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/overview": {
+      "get": {
+        "summary": "Platform analytics overview.",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          }
+        ],
+        "operationId": "analyticsOverview",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_decisions": {
+                      "type": "number"
+                    },
+                    "total_contracts": {
+                      "type": "number"
+                    },
+                    "avg_trust_score": {
+                      "type": "number"
+                    },
+                    "overall_approval_rate": {
+                      "type": "number"
+                    },
+                    "human_review_queue_depth": {
+                      "type": "number"
+                    },
+                    "decisions_this_month": {
+                      "type": "number"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "total_decisions",
+                    "total_contracts",
+                    "avg_trust_score",
+                    "overall_approval_rate",
+                    "human_review_queue_depth",
+                    "decisions_this_month"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/volume": {
+      "get": {
+        "summary": "Decision volume over time.",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          }
+        ],
+        "operationId": "analyticsVolume",
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "number"
+                      },
+                      "avg_trust": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "count"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "WCP Compliance Gateway API",
+    "version": "5.0.0"
+  }
+}
