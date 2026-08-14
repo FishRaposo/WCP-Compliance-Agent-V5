@@ -3,6 +3,9 @@
   "version": "5.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./offline-composition": "./src/offline-composition.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "playground": "mastra dev --dir src/mastra",
@@ -27,6 +30,7 @@
     "@mastra/loggers": "^1.2.0",
     "@mastra/observability": "^1.15.0",
     "@mastra/langfuse": "^1.4.0",
+    "@wcp/contracts": "workspace:*",
     "pino": "^9.0.0",
     "dotenv": "^16.4.0",
     "@wcp/typescript-client": "workspace:*"

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
+    "@wcp/agent": "workspace:*",
     "@wcp/contracts": "workspace:*",
     "@wcp/observability": "workspace:*",
     "@wcp/typescript-client": "workspace:*",

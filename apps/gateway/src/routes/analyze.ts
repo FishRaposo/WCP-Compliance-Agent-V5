@@ -4,6 +4,7 @@ import { agentClient } from "../clients/agent-client.js";
 import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
 import { logUpstreamError } from "../lib/error-log.js";
+import { config } from "../config.js";
 
 export const analyzeRoutes = new Hono();
 
@@ -11,6 +12,14 @@ const AnalyzeRequest = z.object({
   text: z.string().min(1),
   job_id: z.string().optional(),
 });
+
+async function analyze(payload: z.infer<typeof AnalyzeRequest>, headers: Record<string, string>) {
+  if (config.AGENT_SERVICE_TRANSPORT === "in-process") {
+    const { runOfflineAgentPipeline } = await import("@wcp/agent/offline-composition");
+    return runOfflineAgentPipeline(payload, headers);
+  }
+  return agentClient.post("/internal/workflows/wcp-pipeline", payload, headers);
+}
 
 analyzeRoutes.post("/api/v1/analyze", async (c) => {
   const body = await c.req.json();
@@ -23,11 +32,7 @@ analyzeRoutes.post("/api/v1/analyze", async (c) => {
   }
 
   try {
-    const decision = await agentClient.post(
-      "/internal/workflows/wcp-pipeline",
-      parsed.data,
-      getInternalHeaders(c),
-    );
+    const decision = await analyze(parsed.data, getInternalHeaders(c));
     return c.json(decision, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
