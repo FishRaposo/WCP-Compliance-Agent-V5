@@ -176,6 +176,9 @@ export const createSSEBridge = (
     throw new Error("Maximum SSE connections per client exceeded");
   }
   const deliveredRedisIds = new Set<string>();
+  const hasRedisResumeCursor = lastEventId !== undefined && /^\d+-\d+$/.test(lastEventId);
+  let redisCursor = hasRedisResumeCursor ? lastEventId : "$";
+  if (hasRedisResumeCursor) deliveredRedisIds.add(lastEventId);
   const createStreamHandler = (
     controller: ReadableStreamDefaultController<Uint8Array>
   ): StreamMessageHandler => async (messageId, fields) => {
@@ -189,19 +192,12 @@ export const createSSEBridge = (
       streamId: messageId,
     };
     controller.enqueue(encodeToStream(formatSSEEvent(payload)));
+    redisCursor = messageId;
     const conn = activeConnections.get(connectionId);
     if (conn) conn.lastActivity = Date.now();
   };
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      if (redisUrl) {
-        try {
-          const { ensureConsumerGroup: ensureGroup } = await import("./redis-streams.js");
-          await ensureGroup(streamConfig, redisUrl);
-        } catch (err) {
-          logger.warn("Redis consumer group unavailable at SSE start", { connectionId, err });
-        }
-      }
       activeConnections.set(connectionId, {
         controller,
         streamName: streamConfig.streamName,
@@ -225,7 +221,7 @@ export const createSSEBridge = (
         controller.enqueue(encodeToStream(formatSSEEvent(event)));
       }
 
-      if (redisUrl && lastEventId && /^\d+-\d+$/.test(lastEventId)) {
+      if (redisUrl && hasRedisResumeCursor) {
         try {
           const { replayStreamMessages } = await import("./redis-streams.js");
           await replayStreamMessages(
@@ -268,8 +264,15 @@ export const createSSEBridge = (
       if (!redisUrl) return;
 
       try {
-        const { readStreamMessages: readMessages } = await import("./redis-streams.js");
-        await readMessages(streamConfig, createStreamHandler(controller), 1000, redisUrl);
+        const { readStreamMessagesAfter } = await import("./redis-streams.js");
+        const result = await readStreamMessagesAfter(
+          streamConfig,
+          createStreamHandler(controller),
+          redisCursor,
+          1000,
+          redisUrl
+        );
+        redisCursor = result.cursor;
       } catch (err) {
         logger.error("SSE bridge pull error", { connectionId, err });
         const errorPayload: SSEEventPayload = {

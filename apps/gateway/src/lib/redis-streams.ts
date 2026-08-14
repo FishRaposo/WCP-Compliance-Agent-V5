@@ -26,12 +26,36 @@ interface RedisClientInterface {
   on(event: "error", listener: (err: Error) => void): void;
   connect(): Promise<void>;
   quit(): Promise<void>;
-  xgroup(...args: string[]): Promise<unknown>;
-  xreadgroup(...args: string[]): Promise<unknown>;
-  xrange(...args: string[]): Promise<unknown>;
-  xack(stream: string, group: string, id: string): Promise<number>;
-  xadd(stream: string, ...args: string[]): Promise<string>;
+  xGroupCreate(
+    stream: string,
+    group: string,
+    id: string,
+    options: { MKSTREAM: boolean }
+  ): Promise<string>;
+  xReadGroup(
+    group: string,
+    consumer: string,
+    stream: { key: string; id: string },
+    options: { BLOCK: number; COUNT: number }
+  ): Promise<RedisStreamsResult>;
+  xRead(
+    stream: { key: string; id: string },
+    options: { BLOCK: number; COUNT: number }
+  ): Promise<RedisStreamsResult>;
+  xRange(stream: string, start: string, end: string): Promise<RedisStreamMessage[]>;
+  xAck(stream: string, group: string, id: string): Promise<number>;
+  xAdd(stream: string, id: string, fields: Record<string, string>): Promise<string>;
 }
+
+interface RedisStreamMessage {
+  id: string;
+  message: Record<string, string>;
+}
+
+type RedisStreamsResult = Array<{
+  name: string;
+  messages: RedisStreamMessage[];
+}> | null;
 
 /** Redis client singleton - lazily initialized */
 let redisClient: RedisClientInterface | null = null;
@@ -62,7 +86,7 @@ const getRedisClient = async (redisUrl: string): Promise<RedisClientInterface> =
 export const ensureConsumerGroup = async (config: StreamConfig, redisUrl: string): Promise<void> => {
   const client = await getRedisClient(redisUrl);
   try {
-    await client.xgroup("CREATE", config.streamName, config.consumerGroup, "0", "MKSTREAM");
+    await client.xGroupCreate(config.streamName, config.consumerGroup, "0", { MKSTREAM: true });
     logger.info("Consumer group ensured", { stream: config.streamName, group: config.consumerGroup });
   } catch (err) {
     if (err instanceof Error && err.message.includes("BUSYGROUP")) {
@@ -72,18 +96,6 @@ export const ensureConsumerGroup = async (config: StreamConfig, redisUrl: string
     }
   }
 };
-
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size));
-  }
-  return chunks;
-}
-
-/** Internal type for XREADGROUP results */
-type XReadGroupResult = [streamName: string, messages: [messageId: string, fields: string[]][]][];
-type XRangeResult = [messageId: string, fields: string[]][];
 
 /**
  * Replays persisted stream entries strictly newer than an SSE Last-Event-ID.
@@ -97,16 +109,13 @@ export const replayStreamMessages = async (
   redisUrl: string
 ): Promise<number> => {
   const client = await getRedisClient(redisUrl);
-  const messages = (await client.xrange(
-    config.streamName,
-    `(${lastEventId}`,
-    "+"
-  )) as XRangeResult;
+  const messages = await client.xRange(config.streamName, lastEventId, "+");
 
   let processed = 0;
-  for (const [messageId, rawFields] of messages) {
+  for (const { id: messageId, message: fields } of messages) {
+    if (messageId === lastEventId) continue;
     try {
-      await handler(messageId, Object.fromEntries(chunkArray(rawFields, 2)));
+      await handler(messageId, fields);
       processed++;
     } catch (err) {
       logger.error("Failed to replay stream message", { messageId, err });
@@ -125,27 +134,20 @@ export const readStreamMessages = async (
   redisUrl: string
 ): Promise<number> => {
   const client = await getRedisClient(redisUrl);
-  const results = (await client.xreadgroup(
-    "GROUP",
+  const results = await client.xReadGroup(
     config.consumerGroup,
     config.consumerName,
-    "BLOCK",
-    String(blockMs),
-    "COUNT",
-    "100",
-    "STREAMS",
-    config.streamName,
-    ">"
-  )) as XReadGroupResult | null;
+    { key: config.streamName, id: ">" },
+    { BLOCK: blockMs, COUNT: 100 }
+  );
   if (!results) return 0;
 
   let processed = 0;
-  for (const [, messages] of results) {
-    for (const [messageId, rawFields] of messages) {
+  for (const { messages } of results) {
+    for (const { id: messageId, message: fields } of messages) {
       try {
-        const fields = Object.fromEntries(chunkArray(rawFields, 2));
         await handler(messageId, fields);
-        await client.xack(config.streamName, config.consumerGroup, messageId);
+        await client.xAck(config.streamName, config.consumerGroup, messageId);
         processed++;
       } catch (err) {
         logger.error("Failed to process stream message", { messageId, err });
@@ -153,6 +155,48 @@ export const readStreamMessages = async (
     }
   }
   return processed;
+};
+
+export interface StreamReadResult {
+  processed: number;
+  cursor: string;
+}
+
+/**
+ * Reads live entries after an explicit cursor without consumer-group sharing.
+ * Each SSE connection owns its cursor, so every connected client can observe
+ * the same stream entry and resume independently.
+ */
+export const readStreamMessagesAfter = async (
+  config: StreamConfig,
+  handler: StreamMessageHandler,
+  cursor: string,
+  blockMs = 5000,
+  redisUrl: string
+): Promise<StreamReadResult> => {
+  const client = await getRedisClient(redisUrl);
+  const results = await client.xRead(
+    { key: config.streamName, id: cursor },
+    { BLOCK: blockMs, COUNT: 100 }
+  );
+  if (!results) return { processed: 0, cursor };
+
+  let processed = 0;
+  let nextCursor = cursor;
+  for (const { messages } of results) {
+    for (const { id: messageId, message: fields } of messages) {
+      if (messageId === nextCursor) continue;
+      try {
+        await handler(messageId, fields);
+        nextCursor = messageId;
+        processed++;
+      } catch (err) {
+        logger.error("Failed to process stream message", { messageId, err });
+        return { processed, cursor: nextCursor };
+      }
+    }
+  }
+  return { processed, cursor: nextCursor };
 };
 
 /**
@@ -164,11 +208,7 @@ export const addStreamMessage = async (
   redisUrl: string
 ): Promise<string> => {
   const client = await getRedisClient(redisUrl);
-  const flatArgs: string[] = [];
-  for (const [k, v] of Object.entries(fields)) {
-    flatArgs.push(k, v);
-  }
-  const messageId = await client.xadd(streamName, "*", ...flatArgs);
+  const messageId = await client.xAdd(streamName, "*", fields);
   logger.debug("Message added to stream", { streamName, messageId });
   return messageId;
 };
