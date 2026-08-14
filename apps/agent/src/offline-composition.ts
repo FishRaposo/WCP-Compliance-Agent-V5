@@ -11,7 +11,6 @@ import {
   DeterministicReportSchema,
   ExtractedWCPSchema,
   TrustScoredDecisionSchema,
-  type DeterministicReport,
   type ExtractedWCP,
   type TrustScoredDecision,
 } from "./mastra/schemas.js";
@@ -20,91 +19,17 @@ import {
   SERVICE_TRANSPORT_KEY,
 } from "./mastra/tools/http.js";
 import { JOB_ID_KEY } from "./mastra/workflows/wcp-pipeline.js";
+import { runComplianceCoreBridge } from "./compliance-core-bridge.js";
 
 type PipelineInput = { text: string; job_id?: string };
-
-function textField(text: string, label: string, fallback: string): string {
-  const line = text
-    .split(/\r?\n/)
-    .find((candidate) => candidate.toLowerCase().startsWith(`${label.toLowerCase()}:`));
-  return line?.slice(line.indexOf(":") + 1).trim() || fallback;
-}
-
-function numberField(text: string, label: string, fallback: number): number {
-  const value = Number(textField(text, label, String(fallback)).replace(/[$,]/g, ""));
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function extractDeterministically({ text }: { text: string }): ExtractedWCP {
-  return ExtractedWCPSchema.parse({
-    job_id: "offline-extraction",
-    contractor: { name: textField(text, "Contractor", "Offline contractor") },
-    project: { name: textField(text, "Project", "Offline project") },
-    employees: [
-      {
-        name: textField(text, "Employee", "Offline employee"),
-        trade_classification: textField(text, "Trade", "Unclassified"),
-        hours_worked: numberField(text, "Hours", 40),
-        overtime_hours: numberField(text, "Overtime hours", 0),
-        hourly_wage: numberField(text, "Hourly wage", 25),
-        fringe_benefits: numberField(text, "Fringe benefits", 0),
-        gross_earnings: numberField(text, "Gross earnings", 1000),
-        deductions: numberField(text, "Deductions", 0),
-        net_wages: numberField(text, "Net wages", 1000),
-      },
-    ],
-  });
-}
-
-function validateDeterministically(extracted: ExtractedWCP): DeterministicReport {
-  const checks = extracted.employees.flatMap((employee, index) => {
-    const expectedGross =
-      employee.hours_worked * employee.hourly_wage +
-      employee.overtime_hours * employee.hourly_wage * 1.5;
-    const expectedNet = employee.gross_earnings - employee.deductions;
-    const results = [];
-    if (Math.abs(employee.gross_earnings - expectedGross) > 0.01) {
-      results.push({
-        check_id: `offline-gross-${index}`,
-        check_type: "total_arithmetic" as const,
-        employee_name: employee.name,
-        status: "fail" as const,
-        expected_value: expectedGross,
-        actual_value: employee.gross_earnings,
-        variance: employee.gross_earnings - expectedGross,
-        message: "Gross earnings do not match the deterministic offline calculation.",
-      });
-    }
-    if (Math.abs(employee.net_wages - expectedNet) > 0.01) {
-      results.push({
-        check_id: `offline-net-${index}`,
-        check_type: "total_arithmetic" as const,
-        employee_name: employee.name,
-        status: "fail" as const,
-        expected_value: expectedNet,
-        actual_value: employee.net_wages,
-        variance: employee.net_wages - expectedNet,
-        message: "Net wages do not match gross earnings minus deductions.",
-      });
-    }
-    return results;
-  });
-  return DeterministicReportSchema.parse({
-    job_id: extracted.job_id,
-    checks,
-    overall_status: checks.length === 0 ? "pass" : "fail",
-    violation_count: checks.length,
-    warning_count: 0,
-    passed_count: checks.length === 0 ? 2 : Math.max(0, 2 - checks.length),
-  });
-}
 
 const extract = new InProcessServiceAdapter({
   service: "compliance-core",
   operation: "extract",
   allowedCallers: ["agent"],
   idempotent: true,
-  execute: async (input: { text: string }) => extractDeterministically(input),
+  execute: async (input: { text: string }) =>
+    ExtractedWCPSchema.parse(await runComplianceCoreBridge("extract", input)),
 });
 
 const validate = new InProcessServiceAdapter({
@@ -112,7 +37,8 @@ const validate = new InProcessServiceAdapter({
   operation: "validate",
   allowedCallers: ["agent"],
   idempotent: true,
-  execute: async (input: ExtractedWCP) => validateDeterministically(input),
+  execute: async (input: ExtractedWCP) =>
+    DeterministicReportSchema.parse(await runComplianceCoreBridge("validate", input)),
 });
 
 export const offlineDecisionStore = new InMemoryDecisionStore({

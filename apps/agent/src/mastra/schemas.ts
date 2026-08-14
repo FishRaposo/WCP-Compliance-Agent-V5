@@ -86,6 +86,8 @@ export const ExtractedWCPSchema = z.object({
   certification_date: z.string().nullable().optional(),
   payroll_number: z.number().nullable().optional(),
   week_ending: z.string().nullable().optional(),
+  report_id: z.string().nullable().optional(),
+  artifact_id: z.string().nullable().optional(),
 });
 export type ExtractedWCP = z.infer<typeof ExtractedWCPSchema>;
 
