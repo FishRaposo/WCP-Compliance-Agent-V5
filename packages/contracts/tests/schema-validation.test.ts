@@ -7,9 +7,14 @@ import {
   DeterministicReportSchema,
   ExtractedWCPSchema,
   IngestionJobSchema,
+  PipelineEventSchema,
+  TraceContextSchema,
+  CostLatencySchema,
+  EvidenceManifestSchema,
   PayrollRecordSchema,
   TrustScoredDecisionSchema,
 } from "../generated/typescript/index.js";
+import { attachPipelineMetadata, createPipelineEvent } from "../adapters.js";
 
 const schemas: [string, z.ZodTypeAny][] = [
   ["AuditEventSchema", AuditEventSchema],
@@ -18,6 +23,10 @@ const schemas: [string, z.ZodTypeAny][] = [
   ["DeterministicReportSchema", DeterministicReportSchema],
   ["ExtractedWCPSchema", ExtractedWCPSchema],
   ["IngestionJobSchema", IngestionJobSchema],
+  ["PipelineEventSchema", PipelineEventSchema],
+  ["TraceContextSchema", TraceContextSchema],
+  ["CostLatencySchema", CostLatencySchema],
+  ["EvidenceManifestSchema", EvidenceManifestSchema],
   ["PayrollRecordSchema", PayrollRecordSchema],
   ["TrustScoredDecisionSchema", TrustScoredDecisionSchema],
 ];
@@ -28,8 +37,46 @@ describe("Schema validation", () => {
     expect(schema._def.typeName).toBe("ZodObject");
   });
 
-  it("all 8 schemas are defined", () => {
-    expect(schemas).toHaveLength(8);
+  it("all 12 schemas are defined", () => {
+    expect(schemas).toHaveLength(12);
+  });
+
+  it("accepts versioned additive pipeline metadata without changing legacy decision fields", () => {
+    expect(
+      TraceContextSchema.safeParse({ schema_version: "v1", request_id: "req-001", trace_id: "trace-001" })
+        .success,
+    ).toBe(true);
+    expect(
+      CostLatencySchema.safeParse({ schema_version: "v1", cost_usd: 0.002, latency_ms: 125 }).success,
+    ).toBe(true);
+    expect(
+      EvidenceManifestSchema.safeParse({
+        schema_version: "v1",
+        artifact_id: "artifact-001",
+        entries: [{ name: "deterministic-report.json", sha256: "a".repeat(64) }],
+      }).success,
+    ).toBe(true);
+    expect(
+      PipelineEventSchema.safeParse({
+        schema_version: "v1",
+        event_type: "validation_complete",
+        job_id: "job-001",
+        trace_context: { request_id: "req-001" },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("adapts legacy payloads additively without changing their values or enum strings", () => {
+    const legacy = { job_id: "job-001", verdict: "approved", trust_band: "auto_approve" };
+    const adapted = attachPipelineMetadata(legacy, {
+      trace_context: { schema_version: "v1", request_id: "req-001" },
+    });
+
+    expect(adapted).toMatchObject(legacy);
+    expect(adapted.trace_context).toEqual({ schema_version: "v1", request_id: "req-001" });
+    expect(
+      createPipelineEvent({ schema_version: "v1", event_type: "decision_persisted", job_id: "job-001" }),
+    ).toMatchObject({ event_type: "decision_persisted", job_id: "job-001" });
   });
 
   it("AuditEventSchema requires id, job_id, event_type, created_at", () => {

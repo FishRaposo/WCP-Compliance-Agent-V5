@@ -28,6 +28,13 @@ class Contract(BaseModel):
         created_at: str | None = None
         updated_at: str | None = None
 
+class CostLatency(BaseModel):
+        schema_version: str
+        cost_usd: float
+        latency_ms: int
+        stage: str | None = None
+        model: str | None = None
+
 class TrustScoredDecision(BaseModel):
         job_id: str
         verdict: str
@@ -75,6 +82,11 @@ class DeterministicReport(BaseModel):
         confidence_inputs: dict | None = None
         dbwd_rates_used: list | None = None
 
+class EvidenceManifest(BaseModel):
+        schema_version: str
+        artifact_id: str
+        entries: list
+
 class ExtractedWCP(BaseModel):
         job_id: str
         contractor: dict
@@ -116,3 +128,21 @@ class PayrollRecord(BaseModel):
         source: str | None = None
         source_reference: str | None = None
         created_at: str | None = None
+
+class PipelineEvent(BaseModel):
+        schema_version: str
+        event_type: str
+        job_id: str
+        trace_context: dict | None = None
+        cost_latency: dict | None = None
+        evidence_manifest: dict | None = None
+        payload: dict | None = None
+
+class TraceContext(BaseModel):
+        schema_version: str
+        request_id: str
+        trace_id: str | None = None
+        tenant_id: str | None = None
+        artifact_id: str | None = None
+        workflow_id: str | None = None
+        decision_id: str | None = None

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TraceContext",
+  "description": "Versioned request and trace identifiers propagated across the WCP pipeline",
+  "type": "object",
+  "required": ["schema_version", "request_id"],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["v1"] },
+    "request_id": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "tenant_id": { "type": "string" },
+    "artifact_id": { "type": "string" },
+    "workflow_id": { "type": "string" },
+    "decision_id": { "type": "string" }
+  }
+}

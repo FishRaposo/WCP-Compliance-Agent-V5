@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PipelineEvent",
+  "description": "Versioned additive event envelope for the deterministic WCP pipeline",
+  "type": "object",
+  "required": ["schema_version", "event_type", "job_id"],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["v1"] },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "artifact_received",
+        "extraction_complete",
+        "validation_complete",
+        "verdict_issued",
+        "trust_scored",
+        "decision_persisted",
+        "human_review_queued",
+        "human_review_complete"
+      ]
+    },
+    "job_id": { "type": "string" },
+    "trace_context": { "type": "object" },
+    "cost_latency": { "type": "object" },
+    "evidence_manifest": { "type": "object" },
+    "payload": { "type": "object" }
+  }
+}

@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generated_at": "2026-05-29",
-    "model": "mock",
-    "version": "5.2.0",
+    "generated_at": "2026-08-14",
+    "model": "deterministic",
+    "version": "5.2.1",
     "total_examples": 100
   },
   "scores": {
@@ -104,6 +104,14 @@
     "gs-097": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
     "gs-098": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
     "gs-099": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
-    "gs-100": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0}
+    "gs-100": {"verdict_match": true, "overall_match": true, "violation_count_min_met": true, "warning_count": 0},
+    "gs-014": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-038": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-039": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-040": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-047": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-051": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-056": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0},
+    "gs-074": {"verdict_match": true, "overall_match": true, "violation_count": 0, "warning_count": 0}
   }
 }

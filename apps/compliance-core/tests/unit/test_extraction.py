@@ -1,6 +1,47 @@
 from wcp_compliance.extraction.pdf_extractor import extract_from_text
 
 
+def test_extract_block_label_variants_dates_and_decimal_hours():
+    result = extract_from_text(
+        "Company: Variant Builders\n"
+        "Project: Variant Site\n"
+        "Work Site: Baltimore, MD\n"
+        "Week Ending Date: 03/15/2025\n"
+        "Certification Date: March 16, 2025\n\n"
+        "Employee Name: Avery Worker\n"
+        "Job Classification: Electrician\n"
+        "Regular Hours: 40.5\n"
+        "OT Hrs: 1.25\n"
+        "Base Rate: 55.00\n"
+        "Fringe: 0\n"
+        "Gross: 2337.50\n"
+        "Deductions: 0\n"
+        "Net: 2337.50\n"
+    )
+
+    assert result.project.location == "Baltimore, MD"
+    assert result.week_ending.isoformat() == "2025-03-15"
+    assert result.certification_date.isoformat() == "2025-03-16"
+    assert len(result.employees) == 1
+    employee = result.employees[0]
+    assert employee.name == "Avery Worker"
+    assert employee.trade_classification == "Electrician"
+    assert employee.hours_worked == 41.75
+    assert employee.overtime_hours == 1.25
+    assert employee.hourly_wage == 55.0
+
+
+def test_refuses_malformed_variant_block_instead_of_creating_zero_value_employee():
+    result = extract_from_text(
+        "Employee Name: Malformed Hours\n"
+        "Job Classification: Electrician\n"
+        "Regular Hours: 40.5.2\n"
+        "Base Rate: $55.00\n"
+    )
+
+    assert result.employees == []
+
+
 def test_extract_from_text_basic():
     text = (
         "Contractor: ABC Construction\n"

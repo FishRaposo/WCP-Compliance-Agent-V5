@@ -67,7 +67,7 @@ def extract_from_text(text: str) -> ExtractedWCP:
 
     contractor_name = _extract_pattern(
         text,
-        r"(?:contractor|employer|company)[:\s]+([^\n,]+)",
+        r"(?:contractor(?:.?name)?|employer(?:.?name)?|company(?:.?name)?)[:\s]+([^\n,]+)",
     ) or "Unknown Contractor"
 
     contractor_address = _extract_pattern(
@@ -87,7 +87,7 @@ def extract_from_text(text: str) -> ExtractedWCP:
 
     project_location = _extract_pattern(
         text,
-        r"(?:project.?location|site.?location|locality)[:\s]+([^\n]+)",
+        r"(?:^|\n)\s*(?:project.?location|site.?location|work.?location|work.?site|locality|location)[:\s]+([^\n]+)",
     ) or "Washington, DC"
 
     contract_number = _extract_pattern(
@@ -104,12 +104,12 @@ def extract_from_text(text: str) -> ExtractedWCP:
 
     week_ending = _extract_date(
         text,
-        r"(?:week.?ending|period.?ending)[:\s]*([^\n,]+)",
+        r"(?:week.?ending(?:.?date)?|period.?ending(?:.?date)?)[:\s]*([^\n]+)",
     )
 
     certification_date = _extract_date(
         text,
-        r"(?:certified|certification.?date)[:\s]*([^\n,]+)",
+        r"(?:certified|certification.?date|date.?certified)[:\s]*([^\n]+)",
     )
 
     employees = _extract_employees(text)
@@ -256,7 +256,9 @@ def _row_is_consistent(
 def _extract_employees_simple(text: str) -> list[EmployeeRecord]:
     employees: list[EmployeeRecord] = []
 
-    name_pattern = re.compile(r"(?:^|\n)\s*(?:name|employee)\s*[:\s]", re.IGNORECASE)
+    name_pattern = re.compile(
+        r"(?:^|\n)\s*(?:name|employee(?:.?name)?)\s*[:\s]", re.IGNORECASE
+    )
     positions = [m.start() for m in name_pattern.finditer(text)]
 
     if not positions:
@@ -278,7 +280,7 @@ def _extract_employees_simple(text: str) -> list[EmployeeRecord]:
 def _parse_employee_block(block: str) -> EmployeeRecord | None:
     name_extracted = _extract_pattern(
         block,
-        r"(?:name|employee)[: \t]+([^\n,]+)",
+        r"(?:name|employee(?:.?name)?)[: \t]+([^\n,]+)",
     )
     name = name_extracted.strip() if name_extracted else "Unknown"
     if name == "Unknown":
@@ -286,23 +288,42 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
 
     raw_trade = _extract_pattern(
         block,
-        r"(?:trade|role|classification)[: \t]+([^\n,]+)",
+        r"(?:trade|role|(?:job|work|craft).?classification|classification)[: \t]+([^\n,]+)",
     ) or "Unknown"
     trade = resolve_classification(raw_trade.strip())
 
-    hours = _extract_float(block, r"(?:hours.?worked|hours)[: \t]*(-?\d+(?:\.\d+)?)") or 0.0
+    regular_hours_label = r"(?:regular.?hours|regular.?hrs?)"
+    regular_hours = _extract_float(
+        block, regular_hours_label + r"[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])"
+    )
+    if re.search(regular_hours_label + r"[: \t]", block, re.IGNORECASE) and regular_hours is None:
+        return None
+
+    hours = _extract_float(
+        block, r"(?:hours.?worked|hours)[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])"
+    ) or 0.0
     overtime = (
-        _extract_float(block, r"(?:overtime.?hours|overtime|ot)[: \t]*(-?\d+(?:\.\d+)?)")
+        _extract_float(
+            block,
+            r"(?:overtime.?hours|overtime.?hrs?|ot.?hours|ot.?hrs?|overtime|ot)"
+            r"[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])",
+        )
         or 0.0
     )
 
-    # Issue 8: total hours calculation for arithmetic checks
-    total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
+    # A labelled regular-hours field is distinct from total hours. Retain the
+    # established generic-hours behavior for legacy blocks, but add decimal OT
+    # to explicit regular hours so the arithmetic remains faithful.
+    if regular_hours is not None:
+        total_hours = regular_hours + overtime
+    else:
+        total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
 
     wage = (
         _extract_float(
             block,
-            r"(?:hourly.?wage|wage|hourly.?rate|rate)[: \t]*\$?(-?\d+(?:\.\d+)?)",
+            r"(?:base.?rate|base.?wage|hourly.?wage|wage|hourly.?rate|rate)"
+            r"[: \t]*\$?(-?\d+(?:\.\d+)?)(?![\d.])",
         )
         or 0.0
     )

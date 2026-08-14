@@ -826,5 +826,77 @@
     "expected_violations_min": 1,
     "expected_warnings": 0,
     "description": "Surveyor with overtime hours but no overtime premium (straight time)"
+  },
+  {
+    "id": "gs-014",
+    "input": "Contractor: Label Builders\nProject: Label Test\nLocation: Washington, DC\nCertified: 2025-06-15\n\nEmployee Name: Erin Labels\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Employee Name block label"
+  },
+  {
+    "id": "gs-038",
+    "input": "Contractor: Classification Builders\nProject: Label Test\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Chris Class\nJob Classification: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Job Classification block label"
+  },
+  {
+    "id": "gs-039",
+    "input": "Contractor: Overtime Labels\nProject: Label Test\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Ollie Overtime\nTrade: Electrician\nHours: 40\nOT Hrs: 5\nHourly Wage: 55.00\nFringe: 1600.00\nGross: 2612.50\nDeductions: 0\nNet: 2612.50",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "OT Hrs block label"
+  },
+  {
+    "id": "gs-040",
+    "input": "Contractor: Wage Labels\nProject: Label Test\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Bailey Base\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nBase Rate: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Base Rate block label"
+  },
+  {
+    "id": "gs-047",
+    "input": "Contractor: Location Labels\nProject: Label Test\nWork Site: Washington, DC\nCertified: 2025-06-15\n\nName: Lila Location\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Work Site project-location label"
+  },
+  {
+    "id": "gs-051",
+    "input": "Contractor: US Date Builders\nProject: Date Test\nLocation: Washington, DC\nWeek Ending Date: 03/15/2025\nCertified: 03/16/2025\n\nName: Uma Date\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "US dates with Week Ending Date label"
+  },
+  {
+    "id": "gs-056",
+    "input": "Contractor: Long Date Builders\nProject: Date Test\nLocation: Washington, DC\nWeek Ending: March 15, 2025\nCertification Date: March 16, 2025\n\nName: Lola Longdate\nTrade: Electrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 0\nNet: 2200.00",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Long-form dates with Certification Date label"
+  },
+  {
+    "id": "gs-074",
+    "input": "Contractor: Decimal Hours Builders\nProject: Decimal Test\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Dana Decimal\nTrade: Electrician\nRegular Hours: 40.5\nOT Hrs: 1.25\nBase Rate: 55.00\nFringe: 1500.00\nGross: 2330.625\nDeductions: 0\nNet: 2330.625",
+    "expected_verdict": "approved",
+    "expected_overall": "pass",
+    "expected_violations": 0,
+    "expected_warnings": 0,
+    "description": "Decimal regular and overtime hour arithmetic"
   }
 ]

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EvidenceManifest",
+  "description": "Versioned manifest of immutable evidence artifacts for a WCP pipeline run",
+  "type": "object",
+  "required": ["schema_version", "artifact_id", "entries"],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["v1"] },
+    "artifact_id": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "sha256"],
+        "properties": {
+          "name": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "content_type": { "type": "string" },
+          "bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

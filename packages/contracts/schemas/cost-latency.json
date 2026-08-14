@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CostLatency",
+  "description": "Versioned additive cost and latency metadata for pipeline work",
+  "type": "object",
+  "required": ["schema_version", "cost_usd", "latency_ms"],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["v1"] },
+    "cost_usd": { "type": "number", "minimum": 0 },
+    "latency_ms": { "type": "integer", "minimum": 0 },
+    "stage": { "type": "string" },
+    "model": { "type": "string" }
+  }
+}

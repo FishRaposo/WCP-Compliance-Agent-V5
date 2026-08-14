@@ -31,6 +31,15 @@ export const ContractSchema = z.object({
 });
 export type Contract = z.infer<typeof ContractSchema>;
 
+export const CostLatencySchema = z.object({
+  schema_version: z.enum(["v1"]),
+  cost_usd: z.number(),
+  latency_ms: z.number().int(),
+  stage: z.string().optional(),
+  model: z.string().optional(),
+});
+export type CostLatency = z.infer<typeof CostLatencySchema>;
+
 export const TrustScoredDecisionSchema = z.object({
   job_id: z.string(),
   verdict: z.enum(["approved", "rejected", "needs_review"]),
@@ -84,6 +93,13 @@ export const DeterministicReportSchema = z.object({
 });
 export type DeterministicReport = z.infer<typeof DeterministicReportSchema>;
 
+export const EvidenceManifestSchema = z.object({
+  schema_version: z.enum(["v1"]),
+  artifact_id: z.string(),
+  entries: z.array(z.any()),
+});
+export type EvidenceManifest = z.infer<typeof EvidenceManifestSchema>;
+
 export const ExtractedWCPSchema = z.object({
   job_id: z.string(),
   contractor: z.record(z.any()),
@@ -131,3 +147,25 @@ export const PayrollRecordSchema = z.object({
   created_at: z.string().optional(),
 });
 export type PayrollRecord = z.infer<typeof PayrollRecordSchema>;
+
+export const PipelineEventSchema = z.object({
+  schema_version: z.enum(["v1"]),
+  event_type: z.enum(["artifact_received", "extraction_complete", "validation_complete", "verdict_issued", "trust_scored", "decision_persisted", "human_review_queued", "human_review_complete"]),
+  job_id: z.string(),
+  trace_context: z.record(z.any()).optional(),
+  cost_latency: z.record(z.any()).optional(),
+  evidence_manifest: z.record(z.any()).optional(),
+  payload: z.record(z.any()).optional(),
+});
+export type PipelineEvent = z.infer<typeof PipelineEventSchema>;
+
+export const TraceContextSchema = z.object({
+  schema_version: z.enum(["v1"]),
+  request_id: z.string(),
+  trace_id: z.string().optional(),
+  tenant_id: z.string().optional(),
+  artifact_id: z.string().optional(),
+  workflow_id: z.string().optional(),
+  decision_id: z.string().optional(),
+});
+export type TraceContext = z.infer<typeof TraceContextSchema>;
