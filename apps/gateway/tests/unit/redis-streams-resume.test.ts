@@ -11,10 +11,39 @@ const redis = vi.hoisted(() => ({
   connect: vi.fn(),
   quit: vi.fn(),
   on: vi.fn(),
+  connectionMode: "available" as "available" | "refused",
+  createdOptions: undefined as
+    | {
+        url?: string;
+        socket?: {
+          connectTimeout?: number;
+          reconnectStrategy?: false;
+        };
+      }
+    | undefined,
 }));
 
 vi.mock("redis", () => ({
-  createClient: () => redis,
+  createClient: (options: typeof redis.createdOptions) => {
+    redis.createdOptions = options;
+    return {
+      ...redis,
+      connect: () => {
+        if (redis.connectionMode === "refused") {
+          const socket = options?.socket;
+          if (
+            socket?.reconnectStrategy === false &&
+            typeof socket.connectTimeout === "number" &&
+            socket.connectTimeout > 0
+          ) {
+            return Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:1"));
+          }
+          return new Promise<void>(() => undefined);
+        }
+        return redis.connect();
+      },
+    };
+  },
 }));
 
 describe("Redis SSE resume", () => {
@@ -24,6 +53,8 @@ describe("Redis SSE resume", () => {
     bridge.closeAllSSEConnections();
     bridge.clearSSEEventHistory();
     await streams.closeStreamConsumer();
+    redis.connectionMode = "available";
+    redis.createdOptions = undefined;
     vi.resetAllMocks();
   });
 
@@ -79,6 +110,40 @@ describe("Redis SSE resume", () => {
       streamId: "175-0",
     });
     expect(bridge.getSSEEventsAfter("wcp.decisions")).toEqual([]);
+  });
+
+  it("falls back locally within a bounded time when configured Redis refuses connection", async () => {
+    redis.connectionMode = "refused";
+    const bridge = await import("../../src/lib/sse-bridge.js");
+    bridge.clearSSEEventHistory();
+
+    const published = await Promise.race([
+      bridge.publishSSEEvent(
+        "wcp.decisions",
+        {
+          type: "decision.created",
+          data: { id: "decision-local-fallback" },
+          timestamp: "2026-08-14T00:00:03.000Z",
+        },
+        "redis://127.0.0.1:1",
+      ),
+      new Promise<"timed-out">((resolve) => {
+        setTimeout(() => resolve("timed-out"), 100);
+      }),
+    ]);
+
+    expect(published).not.toBe("timed-out");
+    expect(redis.createdOptions).toMatchObject({
+      url: "redis://127.0.0.1:1",
+      socket: {
+        connectTimeout: expect.any(Number),
+        reconnectStrategy: false,
+      },
+    });
+    expect(published).toMatchObject({
+      data: { id: "decision-local-fallback" },
+      streamId: "local-1",
+    });
   });
 
   it("replays strictly after Last-Event-ID with structured camel-case XRANGE", async () => {

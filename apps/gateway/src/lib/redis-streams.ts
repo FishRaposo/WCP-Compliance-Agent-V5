@@ -57,6 +57,8 @@ type RedisStreamsResult = Array<{
   messages: RedisStreamMessage[];
 }> | null;
 
+const REDIS_CONNECT_TIMEOUT_MS = 1_000;
+
 /** Redis client singleton - lazily initialized */
 let redisClient: RedisClientInterface | null = null;
 
@@ -67,7 +69,13 @@ const getRedisClient = async (redisUrl: string): Promise<RedisClientInterface> =
   if (redisClient !== null) return redisClient;
   try {
     const { createClient } = await import("redis");
-    const client = createClient({ url: redisUrl }) as RedisClientInterface;
+    const client = createClient({
+      url: redisUrl,
+      socket: {
+        connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
+        reconnectStrategy: false,
+      },
+    }) as RedisClientInterface;
     client.on("error", (err: Error) => {
       logger.error("Redis client error", { err });
     });
