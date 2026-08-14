@@ -2,52 +2,122 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import re
 import sys
 from typing import Any
 
 from wcp_compliance.extraction import extract_from_text
 from wcp_compliance.models.enums import CheckStatus, CheckType, OverallStatus
-from wcp_compliance.models.schemas import ComplianceCheck, DeterministicReport, ExtractedWCP
+from wcp_compliance.models.schemas import (
+    ComplianceCheck,
+    DeterministicReport,
+    ExtractedWCP,
+    OfflineExtractionMetadata,
+)
 from wcp_compliance.rules.engine import run_rule_engine
 
-_NONCANONICAL_PREFIX = "offline-noncanonical:"
 _REQUIRED_RAW_FIELDS = {
     "contractor": (
-        r"(?:^|\n)\s*(?:contractor(?:.?name)?|employer(?:.?name)?|"
-        r"company(?:.?name)?)\s*:"
+        r"(?:^|\n)[ \t]*(?:contractor(?:[ _-]?name)?|employer(?:[ _-]?name)?|"
+        r"company(?:[ _-]?name)?)[ \t]*:[ \t]*(?P<value>[^\r\n]*)"
     ),
-    "project": r"(?:^|\n)\s*(?:project|job.?name)\s*:",
+    "project": r"(?:^|\n)[ \t]*(?:project|job[ _-]?name)[ \t]*:[ \t]*(?P<value>[^\r\n]*)",
     "project_location": (
-        r"(?:^|\n)\s*(?:project.?location|site.?location|work.?location|"
-        r"work.?site|locality|location)\s*:"
+        r"(?:^|\n)[ \t]*(?:project[ _-]?location|site[ _-]?location|"
+        r"work[ _-]?location|work[ _-]?site|locality|location)[ \t]*:"
+        r"[ \t]*(?P<value>[^\r\n]*)"
     ),
-    "wage_determination": r"(?:^|\n)\s*(?:wage.?determination|wd.?number)\s*:",
-    "week_ending": r"(?:^|\n)\s*(?:week.?ending(?:.?date)?|period.?ending(?:.?date)?)\s*:",
+    "wage_determination": (
+        r"(?:^|\n)[ \t]*(?:wage[ _-]?determination|wd[ _-]?number)[ \t]*:"
+        r"[ \t]*(?P<value>[^\r\n]*)"
+    ),
+    "week_ending": (
+        r"(?:^|\n)[ \t]*(?:week[ _-]?ending(?:[ _-]?date)?|"
+        r"period[ _-]?ending(?:[ _-]?date)?)[ \t]*:[ \t]*(?P<value>[^\r\n]*)"
+    ),
     "certification_date": (
-        r"(?:^|\n)\s*(?:certified|certification.?date|date.?certified)\s*:"
+        r"(?:^|\n)[ \t]*(?:certified|certification[ _-]?date|"
+        r"date[ _-]?certified)[ \t]*:[ \t]*(?P<value>[^\r\n]*)"
     ),
 }
+_WAGE_DETERMINATION_PATTERN = re.compile(
+    r"^(?:WD-?)?[A-Z]{2}-?\d{4}-?\d{3,4}(?:-[A-Z0-9]+)*$",
+    re.IGNORECASE,
+)
+
+
+def _meaningful_text(value: str | None) -> bool:
+    if value is None:
+        return False
+    stripped = value.strip()
+    if not stripped or not any(character.isalnum() for character in stripped):
+        return False
+    normalized = stripped.casefold()
+    return not normalized.startswith("unknown") and normalized not in {
+        "n/a",
+        "na",
+        "none",
+        "null",
+        "unclassified",
+    }
+
+
+def _usable_employee_values(extracted: ExtractedWCP) -> bool:
+    for employee in extracted.employees:
+        values = (
+            employee.hours_worked,
+            employee.overtime_hours,
+            employee.hourly_wage,
+            employee.fringe_benefits,
+            employee.gross_earnings,
+            employee.deductions,
+            employee.net_wages,
+        )
+        if not all(math.isfinite(value) for value in values):
+            return False
+        if employee.hours_worked <= 0 or employee.hourly_wage <= 0 or employee.gross_earnings <= 0:
+            return False
+        if min(
+            employee.overtime_hours,
+            employee.fringe_benefits,
+            employee.deductions,
+            employee.net_wages,
+        ) < 0:
+            return False
+    return True
 
 
 def _canonical_input_issues(text: str, extracted: ExtractedWCP) -> list[str]:
-    issues = [
-        field
-        for field, pattern in _REQUIRED_RAW_FIELDS.items()
-        if re.search(pattern, text, re.IGNORECASE) is None
-    ]
+    issues: list[str] = []
+    for field, pattern in _REQUIRED_RAW_FIELDS.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match is None or not _meaningful_text(match.group("value")):
+            issues.append(field)
     if not extracted.employees:
         issues.append("employees")
-    if extracted.contractor.name.lower().startswith("unknown"):
+    if not _meaningful_text(extracted.contractor.name):
         issues.append("contractor_identity")
-    if extracted.project.name.lower().startswith("unknown"):
+    if not _meaningful_text(extracted.project.name):
         issues.append("project_identity")
+    if not _meaningful_text(extracted.project.location):
+        issues.append("project_location")
+    if _WAGE_DETERMINATION_PATTERN.fullmatch(
+        extracted.project.wage_determination_number.strip()
+    ) is None:
+        issues.append("wage_determination")
+    if extracted.week_ending is None:
+        issues.append("week_ending")
+    if extracted.certification_date is None:
+        issues.append("certification_date")
     if any(
-        employee.name.lower().startswith("unknown")
-        or employee.trade_classification.lower() in {"unknown", "unclassified"}
+        not _meaningful_text(employee.name)
+        or not _meaningful_text(employee.trade_classification)
         for employee in extracted.employees
     ):
         issues.append("employee_identity_or_classification")
+    if extracted.employees and not _usable_employee_values(extracted):
+        issues.append("employee_values")
     return sorted(set(issues))
 
 
@@ -57,19 +127,19 @@ def extract_for_offline(text: str) -> ExtractedWCP:
     issues = _canonical_input_issues(text, extracted)
     if not issues:
         return extracted
-    marker = _NONCANONICAL_PREFIX + json.dumps(issues, separators=(",", ":"))
-    return extracted.model_copy(update={"artifact_id": marker})
+    return extracted.model_copy(
+        update={
+            "offline_metadata": OfflineExtractionMetadata(
+                noncanonical_input_issues=issues,
+            )
+        }
+    )
 
 
 def _marked_issues(extracted: ExtractedWCP) -> list[str]:
-    marker = extracted.artifact_id or ""
-    if not marker.startswith(_NONCANONICAL_PREFIX):
+    if extracted.offline_metadata is None:
         return []
-    raw = marker.removeprefix(_NONCANONICAL_PREFIX)
-    parsed = json.loads(raw)
-    if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
-        raise ValueError("Invalid offline noncanonical marker")
-    return parsed
+    return extracted.offline_metadata.noncanonical_input_issues
 
 
 async def validate_for_offline(extracted: ExtractedWCP) -> DeterministicReport:
@@ -90,7 +160,7 @@ async def validate_for_offline(extracted: ExtractedWCP) -> DeterministicReport:
         regulation_cite="29 C.F.R. § 5.5(a)(3)(ii)",
         message=(
             "Offline input is noncanonical and cannot be auto-approved; "
-            f"missing or unknown fields: {', '.join(issues)}"
+            f"missing or unusable fields: {', '.join(issues)}"
         ),
     )
     return report.model_copy(

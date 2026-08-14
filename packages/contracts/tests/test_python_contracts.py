@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from generated.python import CostLatency, EvidenceManifest, PipelineEvent, TraceContext
+from generated.python import CostLatency, EvidenceManifest, ExtractedWCP, PipelineEvent, TraceContext
 
 
 @pytest.mark.parametrize(
@@ -44,3 +44,17 @@ def test_evidence_manifest_validates_nested_entries(entries):
         EvidenceManifest.model_validate(
             {"schema_version": "v1", "artifact_id": "artifact-1", "entries": entries}
         )
+
+
+def test_extracted_wcp_round_trips_canonical_ids_and_additive_offline_metadata():
+    payload = {
+        "job_id": "job-1",
+        "report_id": "report-1",
+        "artifact_id": "artifact-1",
+        "contractor": {"name": "Test Corp"},
+        "project": {"name": "Project X"},
+        "employees": [],
+        "offline_metadata": {"noncanonical_input_issues": ["wage_determination"]},
+    }
+
+    assert ExtractedWCP.model_validate(payload).model_dump(exclude_none=True) == payload

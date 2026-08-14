@@ -43,6 +43,12 @@ class EmployeeRecord(BaseModel):
     net_wages: float
 
 
+class OfflineExtractionMetadata(BaseModel):
+    model_config = ConfigDict(strict=False)
+
+    noncanonical_input_issues: list[str] = Field(default_factory=list)
+
+
 class ExtractedWCP(BaseModel):
     model_config = ConfigDict(strict=False)
 
@@ -55,6 +61,7 @@ class ExtractedWCP(BaseModel):
     week_ending: date | None = None
     report_id: str | None = None
     artifact_id: str | None = None
+    offline_metadata: OfflineExtractionMetadata | None = None
 
 
 class ComplianceCheck(BaseModel):

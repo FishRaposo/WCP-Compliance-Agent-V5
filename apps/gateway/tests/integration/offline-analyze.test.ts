@@ -146,6 +146,30 @@ describe("Gateway offline Agent composition", () => {
       ].join("\n"),
       verdict: "needs_review",
     },
+    {
+      name: "blank wage determination label",
+      jobId: "job-offline-blank-wd",
+      text: replaceLine(canonicalPayroll, "Wage determination", ""),
+      verdict: "needs_review",
+    },
+    {
+      name: "malformed wage determination label",
+      jobId: "job-offline-malformed-wd",
+      text: replaceLine(canonicalPayroll, "Wage determination", "???"),
+      verdict: "needs_review",
+    },
+    {
+      name: "unparseable week-ending label",
+      jobId: "job-offline-invalid-week",
+      text: replaceLine(canonicalPayroll, "Week ending", "not-a-date"),
+      verdict: "needs_review",
+    },
+    {
+      name: "unparseable employee numeric label",
+      jobId: "job-offline-invalid-hours",
+      text: replaceLine(canonicalPayroll, "Hours", "not-a-number"),
+      verdict: "rejected",
+    },
   ])("never approves $name", async ({ jobId, text, verdict }) => {
     const response = await analyze(jobId, text);
 

@@ -101,6 +101,9 @@ class ExtractedWCP(BaseModel):
         certification_date: str | None = None
         payroll_number: int | None = None
         week_ending: str | None = None
+        report_id: str | None = None
+        artifact_id: str | None = None
+        offline_metadata: dict | None = None
 
 class IngestionJob(BaseModel):
         id: str

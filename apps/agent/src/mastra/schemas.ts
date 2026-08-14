@@ -78,6 +78,11 @@ export const EmployeeRecordSchema = z.object({
 });
 export type EmployeeRecord = z.infer<typeof EmployeeRecordSchema>;
 
+export const OfflineExtractionMetadataSchema = z.object({
+  noncanonical_input_issues: z.array(z.string()),
+});
+export type OfflineExtractionMetadata = z.infer<typeof OfflineExtractionMetadataSchema>;
+
 export const ExtractedWCPSchema = z.object({
   job_id: z.string(),
   contractor: ContractorInfoSchema,
@@ -88,6 +93,7 @@ export const ExtractedWCPSchema = z.object({
   week_ending: z.string().nullable().optional(),
   report_id: z.string().nullable().optional(),
   artifact_id: z.string().nullable().optional(),
+  offline_metadata: OfflineExtractionMetadataSchema.nullable().optional(),
 });
 export type ExtractedWCP = z.infer<typeof ExtractedWCPSchema>;
 

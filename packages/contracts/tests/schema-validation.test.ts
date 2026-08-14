@@ -89,6 +89,20 @@ describe("Schema validation", () => {
     expect(result.success).toBe(false);
   });
 
+  it("ExtractedWCPSchema round-trips canonical ids and additive offline metadata", () => {
+    const payload = {
+      job_id: "job-001",
+      report_id: "report-001",
+      artifact_id: "artifact-001",
+      contractor: { name: "Test Corp" },
+      project: { name: "Project X" },
+      employees: [],
+      offline_metadata: { noncanonical_input_issues: ["wage_determination"] },
+    };
+
+    expect(ExtractedWCPSchema.parse(payload)).toEqual(payload);
+  });
+
   it("DeterministicReportSchema requires checks, overall_status, violation_count, warning_count", () => {
     const result = DeterministicReportSchema.safeParse({});
     expect(result.success).toBe(false);

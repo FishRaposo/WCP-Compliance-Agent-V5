@@ -45,6 +45,18 @@
     },
     "certification_date": { "type": "string", "format": "date" },
     "payroll_number": { "type": "integer" },
-    "week_ending": { "type": "string", "format": "date" }
+    "week_ending": { "type": "string", "format": "date" },
+    "report_id": { "type": "string" },
+    "artifact_id": { "type": "string" },
+    "offline_metadata": {
+      "type": "object",
+      "required": ["noncanonical_input_issues"],
+      "properties": {
+        "noncanonical_input_issues": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
   }
 }
