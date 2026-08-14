@@ -6,6 +6,17 @@ import {
   OfflineServiceError,
   type ServiceTraceContext,
 } from "../offline-service-adapters.js";
+import {
+  computeTrustComponents,
+  computeTrustScore,
+  determineTrustBand,
+  safeVerdict,
+} from "../../../apps/agent/src/mastra/trust.js";
+import type {
+  DeterministicReport,
+  LLMVerdict,
+  TrustScoredDecision,
+} from "../../../apps/agent/src/mastra/schemas.js";
 
 const trace: ServiceTraceContext = {
   schema_version: "v1",
@@ -15,42 +26,96 @@ const trace: ServiceTraceContext = {
 
 describe("in-process service adapters", () => {
   it("runs the Gateway -> Agent -> Compliance Core -> Data Platform chain offline", async () => {
-    const dataPlatform = new InMemoryDecisionStore<{ job_id: string; verdict: string }>({
+    const dataPlatform = new InMemoryDecisionStore({
       service: "data-platform",
       allowedCallers: ["agent"],
     });
-    const compliance = new InProcessServiceAdapter<string, { job_id: string; status: string }>({
+    const compliance = new InProcessServiceAdapter<{ job_id: string }, DeterministicReport>({
       service: "compliance-core",
       operation: "validate",
       allowedCallers: ["agent"],
       idempotent: true,
-      execute: async (text) => ({ job_id: "job-42", status: text.includes("fail") ? "fail" : "pass" }),
+      execute: async ({ job_id }) => ({
+        job_id,
+        checks: [
+          {
+            check_id: "signature-warning",
+            check_type: "signature",
+            employee_name: "",
+            status: "warning",
+            message: "Certification signature requires review.",
+          },
+        ],
+        overall_status: "warnings",
+        violation_count: 0,
+        warning_count: 1,
+      }),
     });
-    const agent = new InProcessServiceAdapter<string, { job_id: string; verdict: string; trace_context: ServiceTraceContext }>({
+    const agent = new InProcessServiceAdapter<
+      { job_id: string },
+      { decision: Awaited<ReturnType<typeof dataPlatform.persist>>; trace_context: ServiceTraceContext }
+    >({
       service: "agent",
       operation: "pipeline",
       allowedCallers: ["gateway"],
       idempotent: true,
-      execute: async (text, context) => {
-        const report = await compliance.call({ caller: "agent", payload: text, trace_context: context });
-        const decision = { job_id: report.job_id, verdict: report.status === "pass" ? "approved" : "rejected" };
+      execute: async (payload, context) => {
+        const report = await compliance.call({ caller: "agent", payload, trace_context: context });
+        const llm: LLMVerdict = {
+          verdict: "needs_review",
+          reasoning: "A certification warning needs human review.",
+          citations: [],
+          confidence: 0.75,
+          referenced_check_ids: ["signature-warning"],
+        };
+        const trust_score = computeTrustScore(computeTrustComponents(report, llm));
+        const trust_band = determineTrustBand(trust_score);
+        const decision: TrustScoredDecision = {
+          job_id: report.job_id,
+          verdict: safeVerdict(report, llm),
+          trust_score,
+          trust_band,
+          requires_human_review: trust_band === "require_human_review",
+          violation_count: report.violation_count,
+          warning_count: report.warning_count,
+          llm_confidence: llm.confidence,
+          reasoning_summary: llm.reasoning,
+          citations: llm.citations,
+        };
         const persisted = await dataPlatform.persist({ caller: "agent", payload: decision, trace_context: context });
-        return { ...persisted, trace_context: context };
+        return { decision: persisted, trace_context: context };
       },
     });
-    const gateway = new InProcessServiceAdapter<string, { job_id: string; verdict: string; trace_context: ServiceTraceContext }>({
+    const gateway = new InProcessServiceAdapter<
+      { job_id: string },
+      { decision: Awaited<ReturnType<typeof dataPlatform.persist>>; trace_context: ServiceTraceContext }
+    >({
       service: "gateway",
       operation: "analyze",
       allowedCallers: ["external"],
       idempotent: true,
-      execute: (text, context) => agent.call({ caller: "gateway", payload: text, trace_context: context }),
+      execute: (payload, context) => agent.call({ caller: "gateway", payload, trace_context: context }),
     });
 
-    await expect(gateway.call({ caller: "external", payload: "valid payroll", trace_context: trace })).resolves.toEqual({
+    const result = await gateway.call({ caller: "external", payload: { job_id: "job-42" }, trace_context: trace });
+
+    expect(result.trace_context).toEqual(trace);
+    expect(result.decision).toMatchObject({
+      id: expect.any(String),
       job_id: "job-42",
-      verdict: "approved",
-      trace_context: trace,
+      verdict: "needs_review",
+      trust_band: "flag_for_review",
+      warning_count: 1,
     });
+    expect(result.decision.trust_score).toBeCloseTo(0.8375);
+    expect(dataPlatform.getAuditEvents("job-42")).toEqual([
+      expect.objectContaining({
+        job_id: "job-42",
+        event_type: "decision_persisted",
+        actor: "agent",
+        trace_id: "trace-42",
+      }),
+    ]);
   });
 
   it("returns additive timeout metadata without changing the upstream result contract", async () => {
@@ -95,19 +160,73 @@ describe("in-process service adapters", () => {
     expect(attempts).toBe(3);
   });
 
-  it("deduplicates persistence by job id without retrying an unsafe write", async () => {
-    const store = new InMemoryDecisionStore<{ job_id: string; verdict: string }>({
+  it("preserves timeout as the primary error code when timeout retries exhaust", async () => {
+    let attempts = 0;
+    const adapter = new InProcessServiceAdapter<string, string>({
+      service: "compliance-core",
+      operation: "validate",
+      allowedCallers: ["agent"],
+      idempotent: true,
+      timeout_ms: 5,
+      max_attempts: 3,
+      execute: () => {
+        attempts += 1;
+        return new Promise(() => undefined);
+      },
+    });
+
+    await expect(adapter.call({ caller: "agent", payload: "payroll", trace_context: trace })).rejects.toMatchObject({
+      metadata: { code: "timeout", attempts: 3, trace_context: trace },
+    });
+    expect(attempts).toBe(3);
+  });
+
+  it("upserts TrustScoredDecision by job id and emits Data Platform audit events", async () => {
+    const store = new InMemoryDecisionStore({
       service: "data-platform",
       allowedCallers: ["agent"],
       max_attempts: 3,
     });
-    const request = { caller: "agent" as const, payload: { job_id: "job-42", verdict: "approved" }, trace_context: trace };
+    const firstDecision: TrustScoredDecision = {
+      job_id: "job-42",
+      verdict: "approved",
+      trust_score: 0.95,
+      trust_band: "auto_approve",
+      requires_human_review: false,
+      violation_count: 0,
+      warning_count: 0,
+      llm_confidence: 0.95,
+      reasoning_summary: "All checks passed.",
+      citations: [],
+    };
+    const secondDecision: TrustScoredDecision = {
+      ...firstDecision,
+      verdict: "needs_review",
+      trust_score: 0.55,
+      trust_band: "require_human_review",
+      requires_human_review: true,
+      warning_count: 1,
+      reasoning_summary: "Certification requires review.",
+    };
 
-    const first = await store.persist(request);
-    const second = await store.persist(request);
+    const first = await store.persist({ caller: "agent", payload: firstDecision, trace_context: trace });
+    const second = await store.persist({ caller: "agent", payload: secondDecision, trace_context: trace });
 
-    expect(second).toEqual(first);
+    expect(first).toMatchObject({ id: expect.any(String), job_id: "job-42", verdict: "approved" });
+    expect(second).toMatchObject({
+      id: first.id,
+      job_id: "job-42",
+      verdict: "needs_review",
+      trust_score: 0.55,
+      warning_count: 1,
+      reasoning_summary: "Certification requires review.",
+    });
     expect(store.size).toBe(1);
+    expect(store.getAuditEvents("job-42").map((event) => event.event_type)).toEqual([
+      "decision_persisted",
+      "decision_persisted",
+      "human_review_queued",
+    ]);
   });
 
   it("rejects calls that bypass the declared service boundary", async () => {

@@ -1,8 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { ExtractedWCPSchema } from "../schemas.js";
-import { complianceClient, traceHeaders } from "./http.js";
-import type { ExtractedWCP } from "../schemas.js";
+import { extractWcp } from "./http.js";
 
 /**
  * Parse raw WH-347 text into a structured payroll record via Compliance Core.
@@ -15,10 +14,6 @@ export const extractTool = createTool({
   inputSchema: z.object({ text: z.string().min(1) }),
   outputSchema: ExtractedWCPSchema,
   execute: async (inputData, { requestContext }) => {
-    return complianceClient.post<ExtractedWCP>(
-      "/internal/extract",
-      { text: inputData.text },
-      traceHeaders(requestContext),
-    );
+    return extractWcp({ text: inputData.text }, requestContext);
   },
 });

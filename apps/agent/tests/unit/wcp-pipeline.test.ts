@@ -17,6 +17,10 @@ vi.mock("@wcp/typescript-client", () => ({
 }));
 
 import { RequestContext } from "@mastra/core/request-context";
+import {
+  InMemoryDecisionStore,
+  InProcessServiceAdapter,
+} from "../../../../packages/contracts/offline-service-adapters.js";
 
 const extracted = {
   job_id: "job-001",
@@ -119,5 +123,75 @@ describe("wcp pipeline (Mastra workflow, mock mode)", () => {
     expect(result.status).toBe("success");
     if (result.status !== "success") return;
     expect(result.result.verdict).toBe("approved");
+  });
+
+  it("runs the real Mastra trust and persistence path through the opt-in in-process transport", async () => {
+    const http = await import("../../src/mastra/tools/http.js");
+    expect(http).toHaveProperty("installInProcessAgentServices");
+    expect(http).toHaveProperty("SERVICE_TRANSPORT_KEY");
+
+    const warningReport = {
+      job_id: "job-offline",
+      checks: [
+        {
+          check_id: "signature-warning",
+          check_type: "signature" as const,
+          employee_name: "",
+          status: "warning" as const,
+          message: "Certification signature requires review.",
+        },
+      ],
+      overall_status: "warnings" as const,
+      violation_count: 0,
+      warning_count: 1,
+    };
+    const validate = new InProcessServiceAdapter({
+      service: "compliance-core",
+      operation: "validate",
+      allowedCallers: ["agent"],
+      idempotent: true,
+      execute: async () => warningReport,
+    });
+    const decisions = new InMemoryDecisionStore({
+      service: "data-platform",
+      allowedCallers: ["agent"],
+    });
+    const uninstall = http.installInProcessAgentServices!({ validate, decisions });
+    const requestContext = new RequestContext();
+    requestContext.set(http.SERVICE_TRANSPORT_KEY!, "in-process");
+    requestContext.set("x-request-id", "request-offline");
+    requestContext.set("x-trace-id", "trace-offline");
+
+    try {
+      const { mastra } = await import("../../src/mastra/index.js");
+      const run = await mastra.getWorkflow("wcpPipelineFromExtracted").createRun();
+      const result = await run.start({
+        inputData: { ...extracted, job_id: "job-offline" },
+        requestContext,
+      });
+
+      expect(result.status).toBe("success");
+      if (result.status !== "success") return;
+      expect(result.result).toMatchObject({
+        job_id: "job-offline",
+        verdict: "needs_review",
+        trust_band: "flag_for_review",
+        warning_count: 1,
+        llm_confidence: 0.75,
+      });
+      expect(result.result.trust_score).toBeCloseTo(0.8375);
+      expect(decisions.get("job-offline")).toMatchObject({
+        id: expect.any(String),
+        job_id: "job-offline",
+        verdict: "needs_review",
+        warning_count: 1,
+      });
+      expect(decisions.getAuditEvents("job-offline")).toEqual([
+        expect.objectContaining({ event_type: "decision_persisted", trace_id: "trace-offline" }),
+      ]);
+      expect(mockPost).not.toHaveBeenCalled();
+    } finally {
+      uninstall();
+    }
   });
 });

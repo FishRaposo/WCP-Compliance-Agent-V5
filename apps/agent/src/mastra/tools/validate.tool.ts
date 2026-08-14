@@ -1,7 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { DeterministicReportSchema, ExtractedWCPSchema } from "../schemas.js";
-import { complianceClient, traceHeaders } from "./http.js";
-import type { DeterministicReport } from "../schemas.js";
+import { validateWcp } from "./http.js";
 
 /**
  * Run the deterministic rule engine over an extracted payroll. This is the source of
@@ -15,10 +14,6 @@ export const validateTool = createTool({
   inputSchema: ExtractedWCPSchema,
   outputSchema: DeterministicReportSchema,
   execute: async (inputData, { requestContext }) => {
-    return complianceClient.post<DeterministicReport>(
-      "/internal/validate",
-      inputData,
-      traceHeaders(requestContext),
-    );
+    return validateWcp(inputData, requestContext);
   },
 });

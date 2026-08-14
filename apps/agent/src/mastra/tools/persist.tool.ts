@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { TrustScoredDecisionSchema } from "../schemas.js";
-import { dataPlatformClient, traceHeaders } from "./http.js";
+import { persistDecision } from "./http.js";
 
 /**
  * Persist a trust-scored decision via the Data Platform.
@@ -17,10 +17,6 @@ export const persistTool = createTool({
   inputSchema: TrustScoredDecisionSchema,
   outputSchema: z.object({ id: z.string() }),
   execute: async (inputData, { requestContext }) => {
-    return dataPlatformClient.post<{ id: string }>(
-      "/internal/decisions",
-      inputData,
-      traceHeaders(requestContext),
-    );
+    return persistDecision(inputData, requestContext);
   },
 });

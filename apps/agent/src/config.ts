@@ -22,6 +22,7 @@ const envSchema = z.object({
   OLLAMA_MODEL: z.string().default("llama3.2"),
   LLM_PROVIDER: z.enum(["openai", "anthropic", "ollama"]).default("openai"),
   LLM_MODE: z.enum(["mock", "real"]).default("mock"),
+  AGENT_SERVICE_TRANSPORT: z.enum(["http", "in-process"]).default("http"),
   LANGFUSE_PUBLIC_KEY: z.string().default(""),
   LANGFUSE_SECRET_KEY: z.string().default(""),
   LANGFUSE_HOST: z.string().url().default("https://cloud.langfuse.com"),
@@ -47,6 +48,10 @@ if (raw.NODE_ENV === "production" && raw.LLM_MODE === "mock") {
 
 if (raw.NODE_ENV === "production" && !raw.INTERNAL_SERVICE_TOKEN) {
   throw new Error("INTERNAL_SERVICE_TOKEN is required in production.");
+}
+
+if (raw.AGENT_SERVICE_TRANSPORT === "in-process" && (raw.NODE_ENV === "production" || raw.LLM_MODE !== "mock")) {
+  throw new Error("AGENT_SERVICE_TRANSPORT=in-process is allowed only in non-production mock mode.");
 }
 
 export const config = raw;
