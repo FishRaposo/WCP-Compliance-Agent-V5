@@ -302,14 +302,13 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     hours = _extract_float(
         block, r"(?:hours.?worked|hours)[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])"
     ) or 0.0
-    overtime = (
-        _extract_float(
-            block,
-            r"(?:overtime.?hours|overtime.?hrs?|ot.?hours|ot.?hrs?|overtime|ot)"
-            r"[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])",
-        )
-        or 0.0
+    overtime_label = r"(?:overtime.?hours|overtime.?hrs?|ot.?hours|ot.?hrs?|overtime|ot)"
+    overtime = _extract_float(
+        block, overtime_label + r"[: \t]*(-?\d+(?:\.\d+)?)(?![\d.])"
     )
+    if re.search(overtime_label + r"[: \t]", block, re.IGNORECASE) and overtime is None:
+        return None
+    overtime = overtime or 0.0
 
     # A labelled regular-hours field is distinct from total hours. Retain the
     # established generic-hours behavior for legacy blocks, but add decimal OT
@@ -319,14 +318,13 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     else:
         total_hours = hours if hours > 40 else (hours + overtime if overtime > 0 else hours)
 
-    wage = (
-        _extract_float(
-            block,
-            r"(?:base.?rate|base.?wage|hourly.?wage|wage|hourly.?rate|rate)"
-            r"[: \t]*\$?(-?\d+(?:\.\d+)?)(?![\d.])",
-        )
-        or 0.0
+    wage_label = r"(?:base.?rate|base.?wage|hourly.?wage|wage|hourly.?rate|rate)"
+    wage = _extract_float(
+        block, wage_label + r"[: \t]*\$?(-?\d+(?:\.\d+)?)(?![\d.])"
     )
+    if re.search(wage_label + r"[: \t]", block, re.IGNORECASE) and wage is None:
+        return None
+    wage = wage or 0.0
 
     fringe = _extract_float(
         block, r"(?:fringe|benefits)[: \t]*\$?(-?\d+(?:,\d+)*(?:\.\d+)?)"

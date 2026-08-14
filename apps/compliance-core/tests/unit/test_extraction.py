@@ -1,3 +1,5 @@
+import pytest
+
 from wcp_compliance.extraction.pdf_extractor import extract_from_text
 
 
@@ -37,6 +39,24 @@ def test_refuses_malformed_variant_block_instead_of_creating_zero_value_employee
         "Job Classification: Electrician\n"
         "Regular Hours: 40.5.2\n"
         "Base Rate: $55.00\n"
+    )
+
+    assert result.employees == []
+
+
+@pytest.mark.parametrize(
+    "label, value",
+    [
+        ("OT Hrs", "1.25.5"),
+        ("Base Rate", "$55.00.1"),
+    ],
+)
+def test_refuses_malformed_explicit_overtime_or_base_rate(label, value):
+    result = extract_from_text(
+        "Employee Name: Malformed Pay\n"
+        "Job Classification: Electrician\n"
+        "Regular Hours: 40\n"
+        f"{label}: {value}\n"
     )
 
     assert result.employees == []
