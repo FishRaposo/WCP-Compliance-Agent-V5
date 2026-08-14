@@ -28,6 +28,7 @@ interface RedisClientInterface {
   quit(): Promise<void>;
   xgroup(...args: string[]): Promise<unknown>;
   xreadgroup(...args: string[]): Promise<unknown>;
+  xrange(...args: string[]): Promise<unknown>;
   xack(stream: string, group: string, id: string): Promise<number>;
   xadd(stream: string, ...args: string[]): Promise<string>;
 }
@@ -82,6 +83,37 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 
 /** Internal type for XREADGROUP results */
 type XReadGroupResult = [streamName: string, messages: [messageId: string, fields: string[]][]][];
+type XRangeResult = [messageId: string, fields: string[]][];
+
+/**
+ * Replays persisted stream entries strictly newer than an SSE Last-Event-ID.
+ * Historical replay is intentionally independent of the consumer group; group
+ * reads only expose pending entries for a consumer when passed an explicit ID.
+ */
+export const replayStreamMessages = async (
+  config: StreamConfig,
+  handler: StreamMessageHandler,
+  lastEventId: string,
+  redisUrl: string
+): Promise<number> => {
+  const client = await getRedisClient(redisUrl);
+  const messages = (await client.xrange(
+    config.streamName,
+    `(${lastEventId}`,
+    "+"
+  )) as XRangeResult;
+
+  let processed = 0;
+  for (const [messageId, rawFields] of messages) {
+    try {
+      await handler(messageId, Object.fromEntries(chunkArray(rawFields, 2)));
+      processed++;
+    } catch (err) {
+      logger.error("Failed to replay stream message", { messageId, err });
+    }
+  }
+  return processed;
+};
 
 /**
  * Reads new messages from a stream using consumer group pattern.

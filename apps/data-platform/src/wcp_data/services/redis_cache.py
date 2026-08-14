@@ -7,7 +7,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from wcp_data.config import settings
 
@@ -40,7 +40,7 @@ class InMemoryCache:
             self._entries.pop(key, None)
             return None
         # JSON round-trip keeps cached values isolated from caller mutation.
-        return json.loads(json.dumps(value, default=str))
+        return cast(dict[str, Any], json.loads(json.dumps(value, default=str)))
 
     def set(self, key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> None:
         self._entries[key] = (
@@ -85,7 +85,6 @@ async def cache_get(key: str) -> dict[str, Any] | None:
         r = await _get_redis()
         value = await r.get(key)
         if value:
-            from typing import cast
             try:
                 return cast(dict[str, Any], json.loads(value))
             except json.JSONDecodeError:
@@ -93,9 +92,9 @@ async def cache_get(key: str) -> dict[str, Any] | None:
                 logger.warning("Corrupt JSON in cache key %s; deleting", key)
                 try:
                     await r.delete(key)
-                except Exception:
-                    pass
-                return None
+                except Exception as exc:  # noqa: BLE001 - cache cleanup is best-effort
+                    logger.debug("Failed to delete corrupt cache key %s: %s", key, exc)
+                return _memory_cache.get(key)
     except Exception:
         logger.warning("Redis cache unavailable for key %s", key)
     return _memory_cache.get(key)

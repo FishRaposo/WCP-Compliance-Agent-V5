@@ -53,6 +53,8 @@ describe("Gateway offline Agent composition", () => {
 
   it("runs raw payroll text through the real analyze route without external services", async () => {
     const networkFetch = vi.spyOn(globalThis, "fetch");
+    const sseBridge = await import("../../src/lib/sse-bridge.js");
+    sseBridge.clearSSEEventHistory();
     const payload = {
       job_id: "job-offline-route",
       text: canonicalPayroll,
@@ -84,6 +86,13 @@ describe("Gateway offline Agent composition", () => {
     });
     expect(offlineDecisionStore.getAuditEvents(payload.job_id)).toEqual([
       expect.objectContaining({ event_type: "decision_persisted", trace_id: "trace-offline-route" }),
+    ]);
+    expect(sseBridge.getSSEEventsAfter("wcp.decisions")).toEqual([
+      expect.objectContaining({
+        type: "decision.created",
+        data: expect.objectContaining({ job_id: payload.job_id, verdict: "approved" }),
+        streamId: "local-1",
+      }),
     ]);
 
     const duplicate = await analyze(

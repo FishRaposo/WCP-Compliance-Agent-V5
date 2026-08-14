@@ -9,6 +9,12 @@ from wcp_data.models.schemas import IngestionJobUpdate
 pytestmark = pytest.mark.unit
 
 
+def test_ingestion_job_update_accepts_canonical_partial_status() -> None:
+    update = IngestionJobUpdate(status="partial")
+
+    assert update.status == "partial"
+
+
 @pytest.mark.asyncio
 async def test_completed_ingestion_job_returns_updated_counters() -> None:
     session = AsyncMock()

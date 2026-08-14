@@ -6,7 +6,7 @@ export const streamRoutes = new Hono();
 
 streamRoutes.get("/api/v1/decisions/stream", async (c) => {
   const connectionId = crypto.randomUUID();
-  const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+  const redisUrl = process.env.REDIS_URL;
 
   // Identify the originating client so the per-client connection cap applies.
   let clientKey: string;

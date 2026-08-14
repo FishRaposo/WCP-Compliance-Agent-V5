@@ -5,6 +5,7 @@ import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
 import { logUpstreamError } from "../lib/error-log.js";
 import { config } from "../config.js";
+import { publishSSEEvent } from "../lib/sse-bridge.js";
 
 export const analyzeRoutes = new Hono();
 
@@ -33,6 +34,11 @@ analyzeRoutes.post("/api/v1/analyze", async (c) => {
 
   try {
     const decision = await analyze(parsed.data, getInternalHeaders(c));
+    await publishSSEEvent("wcp.decisions", {
+      type: "decision.created",
+      data: decision as Record<string, unknown>,
+      timestamp: new Date().toISOString(),
+    });
     return c.json(decision, 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {

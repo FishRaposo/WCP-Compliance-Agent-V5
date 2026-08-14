@@ -108,8 +108,7 @@ export const broadcastSSEEvent = (streamName: string, payload: SSEEventPayload):
   }
 };
 
-/** Publish through the process-local transport used when Redis is optional/offline. */
-export const publishSSEEvent = (streamName: string, payload: SSEEventPayload): SSEEventPayload => {
+const publishLocalSSEEvent = (streamName: string, payload: SSEEventPayload): SSEEventPayload => {
   const event = { ...payload, streamId: payload.streamId ?? `local-${++localEventSequence}` };
   const history = localEvents.get(streamName) ?? [];
   history.push(event);
@@ -117,6 +116,32 @@ export const publishSSEEvent = (streamName: string, payload: SSEEventPayload): S
   localEvents.set(streamName, history);
   broadcastSSEEvent(streamName, event);
   return event;
+};
+
+/** Publish to configured Redis, falling back to the process-local transport. */
+export const publishSSEEvent = async (
+  streamName: string,
+  payload: SSEEventPayload,
+  redisUrl: string | undefined = process.env.REDIS_URL
+): Promise<SSEEventPayload> => {
+  if (redisUrl) {
+    try {
+      const { addStreamMessage } = await import("./redis-streams.js");
+      const streamId = await addStreamMessage(
+        streamName,
+        {
+          type: payload.type,
+          event: JSON.stringify(payload.data),
+          timestamp: payload.timestamp,
+        },
+        redisUrl
+      );
+      return { ...payload, streamId };
+    } catch (err) {
+      logger.warn("Redis publish unavailable; using local SSE transport", { streamName, err });
+    }
+  }
+  return publishLocalSSEEvent(streamName, payload);
 };
 
 /** Return ordered local events newer than an SSE Last-Event-ID value. */
@@ -140,7 +165,7 @@ export const clearSSEEventHistory = (): void => {
 export const createSSEBridge = (
   connectionId: string,
   streamConfig: StreamConfig,
-  redisUrl: string,
+  redisUrl: string | undefined,
   clientKey: string = connectionId,
   lastEventId?: string
 ): ReadableStream<Uint8Array> => {
@@ -150,13 +175,32 @@ export const createSSEBridge = (
   if (countConnectionsForClient(clientKey) >= MAX_SSE_CONNECTIONS_PER_CLIENT) {
     throw new Error("Maximum SSE connections per client exceeded");
   }
+  const deliveredRedisIds = new Set<string>();
+  const createStreamHandler = (
+    controller: ReadableStreamDefaultController<Uint8Array>
+  ): StreamMessageHandler => async (messageId, fields) => {
+    if (deliveredRedisIds.has(messageId)) return;
+    deliveredRedisIds.add(messageId);
+    const data = parseStreamFields(fields);
+    const payload: SSEEventPayload = {
+      type: inferEventType(streamConfig.streamName, fields),
+      data,
+      timestamp: new Date().toISOString(),
+      streamId: messageId,
+    };
+    controller.enqueue(encodeToStream(formatSSEEvent(payload)));
+    const conn = activeConnections.get(connectionId);
+    if (conn) conn.lastActivity = Date.now();
+  };
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      try {
-        const { ensureConsumerGroup: ensureGroup } = await import("./redis-streams.js");
-        await ensureGroup(streamConfig, redisUrl);
-      } catch (err) {
-        logger.warn("Redis consumer group unavailable at SSE start", { connectionId, err });
+      if (redisUrl) {
+        try {
+          const { ensureConsumerGroup: ensureGroup } = await import("./redis-streams.js");
+          await ensureGroup(streamConfig, redisUrl);
+        } catch (err) {
+          logger.warn("Redis consumer group unavailable at SSE start", { connectionId, err });
+        }
       }
       activeConnections.set(connectionId, {
         controller,
@@ -179,6 +223,20 @@ export const createSSEBridge = (
 
       for (const event of getSSEEventsAfter(streamConfig.streamName, lastEventId)) {
         controller.enqueue(encodeToStream(formatSSEEvent(event)));
+      }
+
+      if (redisUrl && lastEventId && /^\d+-\d+$/.test(lastEventId)) {
+        try {
+          const { replayStreamMessages } = await import("./redis-streams.js");
+          await replayStreamMessages(
+            streamConfig,
+            createStreamHandler(controller),
+            lastEventId,
+            redisUrl
+          );
+        } catch (err) {
+          logger.warn("Redis SSE replay unavailable", { connectionId, lastEventId, err });
+        }
       }
 
       // Periodic heartbeat keeps the connection warm and reaps idle/stale ones.
@@ -207,23 +265,11 @@ export const createSSEBridge = (
       if (conn) conn.heartbeatTimer = timer;
     },
     async pull(controller) {
-      const handler: StreamMessageHandler = async (messageId, fields) => {
-        const data = parseStreamFields(fields);
-        const payload: SSEEventPayload = {
-          type: inferEventType(streamConfig.streamName, fields),
-          data,
-          timestamp: new Date().toISOString(),
-          streamId: messageId,
-        };
-        const eventData = formatSSEEvent(payload);
-        controller.enqueue(encodeToStream(eventData));
-        const conn = activeConnections.get(connectionId);
-        if (conn) conn.lastActivity = Date.now();
-      };
+      if (!redisUrl) return;
 
       try {
         const { readStreamMessages: readMessages } = await import("./redis-streams.js");
-        await readMessages(streamConfig, handler, 1000, redisUrl);
+        await readMessages(streamConfig, createStreamHandler(controller), 1000, redisUrl);
       } catch (err) {
         logger.error("SSE bridge pull error", { connectionId, err });
         const errorPayload: SSEEventPayload = {

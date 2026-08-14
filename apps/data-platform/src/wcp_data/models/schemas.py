@@ -296,7 +296,7 @@ class IngestionJobResponse(BaseModel):
 class IngestionJobUpdate(BaseModel):
     """Additive lifecycle update for a tracked ingestion job."""
 
-    status: Literal["pending", "running", "completed", "failed"] | None = None
+    status: Literal["pending", "running", "completed", "failed", "partial"] | None = None
     processed_records: int | None = Field(default=None, ge=0)
     failed_records: int | None = Field(default=None, ge=0)
     error_details: list[dict[str, Any]] | None = None

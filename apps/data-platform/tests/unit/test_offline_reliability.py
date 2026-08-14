@@ -43,6 +43,35 @@ async def test_cache_uses_memory_when_redis_connection_fails(
     assert await redis_cache.cache_get("dbwd:offline") == {"rate": 28.5}
 
 
+@pytest.mark.asyncio
+async def test_cache_deletes_corrupt_redis_json_then_returns_memory_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from wcp_data.services import redis_cache
+
+    class CorruptRedis:
+        def __init__(self) -> None:
+            self.deleted: list[str] = []
+
+        async def get(self, key: str) -> str:
+            return "{corrupt-json"
+
+        async def delete(self, key: str) -> None:
+            self.deleted.append(key)
+
+    client = CorruptRedis()
+    redis_cache._memory_cache.clear()
+    redis_cache._memory_cache.set("dbwd:corrupt", {"rate": 31.25})
+
+    async def corrupt() -> CorruptRedis:
+        return client
+
+    monkeypatch.setattr(redis_cache, "_get_redis", corrupt)
+
+    assert await redis_cache.cache_get("dbwd:corrupt") == {"rate": 31.25}
+    assert client.deleted == ["dbwd:corrupt"]
+
+
 def test_rate_snapshot_is_stable_across_input_order() -> None:
     from wcp_data.services.dbwd_service import build_rate_snapshot
 
