@@ -293,6 +293,15 @@ class IngestionJobResponse(BaseModel):
     updated_at: datetime
 
 
+class IngestionJobUpdate(BaseModel):
+    """Additive lifecycle update for a tracked ingestion job."""
+
+    status: Literal["pending", "running", "completed", "failed"] | None = None
+    processed_records: int | None = Field(default=None, ge=0)
+    failed_records: int | None = Field(default=None, ge=0)
+    error_details: list[dict[str, Any]] | None = None
+
+
 class DBWDRateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

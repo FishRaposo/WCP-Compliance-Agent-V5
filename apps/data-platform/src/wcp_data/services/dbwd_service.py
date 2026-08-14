@@ -1,3 +1,5 @@
+import hashlib
+import json
 import logging
 from datetime import date
 from typing import Any
@@ -17,11 +19,9 @@ _cache_invalidate_pattern: Any = None
 _REDIS_AVAILABLE = False
 
 try:
-    from wcp_data.services.redis_cache import (
-        cache_get as _cache_get,
-        cache_set as _cache_set,
-        cache_invalidate_pattern as _cache_invalidate_pattern,
-    )
+    from wcp_data.services.redis_cache import cache_get as _cache_get
+    from wcp_data.services.redis_cache import cache_invalidate_pattern as _cache_invalidate_pattern
+    from wcp_data.services.redis_cache import cache_set as _cache_set
     _REDIS_AVAILABLE = True
 except Exception:
     pass
@@ -50,6 +50,37 @@ FALLBACK_CORPUS = [
     {"trade": "Flagger", "locality": "Washington, DC", "rate": 22.75, "fringe": 12.30, "effective_date": "2025-01-01", "wage_determination_number": "DC-2025-001"},
     {"trade": "Truck Driver", "locality": "Washington, DC", "rate": 30.20, "fringe": 16.45, "effective_date": "2025-01-01", "wage_determination_number": "DC-2025-001"},
 ]
+
+
+def build_rate_snapshot(rates: list[dict[str, Any]]) -> dict[str, Any]:
+    """Return a canonical, credential-free DBWD rate snapshot for offline evidence."""
+    fields = (
+        "trade",
+        "locality",
+        "rate",
+        "fringe",
+        "effective_date",
+        "wage_determination_number",
+    )
+    normalized = [
+        {field: str(rate[field]) if field in {"effective_date"} else rate[field] for field in fields}
+        for rate in rates
+    ]
+    normalized.sort(
+        key=lambda item: (
+            str(item["trade"]),
+            str(item["locality"]),
+            str(item["effective_date"]),
+            str(item["wage_determination_number"]),
+        )
+    )
+    canonical = json.dumps(normalized, separators=(",", ":"), sort_keys=True)
+    return {
+        "schema_version": 1,
+        "count": len(normalized),
+        "sha256": hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+        "rates": normalized,
+    }
 
 
 async def get_rates(

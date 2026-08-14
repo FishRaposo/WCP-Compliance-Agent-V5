@@ -4,22 +4,16 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_data.models.schemas import (
+    PaginatedPayrolls,
     PayrollBulkImportRequest,
     PayrollBulkImportResult,
     PayrollFilters,
     PayrollRecordCreate,
     PayrollRecordResponse,
-    PaginatedPayrolls,
 )
-from wcp_data.repositories.payroll_repo import (
-    bulk_insert_payrolls as _bulk_insert,
-)
-from wcp_data.repositories.payroll_repo import (
-    get_payroll as _get,
-)
-from wcp_data.repositories.payroll_repo import (
-    list_payrolls as _list,
-)
+from wcp_data.repositories.payroll_repo import bulk_insert_payrolls as _bulk_insert
+from wcp_data.repositories.payroll_repo import get_payroll as _get
+from wcp_data.repositories.payroll_repo import list_payrolls as _list
 
 
 async def bulk_import_payrolls(
@@ -28,10 +22,12 @@ async def bulk_import_payrolls(
     created_records = 0
     failed = 0
     errors: list[dict[str, Any]] = []
+    valid_records: list[PayrollRecordCreate] = []
 
     for index, record in enumerate(request.records, start=1):
         try:
             _ = PayrollRecordCreate.model_validate(record.model_dump())
+            valid_records.append(record)
         except Exception as exc:
             failed += 1
             errors.append({
@@ -44,7 +40,7 @@ async def bulk_import_payrolls(
         inserted = await _bulk_insert(
             session,
             request.contract_id,
-            request.records,
+            valid_records,
             ingestion_job_id=None,
         )
         created_records = len(inserted)

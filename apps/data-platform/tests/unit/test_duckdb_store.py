@@ -92,3 +92,21 @@ def test_query_analytics_delegates_to_execute(tmp_path):
     r2 = store.query_analytics("SELECT 42 AS x")
     assert r1 == r2
     store.close()
+
+
+def test_export_with_manifest_preserves_export_path_and_checksum(tmp_path):
+    """The additive manifest wrapper must not bypass the existing Parquet export."""
+    pytest.importorskip("duckdb")
+    pytest.importorskip("pyarrow")
+    store = _make_store(tmp_path)
+    store.connect()
+    store.conn.execute("CREATE TABLE rates AS SELECT 51.69 AS rate")
+
+    manifest = store.export_to_parquet_with_manifest("rates", str(tmp_path / "rates.parquet"))
+
+    assert manifest is not None
+    assert (tmp_path / "rates.parquet").exists()
+    assert manifest["artifact"] == "rates.parquet"
+    assert manifest["row_count"] == 1
+    assert len(manifest["sha256"]) == 64
+    store.close()

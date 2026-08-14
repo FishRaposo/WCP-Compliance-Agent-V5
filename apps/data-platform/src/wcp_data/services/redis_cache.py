@@ -5,6 +5,8 @@
 
 import json
 import logging
+import time
+from collections.abc import Callable
 from typing import Any
 
 from wcp_data.config import settings
@@ -15,6 +17,49 @@ DEFAULT_TTL = 86400  # 24 hours
 
 # HIGH-05 Fix: Module-level Redis connection pool to prevent connection leaks
 _redis_pool: Any | None = None
+
+
+class InMemoryCache:
+    """A deterministic process-local fallback for optional Redis caching.
+
+    The cache deliberately has the same best-effort semantics as Redis: losing an
+    entry only causes the repository query to run again.  A clock can be injected
+    by tests so expiry behavior never depends on wall-clock timing.
+    """
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
+        self._entries: dict[str, tuple[float, dict[str, Any]]] = {}
+
+    def get(self, key: str) -> dict[str, Any] | None:
+        entry = self._entries.get(key)
+        if entry is None:
+            return None
+        expires_at, value = entry
+        if self._clock() >= expires_at:
+            self._entries.pop(key, None)
+            return None
+        # JSON round-trip keeps cached values isolated from caller mutation.
+        return json.loads(json.dumps(value, default=str))
+
+    def set(self, key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> None:
+        self._entries[key] = (
+            self._clock() + max(ttl, 0),
+            json.loads(json.dumps(value, default=str)),
+        )
+
+    def invalidate_pattern(self, pattern: str) -> int:
+        prefix = pattern.rstrip("*")
+        keys = [key for key in self._entries if key.startswith(prefix)]
+        for key in keys:
+            self._entries.pop(key, None)
+        return len(keys)
+
+    def clear(self) -> None:
+        self._entries.clear()
+
+
+_memory_cache = InMemoryCache()
 
 
 async def _get_redis() -> Any:
@@ -53,7 +98,7 @@ async def cache_get(key: str) -> dict[str, Any] | None:
                 return None
     except Exception:
         logger.warning("Redis cache unavailable for key %s", key)
-    return None
+    return _memory_cache.get(key)
 
 
 async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> None:
@@ -62,6 +107,10 @@ async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> 
         await r.setex(key, ttl, json.dumps(value, default=str))
     except Exception:
         logger.debug("Redis cache set failed: %s", key)
+    finally:
+        # Keep a small local copy so an optional Redis outage does not change
+        # rate lookup behavior for an already-running offline demo.
+        _memory_cache.set(key, value, ttl)
 
 
 async def cache_invalidate_pattern(pattern: str) -> int:
@@ -72,6 +121,7 @@ async def cache_invalidate_pattern(pattern: str) -> int:
             keys.append(key)
         if keys:
             await r.delete(*keys)
+        _memory_cache.invalidate_pattern(pattern)
         return len(keys)
     except Exception:
-        return 0
+        return _memory_cache.invalidate_pattern(pattern)

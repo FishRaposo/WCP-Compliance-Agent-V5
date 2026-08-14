@@ -55,6 +55,10 @@ const SSE_IDLE_TIMEOUT_MS = 120_000;
 /** Active SSE connections registry */
 const activeConnections = new Map<string, SSEConnection>();
 
+const LOCAL_EVENT_LIMIT = 100;
+const localEvents = new Map<string, SSEEventPayload[]>();
+let localEventSequence = 0;
+
 /** Counts active connections originating from a given client key. */
 const countConnectionsForClient = (clientKey: string): number => {
   let count = 0;
@@ -104,6 +108,31 @@ export const broadcastSSEEvent = (streamName: string, payload: SSEEventPayload):
   }
 };
 
+/** Publish through the process-local transport used when Redis is optional/offline. */
+export const publishSSEEvent = (streamName: string, payload: SSEEventPayload): SSEEventPayload => {
+  const event = { ...payload, streamId: payload.streamId ?? `local-${++localEventSequence}` };
+  const history = localEvents.get(streamName) ?? [];
+  history.push(event);
+  if (history.length > LOCAL_EVENT_LIMIT) history.splice(0, history.length - LOCAL_EVENT_LIMIT);
+  localEvents.set(streamName, history);
+  broadcastSSEEvent(streamName, event);
+  return event;
+};
+
+/** Return ordered local events newer than an SSE Last-Event-ID value. */
+export const getSSEEventsAfter = (streamName: string, lastEventId?: string): SSEEventPayload[] => {
+  const history = localEvents.get(streamName) ?? [];
+  if (!lastEventId) return [...history];
+  const index = history.findIndex((event) => event.streamId === lastEventId);
+  return index === -1 ? [...history] : history.slice(index + 1);
+};
+
+/** Test and shutdown helper; never affects Redis-backed stream persistence. */
+export const clearSSEEventHistory = (): void => {
+  localEvents.clear();
+  localEventSequence = 0;
+};
+
 /**
  * Creates a handler that bridges Redis Stream events to SSE.
  * Returns a ReadableStream that can be used as SSE response body.
@@ -112,7 +141,8 @@ export const createSSEBridge = (
   connectionId: string,
   streamConfig: StreamConfig,
   redisUrl: string,
-  clientKey: string = connectionId
+  clientKey: string = connectionId,
+  lastEventId?: string
 ): ReadableStream<Uint8Array> => {
   if (activeConnections.size >= MAX_SSE_CONNECTIONS) {
     throw new Error("Maximum SSE connections exceeded");
@@ -145,6 +175,10 @@ export const createSSEBridge = (
         logger.debug("SSE heartbeat enqueue failed", { connectionId, err });
         const conn = activeConnections.get(connectionId);
         if (conn) conn.isActive = false;
+      }
+
+      for (const event of getSSEEventsAfter(streamConfig.streamName, lastEventId)) {
+        controller.enqueue(encodeToStream(formatSSEEvent(event)));
       }
 
       // Periodic heartbeat keeps the connection warm and reaps idle/stale ones.

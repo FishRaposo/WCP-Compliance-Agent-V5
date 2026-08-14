@@ -4,6 +4,7 @@ Connects to DuckDB, attaches PostgreSQL tables via postgres_scanner,
 and creates parquet views for analytics queries.
 """
 
+import hashlib
 import logging
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,18 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 DEFAULT_DB_PATH = Path("data/analytics.duckdb")
+
+
+def build_archive_manifest(archive_path: str | Path, row_count: int) -> dict[str, Any]:
+    """Create a portable checksum receipt for an already-exported Parquet file."""
+    artifact = Path(archive_path)
+    return {
+        "schema_version": 1,
+        "artifact": artifact.name,
+        "format": "parquet",
+        "row_count": row_count,
+        "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+    }
 
 
 class DuckDBStore:
@@ -87,6 +100,22 @@ class DuckDBStore:
         except Exception as exc:
             logger.warning("Failed to export %s to Parquet: %s", table_or_view, exc)
             return ""
+
+    def export_to_parquet_with_manifest(
+        self,
+        table_or_view: str,
+        output_path: str,
+    ) -> dict[str, Any] | None:
+        """Export a Parquet archive and return its checksum-backed receipt.
+
+        This is additive to ``export_to_parquet`` so existing callers retain their
+        string response while evidence tooling can verify a concrete artifact.
+        """
+        archive = self.export_to_parquet(table_or_view, output_path)
+        if not archive or not self._conn:
+            return None
+        row_count = int(self._conn.execute(f"SELECT COUNT(*) FROM {table_or_view}").fetchone()[0])
+        return build_archive_manifest(archive, row_count)
 
     def query_analytics(self, query: str) -> list[dict[str, Any]]:
         """Execute an analytics query and return results."""

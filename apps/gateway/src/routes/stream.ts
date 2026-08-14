@@ -9,7 +9,7 @@ streamRoutes.get("/api/v1/decisions/stream", async (c) => {
   const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
   // Identify the originating client so the per-client connection cap applies.
-  let clientKey: string = connectionId;
+  let clientKey: string;
   try {
     clientKey = getConnInfo(c).remote.address ?? connectionId;
   } catch {
@@ -21,9 +21,10 @@ streamRoutes.get("/api/v1/decisions/stream", async (c) => {
     consumerGroup: "sse-consumers",
     consumerName: connectionId,
   };
+  const lastEventId = c.req.header("Last-Event-ID") ?? undefined;
 
   try {
-    const stream = createSSEBridge(connectionId, streamConfig, redisUrl, clientKey);
+    const stream = createSSEBridge(connectionId, streamConfig, redisUrl, clientKey, lastEventId);
 
     return c.newResponse(stream, 200, {
       "Content-Type": "text/event-stream",
