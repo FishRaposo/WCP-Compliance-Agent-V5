@@ -1,0 +1,116 @@
+{
+  "agent_synthesis": {
+    "citations": [],
+    "deterministic_truth_in_reasoning": true,
+    "llm_confidence": 0.95,
+    "requires_human_review": false,
+    "trust_band": "auto_approve",
+    "trust_score": 0.9775,
+    "verdict": "approved"
+  },
+  "cache_fallback": {
+    "backend": "memory",
+    "fallback_hit": true,
+    "rate": 51.69,
+    "redis_required": false
+  },
+  "economics": {
+    "cost_usd": 0,
+    "latency": {
+      "recorded": true,
+      "runtime_values_normalized": true,
+      "step_names": [
+        "extract_ms",
+        "persist_ms",
+        "trust_ms",
+        "validate_ms",
+        "verdict_ms"
+      ],
+      "unit": "milliseconds"
+    }
+  },
+  "extraction": {
+    "contractor": "Offline Electric LLC",
+    "employee_count": 1,
+    "employees": [
+      {
+        "hourly_wage": 55,
+        "hours": 40,
+        "name": "Jane Doe",
+        "trade": "Electrician"
+      }
+    ],
+    "locality": "Washington, DC",
+    "noncanonical_input_issues": [],
+    "project": "Library retrofit",
+    "wage_determination": "DC20240001",
+    "week_ending": "2026-01-10"
+  },
+  "frontend_fixtures": {
+    "analysis_fixture": {
+      "trust_score": 0.93,
+      "verdict": "approved"
+    },
+    "analytics_total_decisions": 156,
+    "decision_count": 5,
+    "ingestion_statuses": [
+      "completed",
+      "partial"
+    ],
+    "verdict_counts": {
+      "approved": 3,
+      "needs_review": 1,
+      "rejected": 1
+    }
+  },
+  "mode": {
+    "llm": "mock",
+    "network_required": false,
+    "provider_access_required": false
+  },
+  "persistence": {
+    "audit_actors": [
+      "agent"
+    ],
+    "audit_event_count": 2,
+    "audit_event_types": [
+      "decision_persisted",
+      "decision_persisted"
+    ],
+    "idempotency_verified": true,
+    "record_count": 1
+  },
+  "scenario": "offline-portfolio",
+  "schema_version": "v1",
+  "sse": {
+    "ordered_event_count": 2,
+    "ordered_types": [
+      "decision.created",
+      "job.completed"
+    ],
+    "resume_verified": true,
+    "resumed_event_count": 1,
+    "resumed_types": [
+      "job.completed"
+    ]
+  },
+  "validation": {
+    "check_types": [
+      "data_integrity",
+      "fringe_benefit",
+      "minimum_wage",
+      "overtime",
+      "signature",
+      "total_arithmetic",
+      "wage_rate"
+    ],
+    "failing_check_types": [],
+    "overall_status": "pass",
+    "passed_count": 11,
+    "status_counts": {
+      "pass": 11
+    },
+    "violation_count": 0,
+    "warning_count": 0
+  }
+}

@@ -11,7 +11,8 @@
     "test": "turbo run test",
     "test:contracts": "turbo run test:contracts",
     "test:golden": "turbo run test:golden",
-    "test:gateway:integration": "cd apps/gateway && pnpm test integration"
+    "test:gateway:integration": "cd apps/gateway && pnpm test integration",
+    "evidence": "pnpm --filter @wcp/agent exec tsx ../../scripts/portfolio_demo.ts && node scripts/verify_portfolio_evidence.mjs artifacts/portfolio/wcp-compliance-agent-v5-evidence --golden tests/fixtures/golden/portfolio-evidence.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
