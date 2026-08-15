@@ -47,6 +47,8 @@ def _make_decision_row():
 @pytest.mark.unit
 async def test_create_decision_returns_response():
     session = AsyncMock()
+    # get_bind is synchronous on a real AsyncSession; keep the double faithful
+    session.get_bind = MagicMock()
     session.commit = AsyncMock()
 
     # persist_decision result
@@ -87,6 +89,8 @@ async def test_create_decision_with_human_review_flag():
     from datetime import datetime
 
     session = AsyncMock()
+    # get_bind is synchronous on a real AsyncSession; keep the double faithful
+    session.get_bind = MagicMock()
     session.commit = AsyncMock()
 
     persist_result = MagicMock()
@@ -145,6 +149,8 @@ async def test_create_decision_persists_with_contract_id():
     from datetime import datetime
 
     session = AsyncMock()
+    # get_bind is synchronous on a real AsyncSession; keep the double faithful
+    session.get_bind = MagicMock()
     session.commit = AsyncMock()
 
     persist_result = MagicMock()
