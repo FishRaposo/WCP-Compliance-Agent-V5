@@ -33,7 +33,7 @@ def _engine_options(db_url: str) -> dict[str, object]:
     return {}
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def engine():
     db_url = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
     eng = create_async_engine(db_url, echo=False, **_engine_options(db_url))
