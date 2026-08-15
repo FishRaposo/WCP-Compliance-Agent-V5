@@ -1,5 +1,7 @@
 # Phase 4: Minimum Vertical Slice
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** One complete WH-347 analysis works end-to-end. Upload PDF through Web → Gateway validates → Agent orchestrates → Compliance Core extracts and validates → Agent synthesizes verdict → Data Platform persists decision + audit events → Web displays result with trust score, citations, and audit trail.
 
 **Prerequisites:** Phase 3 complete (services boot, contracts aligned, seed data loaded).

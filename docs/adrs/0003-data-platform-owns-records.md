@@ -36,9 +36,9 @@ Contracts, payrolls, ingestion, analytics, archival storage, and audit events fo
 - Easier future expansion for enterprise connectors and additional data sources.
 - The Data Platform uses Python (FastAPI + SQLAlchemy + Alembic) because DuckDB, PyArrow, Prefect, and data quality tooling are all Python-native.
 
-## Deferred to Post-MVP
+## Original post-MVP deferrals (historical)
 
-The following V4 capabilities are scaffolded but not implemented in the V5 MVP:
+At decision time, the following V4 capabilities were scaffolded but not implemented:
 
 - DuckDB analytics (deferred)
 - Prefect ETL flows (deferred)
@@ -47,4 +47,7 @@ The following V4 capabilities are scaffolded but not implemented in the V5 MVP:
 - Redis Streams decision-event publishing (implemented for decision persistence; broader event families deferred)
 - Enterprise connectors beyond SAM.gov stubs (deferred)
 
-These will be implemented in Phase 4 (V4 Data Platform Feature Migration).
+Later work delivered local DuckDB/Parquet contracts, ingestion flows, native
+validators, Redis decision events/cache fallback, and connector abstractions. Full
+Prefect, Great Expectations, hosted orchestration, and mandatory infrastructure remain
+deliberately deferred; see `docs/planning/v5-known-gaps.md`.

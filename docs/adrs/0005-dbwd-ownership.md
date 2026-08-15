@@ -23,11 +23,14 @@ Rate applicability is legally meaningful validation logic. The Compliance Core n
 
 This is compliance reasoning, not data retrieval. The Data Platform should own the rate storage and refresh pipeline, but the Compliance Core should own the matching logic.
 
-For the V5 MVP, the Compliance Core includes a 20-trade in-memory rate corpus as a fallback. Full Data Platform rate storage with DB refresh will be implemented in Phase 4.
+Compliance Core retains a deterministic in-memory corpus for offline proof. Data
+Platform now owns rate snapshots, refresh fixtures, optional Redis caching, and the
+SAM.gov connector surface; live refresh remains opt-in.
 
 ## Consequences
 
 - Legal reasoning stays close to the deterministic engine.
 - Rate storage and refresh are Data Platform responsibilities.
 - The Compliance Core has a self-contained fallback corpus for testing and MVP demos.
-- Future SAM.gov live integration will be a Data Platform ETL flow.
+- SAM.gov refresh is a Data Platform ETL concern and requires explicit credentials and
+  network access; it is not part of the canonical offline demo.

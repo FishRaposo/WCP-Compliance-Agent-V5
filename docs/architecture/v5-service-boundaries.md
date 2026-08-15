@@ -99,7 +99,9 @@ Every cross-service request includes:
 
 - `x-request-id`: unique per request chain
 - `x-trace-id`: distributed tracing correlation
-- `x-tenant-id`: future multi-tenant context
+
+Hosted multi-tenant/workspace context is deliberately deferred; no tenant header is
+part of the current portfolio contract.
 
 ## Port Allocation
 
@@ -111,4 +113,11 @@ Every cross-service request includes:
 | Compliance Core | 8000 | Internal extraction/validation |
 | Data Platform | 8001 | Internal data API |
 | PostgreSQL | 5432 | Shared database |
-| Redis | 6379 | Cache and SSE/event stream backing |
+| Redis | 6379 | Optional cache and SSE/event stream backing; local fallback exists |
+
+## Offline proof composition
+
+`scripts/portfolio_demo.ts` composes the same contracts without starting network
+services. Its Compliance Core bridge invokes the canonical Python extraction/rule
+engine; it does not maintain a second compliance implementation. The resulting
+evidence proves deterministic contract behavior, not hosted availability.

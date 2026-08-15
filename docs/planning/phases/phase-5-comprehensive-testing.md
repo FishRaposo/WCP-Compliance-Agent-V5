@@ -1,5 +1,7 @@
 # Phase 5: Comprehensive Testing
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** 250+ tests across all services. Every module has unit tests, every API endpoint has at least one test, all service boundaries have contract tests. Test coverage ≥80% on core business logic modules.
 
 **Prerequisites:** Phase 4 complete (vertical slice works).

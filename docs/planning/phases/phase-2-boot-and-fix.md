@@ -1,5 +1,7 @@
 # Phase 2: Boot & Fix
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** All 5 services boot cleanly, `/health` returns 200 on every service, API path mismatches are fixed, dependencies are installed, infrastructure is running.
 
 **Prerequisites:** Phase 1 complete (scaffold exists).

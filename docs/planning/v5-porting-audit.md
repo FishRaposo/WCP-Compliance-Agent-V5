@@ -1,5 +1,9 @@
 # V3/V4 → V5 Porting Audit (FINAL)
 
+> **Historical audit.** This snapshot records V3/V4-to-V5 migration status at the
+> time of the original audit. Later finalization work closed several listed gaps.
+> Current claims live in `README.md` and `docs/planning/v5-known-gaps.md`.
+
 **Status:** 76/88 V3 files ported (86%). All deliberate omissions documented.
 
 **Current snapshot (2026-06-19):** This audit is a historical V3/V4-to-V5 inventory. Current verification is 274 unit tests, 24 Data Platform integration tests, and 93 Compliance Core eval tests (92 examples plus one baseline regression). Current Agent orchestration uses Mastra workflows/tools and persists decisions only through Data Platform `/internal/decisions`.

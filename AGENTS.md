@@ -18,17 +18,22 @@ Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 
 | Layer | Count | Framework |
 |---|---:|---|
-| Compliance Core unit | 75 | pytest |
-| Data Platform unit | 63 | pytest |
-| Agent (Mastra) | 65 | vitest |
-| Gateway unit | 23 | vitest |
+| Compliance Core unit | 84 | pytest |
+| Compliance Core eval | 101 | pytest (100 examples + baseline) |
+| Data Platform | command gate | pytest unit + integration |
+| Agent (Mastra) | 66 | vitest |
+| Gateway | 45 | vitest |
 | Web unit | 29 | vitest |
-| Contracts | 19 | vitest |
-| **Unit-test total** | **274** | pytest + vitest |
-| Data Platform integration | 24 | pytest |
-| Golden-set eval tests | 93 | pytest parametrization |
+| Contracts | 42 | vitest |
+| Tooling | 4 | node:test |
+| Browser smoke | 2 | Playwright desktop + mobile |
 
-**Current local verification:** direct Vitest package runs pass for Agent, Gateway, Web, and Contracts (136 tests). Compliance Core pytest unit+eval passes (168 tests). Data Platform pytest unit+integration passes (83 passed, 4 skipped), with Ruff and mypy clean. E2E Docker flow is not yet fully covered.
+**Current finalization verification:** `pnpm test` passed 42 Contracts, 66 Agent,
+45 Gateway, 29 Web, and four tooling tests. Typecheck, lint, production build,
+deterministic evidence, and two browser smoke projects passed. Compliance Core
+passed 185 tests locally (84 unit + 101 eval). Python 3.12/Poetry, Data Platform service
+fixtures, and Docker builds are authoritative CI gates where the matching local
+toolchain is unavailable.
 
 ## Commands
 
@@ -116,11 +121,14 @@ python3 generate.py           # Regenerate TS + Python types from JSON schemas
 
 ## CI Pipeline
 
-Three parallel Turborepo pipelines on push/PR to main:
+CI runs independent repository-hygiene, TypeScript/evidence, browser, Python, and
+Docker jobs on push/PR to main:
 
-1. **TypeScript**: `typecheck` → `lint` → `build` → `test` across all TS packages
-2. **Python compliance-core**: `ruff check` → `mypy src/` → `pytest tests/unit`
-3. **Python data-platform**: `ruff check` → `mypy src/` → `pytest tests/unit`
+1. **Repository hygiene**: tooling contracts, forbidden-dependency scan, gitleaks
+2. **TypeScript/evidence**: frozen install → typecheck → lint → build → tests → evidence artifact
+3. **Browser**: frozen install → Chromium dependencies → desktop/mobile Playwright smoke
+4. **Python services**: Poetry lock/install → Ruff → mypy → unit/eval or integration tests
+5. **Docker**: production Compose config and service builds in mock mode
 
 Golden-set evaluation runs weekly (Monday 6 AM) and on manual trigger.
 
@@ -183,7 +191,11 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 
 ### Golden-set eval
 
-`apps/compliance-core/tests/eval/golden_set/examples.json` (92 examples) is the shared source of truth; Compliance Core also runs one baseline-regression eval test, for 93 collected eval tests. The Mastra `verdictAgreementScorer` runs over it (`apps/agent/tests/eval/golden-set.test.ts`); the full pipeline eval stays in compliance-core pytest + `eval.yml`.
+`apps/compliance-core/tests/eval/golden_set/examples.json` (100 examples) is the
+shared source of truth; Compliance Core also runs one baseline-regression test, for
+101 collected eval tests. The Mastra `verdictAgreementScorer` runs over it
+(`apps/agent/tests/eval/golden-set.test.ts`); the authoritative deterministic eval
+stays in Compliance Core pytest and `eval.yml`.
 
 ## Environment
 
@@ -219,7 +231,9 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 - `docs/architecture/v5-data-model.md` — 7 tables with relationships
 - `docs/architecture/v2-to-v5-evolution.md` — Version history
 - `docs/architecture/case-study.md` — Full case study
-- `docs/adrs/` — 7 Architecture Decision Records
-- `docs/planning/v5-porting-audit.md` — V3→V5 porting completeness
+- `docs/adrs/` — 9 Architecture Decision Records
+- `docs/planning/v5-porting-audit.md` — historical V3→V5 porting audit
+- `docs/portfolio-evidence.md` — deterministic evidence format and verification
+- `docs/testing.md` — current gate commands and proof boundaries
 - `docs/planning/v5-known-gaps.md` — Documented limitations
 - `docs/operations/deployment.md` — Deployment guide

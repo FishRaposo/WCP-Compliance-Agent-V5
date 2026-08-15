@@ -1,6 +1,6 @@
 ## WCP Compliance Platform V5
 
-> AI-assisted Davis-Bacon certified payroll compliance platform with deterministic validation, agentic verdict synthesis, and five-service architecture.
+> Production-ready WH-347 compliance platform: deterministic validation decides, the LLM explains, and every decision is traceable.
 
 ### What It Does
 
@@ -20,18 +20,22 @@ Five services with explicit ownership boundaries:
 
 The agent can produce a decision draft. The Data Platform creates the official decision record. Deterministic validation is the source of compliance truth.
 
-### Quick Start
+### Portfolio Proof
 
 ```bash
-pnpm install
-docker compose -f infra/docker-compose.yml up -d
-pnpm dev
+pnpm install --frozen-lockfile
+pnpm evidence
+pnpm test:e2e
 ```
+
+The canonical proof is offline and credential-free. PostgreSQL, Redis, Docker,
+SAM.gov, Langfuse, and real LLM providers are optional integration surfaces.
 
 ### Docs
 
 - `AGENTS.md` — Commands, conventions, testing
 - `docs/architecture/v5-service-boundaries.md` — Full architecture
-- `docs/adrs/` — Architecture Decision Records (7 ADRs)
-- `docs/planning/v5-implementation-plan.md` — Phase plan
-- `docs/planning/v5-porting-guide.md` — V3→V5 file mapping
+- `docs/adrs/` — Architecture Decision Records
+- `docs/portfolio-evidence.md` — Reproducible evidence contract
+- `docs/testing.md` — Verification commands and proof boundaries
+- `docs/planning/v5-known-gaps.md` — Current deferrals

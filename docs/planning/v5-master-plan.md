@@ -1,5 +1,9 @@
 # V5 Master Development Plan
 
+> **Historical plan.** This document preserves the original rebuild plan and baseline
+> observations. It does not override the live architecture, finalization evidence, or
+> current deferred boundaries documented in the README and known-gaps file.
+
 ## Status
 
 Phases 0–3 (Architecture Freeze, Monorepo Skeleton, Boot & Fix, Contracts & Types) are **complete**. All 5 services boot and return `/health` 200. Codegen produces valid TypeScript and Python types. Contract tests pass across all 4 service boundaries. Seed scripts are ready. Next: Phase 4 (Vertical Slice).

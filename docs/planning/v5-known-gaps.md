@@ -1,73 +1,51 @@
-# V5 Known Gaps
+# V5 known gaps and deferred boundaries
 
-**Last updated:** 2026-06-19
+**Last verified:** 2026-08-14
 
-This document tracks known limitations, edge cases, and deferred features. V5 is functionally complete — these are quality hardening items, not blockers.
+This is the current boundary document. Historical porting plans under this directory
+are provenance only and may contain unchecked boxes for work delivered later.
 
-## Extraction Edge Cases (8 known)
+## Delivered in the comprehensive finalization pass
 
-The block-based WH-347 parser doesn't handle these format variants:
+- The block parser handles the eight previously documented overtime, employee,
+  classification, wage, location, US/long-form date, and decimal-hour variants.
+  Malformed explicit values fail closed through additive noncanonical-input metadata.
+- The golden fixture contains 100 examples and retains the baseline-regression gate.
+- The credential-free local composition exercises Gateway → Agent → Compliance Core
+  → Data Platform semantics without replacing the canonical rule engine.
+- Data Platform has ingestion-job lifecycle validation, bulk validation, deterministic
+  rate snapshots, in-memory/optional-Redis caching, and Parquet archive
+  manifests/checksums with DuckDB contracts.
+- SSE supports deterministic event IDs, heartbeats, local replay, per-client Redis
+  resume cursors, and in-memory fallback.
+- The portfolio evidence bundle and dependency-free verifier cover extraction,
+  validation, trust, persistence, audit, cache, SSE, cost/latency, and Web fixtures.
+- Playwright covers desktop and mobile fixture-mode flows.
 
-| # | Issue | Example | Workaround |
-|---|---|---|---|
-| 1 | "Overtime Hours" label | `Overtime Hours: 5` not parsed in block mode | Use `Overtime: 5` or `OT: 5` |
-| 2 | "Employee:" label | `Employee: Casey Work` not extracted as name | Use `Name: Casey Work` |
-| 3 | "Classification:" label | `Classification: Electrician` not matched | Use `Trade: Electrician` |
-| 4 | "Wage:" shorthand | `Wage: 55.00` not extracted | Use `Hourly Wage: 55.00` |
-| 5 | "Site Location" variant | `Site Location: Washington, DC` not extracted | Use `Location:` or `Project Location:` |
-| 6 | "01/12/2025" date format in block mode | MM/DD/YYYY only works in row format | Use `Certified: 2025-06-15` |
-| 7 | "January 15, 2025" in block mode | Long-form dates not parsed in block context | Use ISO format |
-| 8 | Decimal hours in block mode | `Hours: 40.5` with `Overtime Hours: 0.5` causes totals mismatch | Use integer hours |
+## Current limits
 
-These are extraction regex gaps, not rule engine bugs. All 8 have documented golden-set examples in `tests/eval/golden_set/` (commented out).
+- No load test, throughput benchmark, or production SLO is claimed.
+- The Gateway rate limiter is process-local and is not shared across replicas.
+- The canonical portfolio demo does not prove a live provider, SAM.gov, PostgreSQL,
+  Redis, Langfuse, or hosted deployment.
+- Live PDF upload through every deployed service and real Redis/PostgreSQL replay are
+  optional integration paths; the default proof uses fixed offline inputs.
+- The Web browser gate uses deterministic fixture mode rather than a deployed backend.
+- No demo video/GIF or binary WH-347 fixture is tracked; the text fixture and evidence
+  report are the reproducible review surfaces.
 
-## Trust Score Divergence (RESOLVED)
+## Deliberately deferred
 
-~~TypeScript and Python implementations used different weights~~ → **Resolved in Phase 15.** Both now use 35/25/20/20.
-
-## Integration Tests
-
-Unit test infrastructure is complete as a source-collected suite: 274 unit tests plus 24 Data Platform integration tests. Golden-set evaluation is tracked separately as 93 collected tests: 92 parametrized examples plus one baseline-regression test. Cross-service E2E tests still require a live Docker runtime.
-
-| Test | Status |
+| Direction | Boundary |
 |---|---|
-| Data Platform DBWD flow | ✅ `tests/integration/test_dbwd_flow.py` |
-| Data Platform decision lifecycle | ✅ `tests/integration/test_decision_lifecycle.py` |
-| Data Platform analytics endpoints | ✅ `tests/integration/test_analytics_endpoints.py` |
-| Redis cache layer | ✅ `tests/integration/test_redis_cache.py` |
-| Gateway → Agent → Compliance Core pipeline | Not yet fully covered; requires live Docker stack |
-| SSE stream with Redis | Not yet fully covered; requires live Docker stack |
+| Celery | No background job queue; current internal pipeline remains bounded HTTP/local composition |
+| Elasticsearch | In-process BM25 and optional pgvector remain the search boundary |
+| Great Expectations | Native deterministic validators remain authoritative |
+| Full Prefect | Lightweight compatibility helpers remain; no mandatory orchestrator |
+| Hosted notifications | No Slack, Discord, email, or webhook delivery service |
+| Hosted/team workflows | No tenancy, workspace, hosted scheduling, or collaboration product layer |
+| Mandatory infrastructure | PostgreSQL, Redis, Docker, SAM.gov, Langfuse, and real LLM providers stay optional for portfolio proof |
 
-Test infra: `infra/docker-compose.test.yml` (ports 5433/6380).
-
-## Performance & Scale
-
-No load testing or benchmarks have been performed. Known considerations:
-
-- Rate limiter is in-memory (not shared across Gateway instances)
-- ~~DBWD rate lookup is in-memory~~ → SAM.gov wired into refresh pipeline (Phase 10); Redis cache wired into rate lookup (Phase 11)
-- No connection pool tuning beyond defaults (`pool_size=10, max_overflow=20`)
-- ~~No Redis caching for DBWD rates~~ → Redis cache fully wired in `dbwd_service.get_rates()` and `get_rate()`
-
-## UI Gaps
-
-- No PDF upload UI integration tested end-to-end (mock mode works)
-- ~~Analytics pages show data tables, not charts~~ → 11 recharts chart components implemented (Phase 9); all 4 analytics pages use real charts
-- No mobile-responsive testing
-
-## Documentation
-
-- No demo GIF (`docs/demo.gif`)
-- No fixture PDF (`packages/test-fixtures/sample-wh347.pdf` — `.txt` exists)
-
-## Deliberate Omissions
-
-These V3 features were intentionally not ported:
-
-| Feature | Reason |
-|---|---|
-| Celery job queue | Pipeline is synchronous HTTP (<5s), no async processing needed |
-| Elasticsearch | In-process BM25 + pgvector covers RAG needs |
-| Great Expectations | Native Python validators in `quality/validators.py` |
-| Prefect (full) | `import_safe_flow` decorator provides Prefect compatibility without dependency |
-| 11 recharts components | Data displayed as cards/tables; charting library can be added later |
+These deferrals are product/infrastructure choices, not incomplete claims hidden by
+the offline demo. Revisit them only with a concrete deployment requirement and new
+behavior contracts.

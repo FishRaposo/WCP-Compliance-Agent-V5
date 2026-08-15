@@ -1,5 +1,7 @@
 # Phase 7: Observability & Eval Hardening
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** Full distributed tracing across all 5 services, Langfuse prompt tracking, golden-set evaluation CI, cost and latency dashboards.
 
 **Prerequisites:** Phase 4 complete (vertical slice works). Can run in parallel with Phase 5 and Phase 6.

@@ -10,3 +10,4 @@
 | 0006 | Monorepo with Turborepo | Accepted | Single monorepo managed by Turborepo + pnpm workspaces. Shared packages in `packages/`. Services in `apps/`. TypeScript and Python services co-exist with their own toolchains. |
 | 0007 | Trust Score Weights | Accepted | Adopt Python weights (35/25/20/20) as single source of truth. Align TypeScript implementation to match. Documented in golden-set evaluation. |
 | 0008 | Agent Built on Mastra | Accepted | Agent orchestration runs on Mastra 1.45 (agents, tools, workflows + suspend/resume, RAG, memory, scorers, observability) on AI SDK v6; replaces the hand-rolled pipeline/router/prompt-registry. HTTP contract and service boundaries unchanged. |
+| 0009 | Canonical Offline Portfolio Evidence | Accepted | Offline adapters compose all five service contracts while canonical Compliance Core remains the only deterministic truth engine; normalized evidence is checksum-verified. |

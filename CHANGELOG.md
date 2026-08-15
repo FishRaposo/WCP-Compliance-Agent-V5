@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.3.0] - 2026-08-14
+
+### Comprehensive portfolio finalization
+
+- Expanded the WH-347 parser and 100-example golden set for alternate labels,
+  US/long-form dates, decimal hours, and malformed-input refusal without changing
+  existing verdict or trust-score baselines.
+- Added versioned pipeline, trace, cost/latency, and evidence contracts with generated
+  TypeScript/Python types.
+- Added deterministic five-service offline composition that delegates compliance
+  decisions to the canonical Python engine and preserves persistence/audit boundaries.
+- Completed local Data Platform ingestion lifecycle, cache fallback, deterministic
+  rate snapshots, Parquet manifests/checksums, and DuckDB contracts.
+- Hardened SSE with deterministic IDs, heartbeats, local replay, per-client Redis
+  cursors, and in-memory fallback.
+- Added the reproducible `pnpm evidence` bundle/verifier and desktop/mobile Playwright
+  smoke coverage.
+- Aligned Node 20/pnpm 9.15 and Python 3.12/Poetry install gates, CI, and Docker build
+  contexts; added repository hygiene and artifact upload jobs.
+- Reconciled architecture, operations, security, testing, historical planning, and
+  public portfolio documentation. Hosted/team workflows and mandatory external
+  infrastructure remain explicitly deferred.
+
 ## [5.2.0] - 2026-06-19
 
 ### Agent → Mastra migration

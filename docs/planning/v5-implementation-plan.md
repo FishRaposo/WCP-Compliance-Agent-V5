@@ -1,5 +1,10 @@
 # V5 Implementation Plan
 
+> **Historical plan.** This checklist records the original V5 build sequence. It is
+> not the current roadmap and its unchecked boxes are not current-state assertions.
+> See `README.md`, `docs/testing.md`, and `docs/planning/v5-known-gaps.md` for the
+> finalized repository state and deliberate deferrals.
+
 ## Phase 0: Architecture Freeze (Complete)
 
 **Goal:** Lock all decisions, create repo skeleton.

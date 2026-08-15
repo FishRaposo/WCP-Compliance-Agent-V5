@@ -1,5 +1,7 @@
 # Phase 0: Architecture Freeze
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** Lock all architectural decisions, document boundaries, define MVP scope, write ADRs.
 
 **Prerequisites:** None. This is the starting point.

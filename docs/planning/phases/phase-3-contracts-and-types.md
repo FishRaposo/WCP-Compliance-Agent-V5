@@ -1,5 +1,7 @@
 # Phase 3: Contracts & Types
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** Shared contract codegen produces valid TypeScript and Python types, hand-written types align with generated schemas, workspace package dependencies resolve correctly, and initial contract tests verify service boundary shapes.
 
 **Prerequisites:** Phase 2 complete (all services boot).

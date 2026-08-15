@@ -65,16 +65,19 @@ TrustScoredDecision returned to User
 ## SSE Streaming Flow
 
 ```text
-Gateway: GET /api/v1/decisions/stream
+Gateway: GET /api/v1/decisions/stream (optional Last-Event-ID)
   |
   |- initial heartbeat comment
   |
-  `- Redis Streams consumer group: wcp.decisions
-       |
-       `- event: decision.created { decision_id, job_id, verdict, trust_score, ... }
+  `- per-client replay cursor
+       |- Redis XREAD when REDIS_URL is configured and healthy
+       `- deterministic local history/fanout otherwise
 ```
 
-If Redis is unavailable, the SSE endpoint still opens and emits the initial heartbeat, while Redis consumer setup/read errors are logged.
+Events carry deterministic IDs. Each client resumes after its own cursor, so one
+reader cannot acknowledge or consume another client's replay. If Redis is absent,
+unavailable, or returns malformed data, the endpoint keeps the same wire contract and
+uses local replay/fanout.
 
 ## Error Boundaries
 
@@ -82,6 +85,9 @@ If Redis is unavailable, the SSE endpoint still opens and emits the initial hear
 - **Agent -> Compliance Core extraction/validation failure**: the Mastra pipeline fails because extraction and deterministic validation are required inputs.
 - **Agent verdict LLM failure in real mode**: the verdict step degrades to deterministic fallback.
 - **Agent -> Data Platform persistence failure**: the Mastra pipeline fails because official persistence did not complete.
-- **Redis unavailable**: Data Platform persistence still succeeds; decision event publish is best-effort. Gateway SSE logs Redis errors and keeps the stream open when possible.
+- **Redis unavailable**: Data Platform persistence still succeeds; cache and SSE use
+  their in-memory fallbacks while preserving event order and resume metadata.
 - **PostgreSQL unavailable**: Data Platform persistence/query endpoints fail through the database session path.
-- **Mock mode**: `LLM_MODE=mock` skips LLM calls but still runs the Mastra workflow and internal service calls.
+- **Mock mode**: `LLM_MODE=mock` skips LLM calls but still runs the Mastra workflow
+  and internal service calls. The separate `pnpm evidence` adapter path composes the
+  canonical engine and all service contracts without network services.

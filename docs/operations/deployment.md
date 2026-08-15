@@ -1,5 +1,9 @@
 # Deployment Guide
 
+> This is an optional deployment surface. The repository ships reproducible local
+> proof, not a hosted service. Production deployment requires infrastructure,
+> credential, privacy, and operational review beyond the portfolio gates.
+
 ## Docker Compose (Production)
 
 ```bash
@@ -78,7 +82,11 @@ VITE_MOCK_API=true WCP_MOCK_AUTH=true AUTH_DISABLED=true LLM_MODE=mock pnpm dev
 
 `VITE_MOCK_API=true` lets the Web app run from fixtures without backend services.
 
-`LLM_MODE=mock` avoids LLM API keys in the Agent, but the Mastra workflow still calls Compliance Core and Data Platform. For full local workflow testing, run PostgreSQL, Redis, Compliance Core, and Data Platform as shown in the Docker Compose setup above.
+`LLM_MODE=mock` avoids LLM API keys in the Agent, but the networked Mastra workflow
+still calls Compliance Core and Data Platform. For a credential-free review that
+does not start infrastructure, run `pnpm evidence`; for a live persistence flow, run
+PostgreSQL, Compliance Core, and Data Platform. Redis is optional because cache and
+SSE have in-memory fallbacks.
 
 ## Scaling
 

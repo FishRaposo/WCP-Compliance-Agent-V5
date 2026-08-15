@@ -1,5 +1,7 @@
 # Phase 8: Portfolio Polish
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** A recruiter understands the system in 90 seconds. A technical reviewer inspects the boundaries in 5 minutes. Local demo path works without API keys. The architecture narrative is compelling and clear.
 
 **Prerequisites:** Phases 5–7 substantially complete.

@@ -1,5 +1,7 @@
 # Phase 6: V4 Data Platform Feature Migration
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** Port all V4 capabilities from the V3/V4 archive into the V5 Data Platform service, behind clean `/internal/` APIs. Add V4 analytics pages to the Web App.
 
 **Prerequisites:** Phase 4 complete (vertical slice works). Can run in parallel with Phase 5 (testing).

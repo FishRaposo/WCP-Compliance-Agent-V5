@@ -1,5 +1,9 @@
 # WCP Compliance Platform V5 Rebuild Design Document
 
+> **Historical design record.** This document captures the intended clean rebuild
+> before implementation. Future-tense statements and checklists below are preserved
+> for provenance; they are not current capability claims.
+
 > Current Mastra migration note (2026-06-19): this document is retained as a design-history artifact. The active implementation uses Mastra workflows under `apps/agent/src/mastra/`; Agent submits `TrustScoredDecision` payloads to Data Platform `/internal/decisions`, and Data Platform creates official `DecisionRecord` and `AuditEvent` rows. See `docs/architecture/v5-request-flow.md` and `docs/architecture/v5-service-boundaries.md` for the current flow.
 
 ## 1. Executive Summary

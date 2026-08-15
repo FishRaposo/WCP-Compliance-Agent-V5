@@ -1,10 +1,14 @@
 # WCP Compliance Agent V5
 
-**Production-ready WH-347 certified payroll compliance platform for Davis-Bacon Act contractors.**
+**Production-ready WH-347 compliance platform: deterministic validation decides, the LLM explains, and every decision is traceable.**
 
 V5 is a five-service monorepo where each service has one clear responsibility. A payroll flows through extraction, deterministic validation, Mastra-based verdict synthesis, trust scoring, and audited persistence with request and trace IDs propagated across service boundaries.
 
-**Current verification target:** 274 source-collected unit tests, 24 Data Platform integration tests, and 93 Compliance Core golden-set eval tests (92 examples plus one baseline regression). UI mock mode can run without backend services; Agent mock mode avoids LLM API keys while still exercising the Mastra workflow and internal service boundaries.
+**Shipped proof:** the offline portfolio path runs without credentials, Docker, Redis,
+PostgreSQL, or network access. The current TypeScript gate covers 42 Contracts, 66
+Agent, 45 Gateway, and 29 Web tests, plus four tooling tests. Compliance Core passed
+84 unit tests and 101 eval tests over 100 golden examples and one baseline regression.
+The Python 3.12/Poetry and optional-infrastructure gates run in CI.
 
 ---
 
@@ -44,6 +48,19 @@ poetry install --no-interaction
 cd ../data-platform
 poetry install --no-interaction
 ```
+
+### Credential-free portfolio proof
+
+```bash
+pnpm evidence
+pnpm test:e2e
+```
+
+`pnpm evidence` executes the fixed five-service scenario through local adapters,
+writes a normalized bundle under `artifacts/portfolio/`, verifies its checksums, and
+compares it with the tracked golden fixture. `pnpm test:e2e` runs desktop and mobile
+browser smoke tests with `VITE_MOCK_API=true`. See
+[Portfolio Evidence](docs/portfolio-evidence.md) for the bundle and replay contract.
 
 ### UI Mock Mode
 
@@ -106,24 +123,22 @@ Upload WH-347 (PDF or text)
 
 | Layer | Current count | Runner | Status |
 |---|---:|---|---|
-| Compliance Core unit tests | 75 | pytest | Source-collected; run with Poetry/CI |
-| Data Platform unit tests | 63 | pytest | Source-collected; run with Poetry/CI |
-| Agent unit tests | 65 | vitest | Passed locally |
-| Gateway unit tests | 23 | vitest | Passed locally |
-| Web unit tests | 29 | vitest | Passed locally |
-| Contracts tests | 19 | vitest | Passed locally |
-| **Unit-test total** | **274** | pytest + vitest | TypeScript subset 136/136 passed locally |
-| Data Platform integration tests | 24 | pytest | Passed locally with in-memory SQLite fixtures |
-| Golden-set eval tests | 93 | pytest parametrization | 92 examples plus one baseline regression; not counted as unit tests |
-| End-to-end Docker flow | - | Docker Compose | Not yet fully covered |
+| Compliance Core unit tests | 84 | pytest | Passed locally in the project virtual environment |
+| Compliance Core eval tests | 101 | pytest | 100 examples plus one baseline regression passed |
+| Data Platform unit/integration | command gate | pytest | Python 3.12/Poetry CI job; PostgreSQL and Redis are service fixtures for integration |
+| Agent tests | 66 | vitest | Passed in the finalization gate |
+| Gateway tests | 45 | vitest | Passed in the finalization gate |
+| Web tests | 29 | vitest | Passed in the finalization gate |
+| Contracts tests | 42 | vitest | Passed in the finalization gate |
+| Tooling contract tests | 4 | node:test | Passed in the finalization gate |
+| Browser smoke | 2 | Playwright | Desktop Chromium-compatible Chrome and 390x844 mobile passed |
+| Portfolio evidence | 1 bundle | SHA-256 verifier | Passed with reproducibility hash pinned in the fixture |
 
 ```bash
-pnpm test                               # All TypeScript tests via Turborepo on supported platforms
-pnpm test:e2e                           # Desktop and mobile Chromium smoke tests in UI mock mode
-cd apps/agent && pnpm test              # 65 vitest tests
-cd apps/gateway && pnpm test            # 23 vitest tests
-cd apps/web && pnpm test                # 29 vitest tests
-cd packages/contracts && pnpm test      # 19 vitest tests
+pnpm test                               # TypeScript and tooling tests via Turborepo
+pnpm test:golden                        # Compliance Core golden-set regression gate
+pnpm evidence                           # Generate and verify the offline evidence bundle
+pnpm test:e2e                           # Desktop and mobile browser smoke tests in UI mock mode
 cd apps/compliance-core && poetry run pytest tests/unit tests/eval -v
 cd apps/data-platform && poetry run pytest tests/unit tests/integration -v
 ```
@@ -134,6 +149,9 @@ cd apps/data-platform && poetry run pytest tests/unit tests/integration -v
 - **Agent never writes to the database directly**: its Mastra workflow submits `TrustScoredDecision`; Data Platform creates official records.
 - **Every decision is traceable**: `x-request-id` and `x-trace-id` propagate through the pipeline and persistence layer.
 - **Mock modes are scoped**: `VITE_MOCK_API=true` runs the UI without backend services; `LLM_MODE=mock` runs Agent workflows without LLM API keys.
+- **Offline composition is a proof adapter, not a new source of truth**: it invokes
+  the canonical Compliance Core engine, then exercises Agent, Data Platform, cache,
+  SSE, audit, and UI-fixture contracts in one deterministic scenario.
 - **Safe verdict override**: LLM approval is overridden to `rejected` when deterministic violations exist.
 
 ## Project Structure
@@ -166,8 +184,17 @@ docs/
 - [V2 to V5 Evolution](docs/architecture/v2-to-v5-evolution.md)
 - [Case Study](docs/architecture/case-study.md)
 - [ADR Index](docs/adrs/README.md)
+- [Setup and Entry Points](docs/operations/setup-and-entrypoints.md)
+- [Security](docs/operations/security.md)
+- [Failure Modes](docs/operations/failure-modes.md)
+- [Testing](docs/testing.md)
+- [Portfolio Evidence](docs/portfolio-evidence.md)
 - [Known Gaps](docs/planning/v5-known-gaps.md)
 - [Deployment Guide](docs/operations/deployment.md)
+
+The documents under `docs/planning/` that describe the V3/V4 port are historical
+execution records. Current capability and deferred-boundary claims live in this
+README, `docs/planning/v5-known-gaps.md`, and the operational documents above.
 
 ## License
 

@@ -1,5 +1,7 @@
 # Phase 1: Monorepo Skeleton
 
+> **Historical phase record.** Status and checkboxes below describe the original build sequence.
+
 **Goal:** Create the complete V5 monorepo structure with all 5 services, shared packages, infrastructure config, and ported business logic. Every service has its config, entry point, models, and API routes scaffolded.
 
 **Prerequisites:** Phase 0 complete (decisions locked).

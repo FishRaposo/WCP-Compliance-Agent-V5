@@ -9,7 +9,7 @@ git clone <repo-url>
 cd wcp-compliance-agent-v5
 
 # Install TypeScript dependencies
-pnpm install
+pnpm install --frozen-lockfile
 
 # Install Python dependencies
 cd apps/compliance-core && poetry install
@@ -30,8 +30,14 @@ cd ../data-platform && poetry install
 ## Testing
 
 ```bash
-# Run all TypeScript tests
+# Run TypeScript and tooling tests
 pnpm test
+
+# Generate and verify the credential-free portfolio bundle
+pnpm evidence
+
+# Run desktop and mobile browser smoke tests
+pnpm test:e2e
 
 # Run Python tests
 cd apps/compliance-core && poetry run pytest tests/unit -v
@@ -43,18 +49,21 @@ cd apps/compliance-core && poetry run pytest tests/eval -v
 
 ## Mock Mode
 
-All testing can be done without external services:
+The canonical evidence and browser paths run without external services:
 
 ```bash
-VITE_MOCK_API=true LLM_MODE=mock WCP_MOCK_AUTH=true pnpm dev
+pnpm evidence
+pnpm test:e2e
 ```
 
-This runs the full stack with mock data — no PostgreSQL, Redis, or API keys needed.
+`VITE_MOCK_API=true` also runs the Web app from fixtures. A live Data Platform
+persistence flow still requires its configured database; do not describe fixture or
+adapter execution as a hosted full-stack deployment.
 
 ## PR Process
 
 1. Write tests for your changes
-2. Run `pnpm typecheck && pnpm lint && pnpm test`
+2. Run `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm test`
 3. Run Python tests for any Python changes
 4. Run golden-set eval if changing deterministic logic
 5. Ensure no regressions in golden-set baseline
@@ -69,9 +78,8 @@ This runs the full stack with mock data — no PostgreSQL, Redis, or API keys ne
 
 ## CI
 
-Three parallel pipelines run on every push to master:
-- TypeScript: typecheck → lint → build → test
-- Compliance Core: ruff → mypy → pytest
-- Data Platform: ruff → mypy → pytest
+Independent hygiene, TypeScript/evidence, browser, Python-service, and Docker jobs
+run on every push or pull request to `main`. See `.github/workflows/ci.yml` for the
+exact locked toolchains and commands.
 
 Golden-set evaluation runs weekly (Monday 6 AM) and on manual trigger.

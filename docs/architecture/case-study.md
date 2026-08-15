@@ -59,17 +59,22 @@ Retrieval combines:
 
 ## Testing Approach
 
-Current source-collected coverage:
+Current finalization coverage:
 
-1. **Unit tests**: 274 across Python and TypeScript services/packages.
-2. **Data Platform integration tests**: 24 in-process or fixture-backed tests.
-3. **Golden-set eval**: 93 collected tests, covering 92 WH-347 examples plus baseline regression.
-4. **Contract tests**: generated schema validation plus Agent/Data Platform response-shape checks.
+1. **TypeScript**: 42 Contracts, 66 Agent, 45 Gateway, 29 Web, and four tooling tests.
+2. **Compliance Core**: 84 unit tests and 101 eval tests, covering 100 WH-347 examples plus baseline regression.
+3. **Data Platform**: unit and integration command gates run under Python 3.12/Poetry with PostgreSQL/Redis CI services.
+4. **Browser/evidence**: desktop and mobile smoke projects plus a normalized, checksum-verified five-service evidence bundle.
 
 Mock modes are scoped:
 
 - `VITE_MOCK_API=true` lets the Web app run without backend services.
 - `LLM_MODE=mock` bypasses LLM calls while still running the Mastra workflow and internal service boundaries.
+
+The canonical evidence scenario goes further by composing the five service contracts
+without network infrastructure while still delegating deterministic truth to the real
+Compliance Core engine. It is reproducible portfolio proof, not a hosted-production
+claim.
 
 ## Lessons Learned
 
