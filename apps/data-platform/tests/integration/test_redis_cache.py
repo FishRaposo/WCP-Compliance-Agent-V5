@@ -49,5 +49,5 @@ async def test_cache_set_does_not_raise_when_redis_unavailable():
 async def test_cache_invalidate_pattern_does_not_raise_when_redis_unavailable():
     """cache_invalidate_pattern() returns 0 gracefully when Redis unavailable."""
     from wcp_data.services.redis_cache import cache_invalidate_pattern
-    count = await cache_invalidate_pattern("test:*")
+    count = await cache_invalidate_pattern("unreachable-only:*")
     assert count == 0
