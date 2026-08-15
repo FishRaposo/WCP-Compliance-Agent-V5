@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -38,7 +40,7 @@ async def persist_decision(session: AsyncSession, decision: DecisionCreate) -> s
         if bind is not None and bind.dialect.name == "sqlite"
         else pg_insert
     )
-    stmt = insert_fn(decisions_table).values(**values)
+    stmt: Any = insert_fn(decisions_table).values(**values)
     update_cols = {k: stmt.excluded[k] for k in values if k != "job_id"}
     stmt = stmt.on_conflict_do_update(
         index_elements=[decisions_table.c.job_id],
