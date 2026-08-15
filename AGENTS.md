@@ -199,7 +199,7 @@ stays in Compliance Core pytest and `eval.yml`.
 
 ## Environment
 
-- Copy `.env.example` (to be created) to each service directory.
+- Copy the root `.env.example` to each service directory.
 - **Gateway config**: `JWT_SECRET`, `AUTH_DISABLED`, `AGENT_URL`, `COMPLIANCE_CORE_URL`, `DATA_PLATFORM_URL`.
 - **Agent config**: `LLM_PROVIDER` (openai|anthropic|ollama), `LLM_MODE` (mock|real), `OPENAI_API_KEY`, `COMPLIANCE_CORE_URL`, `DATA_PLATFORM_URL`.
 - **Compliance Core config**: `DATA_PLATFORM_URL` (for rate lookups post-MVP).
