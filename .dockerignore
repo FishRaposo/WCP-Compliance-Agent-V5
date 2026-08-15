@@ -1,0 +1,12 @@
+.git
+.github
+.superpowers
+**/node_modules
+**/dist
+**/.venv
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+artifacts
+test-results
+playwright-report

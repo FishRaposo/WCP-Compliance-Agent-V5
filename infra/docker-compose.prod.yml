@@ -55,7 +55,9 @@ services:
         condition: service_healthy
 
   gateway:
-    build: ../apps/gateway
+    build:
+      context: ..
+      dockerfile: apps/gateway/Dockerfile
     environment:
       AGENT_URL: http://agent:3001
       COMPLIANCE_CORE_URL: http://compliance-core:8000
@@ -71,7 +73,9 @@ services:
       - data-platform
 
   agent:
-    build: ../apps/agent
+    build:
+      context: ..
+      dockerfile: apps/agent/Dockerfile
     environment:
       COMPLIANCE_CORE_URL: http://compliance-core:8000
       DATA_PLATFORM_URL: http://data-platform:8001
@@ -84,9 +88,11 @@ services:
       - data-platform
 
   web:
-    build: ../apps/web
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
     ports:
       - "80:80"
     depends_on:

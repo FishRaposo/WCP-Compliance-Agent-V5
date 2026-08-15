@@ -1,17 +1,19 @@
 FROM node:20-alpine AS builder
 
-WORKDIR /app
-RUN npm install -g pnpm@9
+WORKDIR /workspace
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
-COPY package.json pnpm-lock.json ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+RUN pnpm install --frozen-lockfile --filter @wcp/web...
 
-COPY src/ ./src/
-COPY index.html vite.config.ts tsconfig.json ./
+COPY apps/web apps/web
 
-RUN pnpm build
+ARG VITE_API_URL=http://localhost:3000
+ENV VITE_API_URL=${VITE_API_URL}
+RUN pnpm --filter @wcp/web build
 
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /workspace/apps/web/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

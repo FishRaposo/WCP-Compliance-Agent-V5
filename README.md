@@ -30,11 +30,26 @@ Web (React 19) -> Gateway (Hono) -> Agent (Mastra)
 
 ## Quick Start
 
+### Prerequisites and install
+
+- Node.js 20 and pnpm 9.15.0 (the exact pnpm version is declared in `package.json`).
+- Python 3.12 and Poetry 1.8.5 for the two Python services.
+
+```bash
+pnpm install --frozen-lockfile
+
+cd apps/compliance-core
+poetry install --no-interaction
+
+cd ../data-platform
+poetry install --no-interaction
+```
+
 ### UI Mock Mode
 
 ```bash
 git clone <repo-url> && cd wcp-compliance-agent-v5
-pnpm install
+pnpm install --frozen-lockfile
 
 VITE_MOCK_API=true WCP_MOCK_AUTH=true pnpm dev
 ```
@@ -50,11 +65,11 @@ cd infra
 docker compose up -d postgres redis
 
 cd ../apps/compliance-core
-poetry install
+poetry install --no-interaction
 poetry run uvicorn wcp_compliance.main:app --port 8000
 
 cd ../data-platform
-poetry install
+poetry install --no-interaction
 poetry run alembic upgrade head
 poetry run uvicorn wcp_data.main:app --port 8001
 
@@ -104,6 +119,7 @@ Upload WH-347 (PDF or text)
 
 ```bash
 pnpm test                               # All TypeScript tests via Turborepo on supported platforms
+pnpm test:e2e                           # Desktop and mobile Chromium smoke tests in UI mock mode
 cd apps/agent && pnpm test              # 65 vitest tests
 cd apps/gateway && pnpm test            # 23 vitest tests
 cd apps/web && pnpm test                # 29 vitest tests

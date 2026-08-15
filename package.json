@@ -8,13 +8,15 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "test": "turbo run test",
+    "test": "node --test tests/tooling/portfolio-gates.test.mjs && turbo run test --concurrency=2",
     "test:contracts": "turbo run test:contracts",
-    "test:golden": "turbo run test:golden",
+    "test:golden": "cd apps/compliance-core && poetry run pytest tests/eval -q",
     "test:gateway:integration": "cd apps/gateway && pnpm test integration",
-    "evidence": "pnpm --filter @wcp/agent exec tsx ../../scripts/portfolio_demo.ts && node scripts/verify_portfolio_evidence.mjs artifacts/portfolio/wcp-compliance-agent-v5-evidence --golden tests/fixtures/golden/portfolio-evidence.json"
+    "evidence": "pnpm --filter @wcp/agent exec tsx ../../scripts/portfolio_demo.ts && node scripts/verify_portfolio_evidence.mjs artifacts/portfolio/wcp-compliance-agent-v5-evidence --golden tests/fixtures/golden/portfolio-evidence.json",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",

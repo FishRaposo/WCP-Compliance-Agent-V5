@@ -1,15 +1,19 @@
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /workspace
 
-RUN npm install -g pnpm@9
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
-COPY package.json pnpm-lock.json ./
-RUN pnpm install --frozen-lockfile --prod
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/agent/package.json apps/agent/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/typescript-client/package.json packages/typescript-client/package.json
+RUN pnpm install --frozen-lockfile --filter @wcp/agent...
 
-COPY src/ ./src/
-COPY tsconfig.json ./
+COPY apps/agent apps/agent
+COPY packages/contracts packages/contracts
+COPY packages/typescript-client packages/typescript-client
 
 EXPOSE 3001
 
-CMD ["pnpm", "exec", "tsx", "src/server.ts"]
+CMD ["pnpm", "--filter", "@wcp/agent", "exec", "tsx", "src/server.ts"]

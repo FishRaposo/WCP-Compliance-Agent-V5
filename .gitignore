@@ -21,3 +21,5 @@ _archive/
 .poetry-cache/
 .pnpm-store/
 artifacts/portfolio/
+test-results/
+playwright-report/

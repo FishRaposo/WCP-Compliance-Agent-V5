@@ -6,15 +6,39 @@ on:
   pull_request:
     branches: [master, main]
 
+permissions:
+  contents: read
+
 jobs:
+  repository-hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test tests/tooling/portfolio-gates.test.mjs
+      - name: Reject sibling and Git-installed dependencies
+        shell: bash
+        run: |
+          if git grep -nE '(git\+https://|operator-shared-core|\.\./shared-core|from shared_core|import shared_core)' -- \
+            package.json pnpm-lock.yaml pnpm-workspace.yaml apps packages infra README.md docs; then
+            echo "::error::Forbidden external or sibling dependency reference found."
+            exit 1
+          fi
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   typescript:
-    name: TypeScript Pipeline
+    name: TypeScript pipeline and evidence
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 9.15.0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -24,6 +48,28 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test
+      - run: pnpm evidence
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wcp-portfolio-evidence
+          path: artifacts/portfolio/wcp-compliance-agent-v5-evidence
+          if-no-files-found: error
+
+  browser-smoke:
+    name: Chromium portfolio smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
 
   compliance-core:
     name: Compliance Core (Python)
@@ -38,11 +84,12 @@ jobs:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
         with:
-          version: 1.8
+          version: 1.8.5
+      - run: poetry check --lock
       - run: poetry install --no-interaction
       - run: poetry run ruff check .
       - run: poetry run mypy src/
-      - run: poetry run pytest tests/unit -v -m "not integration"
+      - run: poetry run pytest tests/unit tests/eval -q
 
   data-platform:
     name: Data Platform (Python)
@@ -84,9 +131,21 @@ jobs:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
         with:
-          version: 1.8
+          version: 1.8.5
+      - run: poetry check --lock
       - run: poetry install --no-interaction
       - run: poetry run ruff check .
       - run: poetry run mypy src/
-      - run: poetry run pytest tests/unit -v -m "not integration"
-      - run: poetry run pytest tests/integration -v -m integration
+      - run: poetry run pytest tests/unit -q -m "not integration"
+      - run: poetry run pytest tests/integration -q -m integration
+
+  docker:
+    name: Docker Compose build
+    runs-on: ubuntu-latest
+    env:
+      LLM_MODE: mock
+      OPENAI_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f infra/docker-compose.prod.yml config
+      - run: docker compose -f infra/docker-compose.prod.yml build
