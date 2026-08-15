@@ -4,7 +4,6 @@ Falls back gracefully when pgvector/embeddings are unavailable.
 """
 
 import logging
-
 from typing import Any, cast
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,6 @@ Falls back gracefully when sentence-transformers is not available.
 """
 
 import logging
-
 from typing import Any
 
 logger = logging.getLogger(__name__)

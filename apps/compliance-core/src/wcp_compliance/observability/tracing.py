@@ -1,6 +1,8 @@
 """OpenTelemetry tracing setup for WCP Compliance Core."""
 
 import logging
+from collections.abc import Generator
+from typing import Any
 
 from wcp_compliance.config import settings
 
@@ -30,10 +32,6 @@ def setup_tracing() -> None:
         logger.info("OpenTelemetry tracing initialized")
     except Exception:
         logger.info("OpenTelemetry unavailable, tracing disabled")
-
-
-from typing import Any, Generator
-
 
 def get_tracer(name: str = "wcp-compliance-core") -> Any:
     try:
