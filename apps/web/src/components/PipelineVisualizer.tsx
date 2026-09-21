@@ -7,7 +7,7 @@ interface Props {
 const defaultSteps: PipelineStep[] = [
   { label: "Extract", status: "pending" },
   { label: "Validate", status: "pending" },
-  { label: "Verdict", status: "pending" },
+  { label: "Explain", status: "pending" },
   { label: "Trust Score", status: "pending" },
   { label: "Persist", status: "pending" },
 ];

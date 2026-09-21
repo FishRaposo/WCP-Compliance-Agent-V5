@@ -11,6 +11,19 @@ one baseline regression. The offline portfolio path runs without credentials, Do
 Redis, PostgreSQL, or network access. The Python 3.12/Poetry and
 optional-infrastructure gates run in CI.
 
+## Portfolio demo
+
+**Thesis:** deterministic compliance checks decide the verdict; the LLM only explains the audit record.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm demo:ui
+```
+
+Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
+
+**Click path:** Dashboard → **Analyze Payroll** → paste any WH-347 text → **Analyze Schedule** → watch the five-step pipeline (Extract → Validate → Explain → Trust Score → Persist) → rejected decision with violations, reasoning, trust score, and citations → **Review Queue** for `job-wh347-demo-2026` → **Contracts** / **Payrolls** / **Ingestion** / **Analytics** for the same case IDs.
+
 ---
 
 ## Architecture

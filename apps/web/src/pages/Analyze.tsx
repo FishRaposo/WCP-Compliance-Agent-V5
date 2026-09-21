@@ -6,7 +6,7 @@ import { useAnalyze, useAnalyzePdf } from "../hooks/useAnalyze";
 import type { TrustScoredDecision, PipelineStep } from "../types/api";
 import { Card, CardContent } from "@/components/ui/card";
 
-const STEP_LABELS = ["Extract", "Validate", "Verdict", "Trust Score", "Persist"];
+const STEP_LABELS = ["Extract", "Validate", "Explain", "Trust Score", "Persist"];
 
 function buildSteps(current: number): PipelineStep[] {
   return STEP_LABELS.map((label, i) => ({

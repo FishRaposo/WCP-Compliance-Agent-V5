@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import SampleDataBadge from "@/components/SampleDataBadge";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -65,7 +66,10 @@ export default function Layout({ children }: { children: ReactNode }) {
             <ShieldCheck className="w-4.5 h-4.5 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white">WCP Compliance</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold tracking-tight text-white">WCP Compliance</h1>
+              <SampleDataBadge />
+            </div>
             <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">Audit Suite v5.0</p>
           </div>
         </div>

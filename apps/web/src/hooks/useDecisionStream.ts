@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DecisionSummary } from "../types/api";
-import { mockDecisionSummaries } from "../utils/mock-data";
+import { mockDecisionSummaries, DEMO_JOB_ID } from "../utils/mock-data";
 
 const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
@@ -18,9 +18,13 @@ export function useDecisionStream() {
   const connect = useCallback(() => {
     if (IS_MOCK) {
       setConnected(true);
+      const demoDecision =
+        mockDecisionSummaries.find((d) => d.job_id === DEMO_JOB_ID) ?? mockDecisionSummaries[0]!;
+      const initial = { ...demoDecision, created_at: new Date().toISOString() };
+      setLatestDecision(initial);
+      setEvents([initial]);
       const interval = setInterval(() => {
-        const random = mockDecisionSummaries[Math.floor(Math.random() * mockDecisionSummaries.length)]!;
-        const decision = { ...random, created_at: new Date().toISOString() };
+        const decision = { ...demoDecision, created_at: new Date().toISOString() };
         setLatestDecision(decision);
         setEvents((prev) => [decision, ...prev].slice(0, MAX_EVENTS));
       }, 10_000);

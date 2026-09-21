@@ -14,14 +14,16 @@ import {
   mockComplianceAnalytics,
   mockWagesAnalytics,
   mockLLMAnalytics,
+  DEMO_DECISION_ID,
 } from "./mock-data";
+import type { TrustBand } from "../types/api";
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 export const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
 async function request<T>(path: string, init?: RequestInit, params?: Record<string, string | number | undefined>): Promise<T> {
   if (IS_MOCK) {
-    return mockResolve<T>(path);
+    return mockResolve<T>(path, init, params);
   }
 
   let url = path;
@@ -74,13 +76,28 @@ function normalizeMockPath(path: string): string {
   return path.replace(/^\/api\/v1\//, "/api/");
 }
 
-async function mockResolve<T>(path: string): Promise<T> {
-  await new Promise((r) => setTimeout(r, 300));
-
+async function mockResolve<T>(
+  path: string,
+  init?: RequestInit,
+  params?: Record<string, string | number | undefined>,
+): Promise<T> {
   const p = normalizeMockPath(path);
+  const isAnalyze = p.startsWith("/api/analyze");
+  const delayMs = isAnalyze ? 2800 : 300;
+  await new Promise((r) => setTimeout(r, delayMs));
 
-  if (p.startsWith("/api/analyze")) return mockTrustScoredDecision as T;
-  if (p === "/api/decisions") return mockDecisionSummaries as T;
+  if (init?.method === "POST" && p.startsWith("/api/decisions/") && p.endsWith("/review")) {
+    return { decision_id: DEMO_DECISION_ID, status: "recorded" } as T;
+  }
+
+  if (isAnalyze) return mockTrustScoredDecision as T;
+  if (p === "/api/decisions") {
+    const trustBand = params?.trust_band as TrustBand | undefined;
+    if (trustBand) {
+      return mockDecisionSummaries.filter((d) => d.trust_band === trustBand) as T;
+    }
+    return mockDecisionSummaries as T;
+  }
   if (p.startsWith("/api/jobs/")) return mockJobStatus as T;
   if (p.includes("/analytics/overview")) return mockAnalyticsOverview as T;
   if (p.includes("/analytics/volume") || p.includes("/analytics/decision-volume")) return mockDecisionVolume as T;
