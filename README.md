@@ -22,7 +22,12 @@ pnpm demo:ui
 
 Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
 
-**Click path:** Dashboard → **Analyze Payroll** → paste any WH-347 text → **Analyze Schedule** → watch the five-step pipeline (Extract → Validate → Explain → Trust Score → Persist) → rejected decision with violations, reasoning, trust score, and citations → **Review Queue** for `job-wh347-demo-2026` → **Contracts** / **Payrolls** / **Ingestion** / **Analytics** for the same case IDs.
+**Click path:**
+
+1. **Review Queue** — one pending case for `job-wh347-demo-2026` (42% trust, rejected).
+2. **Inspect Audit** — three deterministic violations, regulatory citations, and the LLM explanation paragraph; compliance checks decided the verdict.
+3. **Analyze Payroll** (optional) — paste any WH-347 text and run the five-step pipeline (Extract → Validate → Explain → Trust → Persist) to the same rejected outcome.
+4. **Contracts**, **Payrolls**, **Ingestion**, or **Analytics** — the same demo IDs appear across routes.
 
 ---
 
