@@ -5,7 +5,14 @@ test("mock portfolio workflow covers login, decision proof, analytics, and revie
   await expect(
     page.getByRole("heading", { name: "WCP Davis-Bacon Compliance Audit Engine" }),
   ).toBeVisible();
-  await expect(page.getByText("Sample data", { exact: true })).toBeVisible();
+  const sampleDataBadge = page.getByLabel("Sample data mode");
+  const viewportWidth = page.viewportSize()?.width ?? 0;
+  if (viewportWidth >= 768) {
+    await expect(sampleDataBadge).toBeVisible();
+  } else {
+    // Mobile layout hides the desktop sidebar (`hidden md:flex`); badge stays in DOM for a11y.
+    await expect(sampleDataBadge).toBeAttached();
+  }
 
   await page.goto("/analyze");
   await expect(page.getByRole("heading", { name: "Analyze Payroll" })).toBeVisible();

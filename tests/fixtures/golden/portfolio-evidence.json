@@ -48,17 +48,16 @@
   },
   "frontend_fixtures": {
     "analysis_fixture": {
-      "trust_score": 0.93,
-      "verdict": "approved"
+      "trust_score": 0.42,
+      "verdict": "rejected"
     },
-    "analytics_total_decisions": 156,
-    "decision_count": 5,
+    "analytics_total_decisions": 24,
+    "decision_count": 3,
     "ingestion_statuses": [
-      "completed",
-      "partial"
+      "completed"
     ],
     "verdict_counts": {
-      "approved": 3,
+      "approved": 1,
       "needs_review": 1,
       "rejected": 1
     }
