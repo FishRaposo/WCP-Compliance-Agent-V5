@@ -371,6 +371,22 @@ function formatMoney(value: unknown): string {
   return typeof value === "number" ? `$${value.toFixed(2)}` : "n/a";
 }
 
+const trustBandWording: Record<string, string> = {
+  auto_approve: "verdict applied automatically",
+  flag_for_review: "verdict flagged for review",
+  require_human_review: "verdict held for human review",
+};
+
+/**
+ * Presentation only: the band name `auto_approve` means "apply the verdict without review",
+ * which reads as "approved" next to a rejection, so spell out what the band does.
+ */
+function trustLine(synthesis: Record<string, any> | undefined): string {
+  const score = typeof synthesis?.trust_score === "number" ? synthesis.trust_score.toFixed(2) : "n/a";
+  const band = String(synthesis?.trust_band ?? "unknown");
+  return `${score} — ${trustBandWording[band] ?? "verdict routing unknown"} (trust band: ${band})`;
+}
+
 function humanReport(report: Record<string, any>, reproducibilityHash: string): string {
   const violations: Record<string, any>[] = Array.isArray(report.validation?.violations)
     ? report.validation.violations
@@ -387,7 +403,7 @@ function humanReport(report: Record<string, any>, reproducibilityHash: string): 
     `- Payroll: ${report.extraction?.contractor}, ${report.extraction?.project} (${report.extraction?.locality}), week ending ${report.extraction?.week_ending}`,
     `- Verdict: ${report.agent_synthesis?.verdict}`,
     `- Deterministic status: ${report.validation?.overall_status} (${report.validation?.violation_count ?? 0} violation(s), ${report.validation?.warning_count ?? 0} warning(s))`,
-    `- Trust score: ${report.agent_synthesis?.trust_score} (${report.agent_synthesis?.trust_band})`,
+    `- Trust score: ${trustLine(report.agent_synthesis)}`,
     `- Requires human review: ${report.agent_synthesis?.requires_human_review}`,
     `- Persisted records: ${report.persistence?.record_count}`,
     `- Cache backend: ${report.cache_fallback?.backend}`,
