@@ -1,0 +1,71 @@
+# Dependency policy (portfolio X7): minor and patch updates arrive as one grouped PR
+# per ecosystem; major versions of the framework-level packages below are ignored and
+# migrated by hand. pnpm and Poetry lockfiles are updated by Dependabot and CI installs
+# from them only (`pnpm install --frozen-lockfile`, `poetry check --lock` + `poetry install`).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      - dependency-name: "@eslint/*"
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript-eslint
+        update-types: [version-update:semver-major]
+      - dependency-name: "@typescript-eslint/*"
+        update-types: [version-update:semver-major]
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/react"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/react-dom"
+        update-types: [version-update:semver-major]
+      - dependency-name: zod
+        update-types: [version-update:semver-major]
+      - dependency-name: express
+        update-types: [version-update:semver-major]
+      - dependency-name: ioredis
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: pip
+    directories:
+      - "/apps/compliance-core"
+      - "/apps/data-platform"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      python-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: pydantic
+        update-types: [version-update:semver-major]
+      - dependency-name: pydantic-settings
+        update-types: [version-update:semver-major]
+      - dependency-name: fastapi
+        update-types: [version-update:semver-major]
+      - dependency-name: sqlalchemy
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions-minor-and-patch:
+        update-types: [minor, patch]
