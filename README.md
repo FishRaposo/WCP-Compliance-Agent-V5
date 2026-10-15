@@ -4,8 +4,8 @@
 
 V5 is a five-service monorepo where each service has one clear responsibility. A payroll flows through extraction, deterministic validation, Mastra-based verdict synthesis, trust scoring, and audited persistence with request and trace IDs propagated across service boundaries.
 
-**Shipped proof: 367 tests across five services, plus four tooling checks.** The
-current TypeScript gate covers 42 Contracts, 66 Agent, 45 Gateway, and 29 Web tests;
+**Shipped proof: 368 tests across five services, plus four tooling checks.** The
+current TypeScript gate covers 42 Contracts, 66 Agent, 45 Gateway, and 30 Web tests;
 Compliance Core passed 84 unit tests and 101 eval tests over 100 golden examples and
 one baseline regression. The offline portfolio path runs without credentials, Docker,
 Redis, PostgreSQL, or network access. The Python 3.12/Poetry and
@@ -62,11 +62,17 @@ Web (React 19) -> Gateway (Hono) -> Agent (Mastra)
 pnpm install --frozen-lockfile
 
 cd apps/compliance-core
+poetry config virtualenvs.in-project true
 poetry install --no-interaction
 
 cd ../data-platform
+poetry config virtualenvs.in-project true
 poetry install --no-interaction
 ```
+
+Poetry’s default cache-based virtualenv does not create `apps/*/.venv`, which the
+credential-free evidence script uses to invoke Compliance Core and Data Platform.
+The in-project setting matches the CI TypeScript/evidence job.
 
 ### Credential-free portfolio proof
 
@@ -147,7 +153,7 @@ Upload WH-347 (PDF or text)
 | Data Platform unit/integration | command gate | pytest | Python 3.12/Poetry CI job; PostgreSQL and Redis are service fixtures for integration |
 | Agent tests | 66 | vitest | Passed in the finalization gate |
 | Gateway tests | 45 | vitest | Passed in the finalization gate |
-| Web tests | 29 | vitest | Passed in the finalization gate |
+| Web tests | 30 | vitest | Passed in the finalization gate |
 | Contracts tests | 42 | vitest | Passed in the finalization gate |
 | Tooling contract tests | 4 | node:test | Passed in the finalization gate |
 | Browser smoke | 2 | Playwright | Desktop Chromium-compatible Chrome and 390x844 mobile passed |
