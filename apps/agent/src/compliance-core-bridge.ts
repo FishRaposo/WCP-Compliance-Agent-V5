@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 type BridgeOperation = "extract" | "validate";
 type PythonInvocation = { command: string; args: string[] };
 
-const BRIDGE_TIMEOUT_MS = 4_500;
+const BRIDGE_TIMEOUT_MS = Number(process.env.COMPLIANCE_CORE_BRIDGE_TIMEOUT_MS ?? 30_000);
 const complianceCoreRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../compliance-core");
 const complianceCoreSource = resolve(complianceCoreRoot, "src");
 

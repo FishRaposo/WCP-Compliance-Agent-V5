@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -11,15 +11,26 @@ from wcp_data.models.schemas import (
 )
 from wcp_data.models.tables import decisions_table
 
+PersistStatus = Literal["created", "duplicate", "conflict"]
 
-async def persist_decision(session: AsyncSession, decision: DecisionCreate) -> str:
-    """Insert a decision idempotently on job_id.
+# Fields that define the logical decision payload for idempotency. Call
+# metadata (latency, cost, trace ids) legitimately varies across retries and
+# is deliberately excluded from the identical/conflicting comparison.
+_PAYLOAD_FIELDS = (
+    "verdict",
+    "trust_score",
+    "trust_band",
+    "requires_human_review",
+    "violation_count",
+    "warning_count",
+    "reasoning_summary",
+    "citations",
+    "contract_id",
+)
 
-    A duplicate job_id updates the existing row and returns its id rather than
-    raising IntegrityError. Does NOT commit — the caller owns the transaction so
-    the decision and its audit events persist atomically.
-    """
-    values = {
+
+def _decision_values(decision: DecisionCreate) -> dict[str, Any]:
+    return {
         "job_id": decision.job_id,
         "verdict": decision.verdict,
         "trust_score": decision.trust_score,
@@ -34,24 +45,60 @@ async def persist_decision(session: AsyncSession, decision: DecisionCreate) -> s
         "phoenix_trace_id": decision.phoenix_trace_id,
         "contract_id": decision.contract_id,
     }
+
+
+async def persist_decision(
+    session: AsyncSession, decision: DecisionCreate
+) -> tuple[str, PersistStatus]:
+    """Insert a decision idempotently on job_id.
+
+    Returns ``(decision_id, status)`` where status is ``created`` for a new
+    row, ``duplicate`` when an identical payload was already persisted for the
+    same job_id (retry-safe replay), or ``conflict`` when the same job_id
+    carries a different payload — the caller must reject that case rather than
+    silently overwrite the official record. Does NOT commit — the caller owns
+    the transaction so the decision and its audit events persist atomically.
+    """
+    values = _decision_values(decision)
     bind = session.get_bind()
     insert_fn = (
         sqlite_insert
         if bind is not None and bind.dialect.name == "sqlite"
         else pg_insert
     )
-    stmt: Any = insert_fn(decisions_table).values(**values)
-    update_cols = {k: stmt.excluded[k] for k in values if k != "job_id"}
-    stmt = stmt.on_conflict_do_update(
-        index_elements=[decisions_table.c.job_id],
-        set_=update_cols,
-    ).returning(decisions_table.c.id)
+    stmt: Any = (
+        insert_fn(decisions_table)
+        .values(**values)
+        .on_conflict_do_nothing(index_elements=[decisions_table.c.job_id])
+        .returning(decisions_table.c.id)
+    )
     result = await session.execute(stmt)
     row = result.fetchone()
-    if row is None:
+    if row is not None:
+        await session.flush()
+        return str(row.id), "created"
+
+    result = await session.execute(
+        select(decisions_table).where(decisions_table.c.job_id == decision.job_id)
+    )
+    existing = result.first()
+    if existing is None:
         raise RuntimeError("INSERT INTO decisions did not return an id")
-    await session.flush()
-    return str(row.id)
+    data = dict(existing._mapping)
+    identical = all(
+        _canonical(data[field]) == _canonical(values[field]) for field in _PAYLOAD_FIELDS
+    )
+    return str(data["id"]), "duplicate" if identical else "conflict"
+
+
+def _canonical(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_canonical(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _canonical(v) for k, v in sorted(value.items())}
+    if isinstance(value, float) or value is None:
+        return value
+    return value
 
 
 async def override_decision(

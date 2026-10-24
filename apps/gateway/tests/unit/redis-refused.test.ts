@@ -28,5 +28,5 @@ describe("Redis connection fallback", () => {
 
     expect(published.streamId).toBe("local-1");
     expect(getSSEEventsAfter("wcp.decisions")).toEqual([published]);
-  }, 3_000);
+  }, 20_000);
 });

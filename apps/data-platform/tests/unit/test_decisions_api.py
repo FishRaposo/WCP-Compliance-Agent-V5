@@ -25,7 +25,7 @@ async def test_create_decision_endpoint_uses_trace_header(monkeypatch):
             reasoning_summary=body.reasoning_summary,
             citations=body.citations,
             created_at=datetime(2025, 1, 1),
-        )
+        ), "created"
 
     monkeypatch.setattr(decisions, "create_decision", fake_create_decision)
 
@@ -41,8 +41,11 @@ async def test_create_decision_endpoint_uses_trace_header(monkeypatch):
         citations=[],
     )
 
+    from fastapi import Response
+
     result = await decisions.create_decision_endpoint(
         body,
+        response=Response(),
         trace_id="",
         x_trace_id="trace-header",
         session=AsyncMock(),
@@ -70,7 +73,7 @@ async def test_create_decision_endpoint_keeps_query_trace_id_fallback(monkeypatc
             reasoning_summary=body.reasoning_summary,
             citations=body.citations,
             created_at=datetime(2025, 1, 1),
-        )
+        ), "created"
 
     monkeypatch.setattr(decisions, "create_decision", fake_create_decision)
 
@@ -86,8 +89,11 @@ async def test_create_decision_endpoint_keeps_query_trace_id_fallback(monkeypatc
         citations=[],
     )
 
+    from fastapi import Response
+
     result = await decisions.create_decision_endpoint(
         body,
+        response=Response(),
         trace_id="trace-query",
         x_trace_id="",
         session=AsyncMock(),
