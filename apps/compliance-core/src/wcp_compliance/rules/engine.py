@@ -8,7 +8,7 @@ from wcp_compliance.checks.overtime_check import check_overtime
 from wcp_compliance.checks.signature_check import check_signature
 from wcp_compliance.checks.total_check import check_totals
 from wcp_compliance.checks.wage_check import check_wage
-from wcp_compliance.dbwd_matching.rate_lookup import get_dbwd_rate
+from wcp_compliance.dbwd_matching.rate_lookup import get_dbwd_rate_with_provenance
 from wcp_compliance.models.enums import CheckStatus, CheckType, OverallStatus, VerdictStatus
 from wcp_compliance.models.schemas import (
     ComplianceCheck,
@@ -36,9 +36,29 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
     rate_results = await asyncio.gather(*rate_tasks, return_exceptions=True)
 
     for trade, result in zip(unique_trades, rate_results):
-        if isinstance(result, DBWDRateRecord):
-            dbwd_rates.append(result)
-            trade_to_rate[trade] = result
+        if isinstance(result, tuple) and isinstance(result[0], DBWDRateRecord):
+            record, match_kind = result
+            dbwd_rates.append(record)
+            trade_to_rate[trade] = record
+            if match_kind == "fuzzy":
+                checks.append(
+                    ComplianceCheck(
+                        check_id=f"classification_{trade.lower().replace(' ', '_')}",
+                        check_type=CheckType.CLASSIFICATION,
+                        employee_name="_multiple_",
+                        status=CheckStatus.WARNING,
+                        expected_value=None,
+                        actual_value=None,
+                        variance=None,
+                        regulation_cite="29 C.F.R. § 5.5(a)(3)(i)",
+                        message=(
+                            f"Trade '{trade}' matched approximately to prevailing-wage "
+                            f"classification '{record.trade}' "
+                            f"(WD {record.wage_determination_number}); "
+                            "verify the mapping before relying on the computed wage/fringe checks"
+                        ),
+                    )
+                )
         else:
             error_msg = str(result)
             # Decide WARNING vs FAIL purely from the error semantics, never from
@@ -102,8 +122,10 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
     )
 
 
-async def _fetch_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDRateRecord:
-    return await get_dbwd_rate(trade, locality, effective_date)
+async def _fetch_dbwd_rate(
+    trade: str, locality: str, effective_date: str
+) -> tuple[DBWDRateRecord, str]:
+    return await get_dbwd_rate_with_provenance(trade, locality, effective_date)
 
 
 def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:

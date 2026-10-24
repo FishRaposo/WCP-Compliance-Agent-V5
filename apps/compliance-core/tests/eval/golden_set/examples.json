@@ -488,11 +488,11 @@
   {
     "id": "gs-062",
     "input": "Contractor: MisspelledTrade\nProject: Typo\nLocation: Washington, DC\nCertified: 2025-06-15\n\nName: Sue Type\nTrade: Eletrician\nHours: 40\nOvertime Hours: 0\nHourly Wage: 55.00\nFringe: 1400.00\nGross: 2200.00\nDeductions: 150.00\nNet: 2050.00",
-    "expected_verdict": "approved",
-    "expected_overall": "pass",
+    "expected_verdict": "needs_review",
+    "expected_overall": "warnings",
     "expected_violations": 0,
-    "expected_warnings": 0,
-    "description": "Misspelled trade \u00e2\u20ac\u201d fuzzy match resolves to Electrician"
+    "expected_warnings": 1,
+    "description": "Misspelled trade \u2014 fuzzy rate match is flagged for review (approximate classification is unverified coverage, WC-02)"
   },
   {
     "id": "gs-063",
@@ -798,7 +798,7 @@
     "expected_overall": "fail",
     "expected_violations_min": 2,
     "expected_warnings": 0,
-    "description": "Flagger at federal minimum wage only — far below DBWD"
+    "description": "Flagger at federal minimum wage only \u00e2\u20ac\u201d far below DBWD"
   },
   {
     "id": "gs-098",

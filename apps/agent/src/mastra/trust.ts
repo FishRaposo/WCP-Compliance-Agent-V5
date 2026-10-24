@@ -82,7 +82,9 @@ export function computeAgreement(
 /**
  * Safety override: deterministic violations are the source of compliance truth, so a payroll
  * with hard violations can never be "approved" — nor merely "needs_review". It must be
- * rejected, regardless of what the LLM returned. The LLM adds explanation, not correctness.
+ * rejected, regardless of what the LLM returned. Unverified coverage (warnings without
+ * violations — e.g. an unmapped locality or approximate trade rate) cannot become
+ * "approved" either: it abstains to human review. The LLM adds explanation, not correctness.
  */
 export function safeVerdict(
   deterministic: DeterministicReport,
@@ -90,6 +92,13 @@ export function safeVerdict(
 ): VerdictStatus {
   if (deterministic.violation_count > 0 && llmVerdict.verdict !== "rejected") {
     return "rejected";
+  }
+  if (
+    deterministic.violation_count === 0 &&
+    deterministic.warning_count > 0 &&
+    llmVerdict.verdict === "approved"
+  ) {
+    return "needs_review";
   }
   return llmVerdict.verdict;
 }
