@@ -47,7 +47,8 @@ async def test_persist_decision_returns_id():
         reasoning_summary="All checks passed",
         citations=[],
     )
-    result = await persist_decision(session, decision)
+    result, status = await persist_decision(session, decision)
+    assert status == "created"
     assert result == "decision-abc-123"
     # persist_decision no longer commits — the caller owns the transaction.
     assert session.flush.called

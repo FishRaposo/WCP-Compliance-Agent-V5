@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_data.db.session import get_session
@@ -8,6 +8,7 @@ from wcp_data.models.schemas import (
     DecisionResponse,
 )
 from wcp_data.services.decision_service import (
+    DecisionConflictError,
     create_decision,
     get_decision,
     list_decisions,
@@ -20,11 +21,18 @@ router = APIRouter()
 @router.post("", response_model=DecisionResponse, status_code=201)
 async def create_decision_endpoint(
     body: DecisionCreate,
+    response: Response,
     trace_id: str = Query(default=""),
     x_trace_id: str = Header(default="", alias="x-trace-id"),
     session: AsyncSession = Depends(get_session),
 ) -> DecisionResponse:
-    return await create_decision(session, body, trace_id=x_trace_id or trace_id)
+    try:
+        decision, status = await create_decision(session, body, trace_id=x_trace_id or trace_id)
+    except DecisionConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if status == "duplicate":
+        response.status_code = 200
+    return decision
 
 
 @router.get("", response_model=list[DecisionResponse])
@@ -57,7 +65,12 @@ async def override_decision_endpoint(
     x_trace_id: str = Header(default="", alias="x-trace-id"),
     session: AsyncSession = Depends(get_session),
 ) -> DecisionResponse:
-    result = await override_decision(session, decision_id, body, trace_id=x_trace_id or trace_id)
+    try:
+        result, _status = await override_decision(
+            session, decision_id, body, trace_id=x_trace_id or trace_id
+        )
+    except DecisionConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     if result is None:
         raise HTTPException(status_code=404, detail="Decision not found")
     return result

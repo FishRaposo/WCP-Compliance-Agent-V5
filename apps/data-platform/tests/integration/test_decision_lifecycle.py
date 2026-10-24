@@ -19,7 +19,8 @@ async def test_create_and_retrieve_decision(db_session):
         warning_count=1,
         reasoning_summary="All wages meet DBWD requirements.",
     )
-    record = await create_decision(db_session, payload)
+    record, status = await create_decision(db_session, payload)
+    assert status == "created"
     assert record.job_id == "integ-job-001"
     assert record.verdict == "approved"
 
@@ -43,7 +44,8 @@ async def test_decision_trust_band_auto_approve(db_session):
         warning_count=0,
         reasoning_summary="Perfect compliance.",
     )
-    record = await create_decision(db_session, payload)
+    record, status = await create_decision(db_session, payload)
+    assert status == "created"
     assert record.trust_band == "auto_approve"
     assert not record.requires_human_review
 
@@ -63,7 +65,8 @@ async def test_decision_requires_human_review(db_session):
         warning_count=2,
         reasoning_summary="Multiple wage violations detected.",
     )
-    record = await create_decision(db_session, payload)
+    record, status = await create_decision(db_session, payload)
+    assert status == "created"
     assert record.requires_human_review is True
     assert record.violation_count == 3
 
@@ -100,8 +103,9 @@ async def test_duplicate_job_id_is_idempotent(db_session):
         trust_band="auto_approve",
         reasoning_summary="Duplicate test.",
     )
-    first = await create_decision(db_session, payload)
-    second = await create_decision(db_session, payload)
+    first, status1 = await create_decision(db_session, payload)
+    second, status2 = await create_decision(db_session, payload)
+    assert status1 == "created" and status2 == "duplicate"
     assert first.id == second.id
     matches = [d for d in await list_decisions(db_session, limit=50) if d.job_id == "integ-job-dup"]
     assert len(matches) == 1
@@ -112,7 +116,7 @@ async def test_override_decision_records_reviewer_verdict(db_session):
     from wcp_data.services.decision_service import create_decision, override_decision
     from wcp_data.models.schemas import DecisionCreate, DecisionOverrideRequest
 
-    created = await create_decision(db_session, DecisionCreate(
+    created, _ = await create_decision(db_session, DecisionCreate(
         job_id="integ-job-override",
         verdict="needs_review",
         trust_score=0.40,
@@ -123,11 +127,12 @@ async def test_override_decision_records_reviewer_verdict(db_session):
         reasoning_summary="Flagged for review.",
     ))
 
-    result = await override_decision(
+    result, status = await override_decision(
         db_session,
         str(created.id),
         DecisionOverrideRequest(verdict="approved", reviewer="auditor@example.com", note="cleared"),
     )
+    assert status == "created"
     assert result is not None
     assert result.verdict == "approved"
     assert result.requires_human_review is False
@@ -139,9 +144,9 @@ async def test_override_unknown_decision_returns_none(db_session):
     from wcp_data.services.decision_service import override_decision
     from wcp_data.models.schemas import DecisionOverrideRequest
 
-    result = await override_decision(
+    result, status = await override_decision(
         db_session,
         "00000000-0000-0000-0000-000000000000",
         DecisionOverrideRequest(verdict="rejected", reviewer="auditor@example.com"),
     )
-    assert result is None
+    assert result is None and status == "not_found"

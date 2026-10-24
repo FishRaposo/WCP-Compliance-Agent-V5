@@ -269,7 +269,15 @@ def _fuzzy_match(trade: str, corpus: dict[str, DBWDRateRecord]) -> DBWDRateRecor
     return None
 
 
-def _lookup_in_memory(trade: str, locality: str, lookup_date: date) -> DBWDRateRecord:
+def _lookup_in_memory(
+    trade: str, locality: str, lookup_date: date
+) -> tuple[DBWDRateRecord, str]:
+    """Resolve a rate, returning ``(record, match_kind)``.
+
+    ``match_kind`` is ``"exact"`` for a canonical trade hit or ``"fuzzy"`` for a
+    Levenshtein-tolerant alias — the engine surfaces fuzzy provenance as a
+    review warning instead of silently substituting a neighboring trade's rate.
+    """
     corpus = _load_corpus()
     normalized = _normalize_trade(trade)
     scoped_corpus = {
@@ -284,11 +292,11 @@ def _lookup_in_memory(trade: str, locality: str, lookup_date: date) -> DBWDRateR
         )
 
     if normalized in scoped_corpus:
-        return scoped_corpus[normalized]
+        return scoped_corpus[normalized], "exact"
 
     fuzzy_result = _fuzzy_match(trade, scoped_corpus)
     if fuzzy_result:
-        return fuzzy_result
+        return fuzzy_result, "fuzzy"
 
     available = sorted(set(r.trade for r in scoped_corpus.values()))
     raise ValueError(
@@ -298,6 +306,13 @@ def _lookup_in_memory(trade: str, locality: str, lookup_date: date) -> DBWDRateR
 
 
 async def get_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDRateRecord:
+    record, _ = await get_dbwd_rate_with_provenance(trade, locality, effective_date)
+    return record
+
+
+async def get_dbwd_rate_with_provenance(
+    trade: str, locality: str, effective_date: str
+) -> tuple[DBWDRateRecord, str]:
     lookup_date = _parse_lookup_date(effective_date)
     return _lookup_in_memory(trade, locality, lookup_date)
 

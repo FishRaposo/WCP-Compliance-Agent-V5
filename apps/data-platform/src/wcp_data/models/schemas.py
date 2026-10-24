@@ -68,6 +68,7 @@ AuditEventType = Literal[
     "decision_persisted",
     "human_review_queued",
     "human_review_complete",
+    "decision_event_publish_failed",
 ]
 
 

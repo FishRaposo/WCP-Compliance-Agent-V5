@@ -79,7 +79,8 @@ async def test_create_decision_returns_response():
         reasoning_summary="All good",
         citations=[],
     )
-    result = await create_decision(session, draft, trace_id="trace-001")
+    result, status = await create_decision(session, draft, trace_id="trace-001")
+    assert status == "created"
     assert result.id == "dec-001"
     assert result.verdict == "approved"
 
@@ -139,7 +140,8 @@ async def test_create_decision_with_human_review_flag():
         reasoning_summary="Multiple issues found",
         citations=[],
     )
-    result = await create_decision(session, draft, trace_id="trace-002")
+    result, status = await create_decision(session, draft, trace_id="trace-002")
+    assert status == "created"
     assert result.id == "dec-002"
     assert result.requires_human_review is True
 
@@ -192,5 +194,6 @@ async def test_create_decision_persists_with_contract_id():
         trust_band="auto_approve",
         contract_id="ctr-001",
     )
-    result = await create_decision(session, draft, trace_id="trace-003")
+    result, status = await create_decision(session, draft, trace_id="trace-003")
+    assert status == "created"
     assert result.contract_id == "ctr-001"
