@@ -4,9 +4,9 @@
 
 V5 is a five-service monorepo where each service has one clear responsibility. A payroll flows through extraction, deterministic validation, Mastra-based verdict synthesis, trust scoring, and audited persistence with request and trace IDs propagated across service boundaries.
 
-**Shipped proof: 368 tests across five services, plus four tooling checks.** The
-current TypeScript gate covers 42 Contracts, 66 Agent, 45 Gateway, and 30 Web tests;
-Compliance Core passed 84 unit tests and 101 eval tests over 100 golden examples and
+**Shipped proof: 377 tests across five services, plus four tooling checks.** The
+current TypeScript gate covers 42 Contracts, 70 Agent, 45 Gateway, and 30 Web tests;
+Compliance Core passed 89 unit tests and 101 eval tests over 100 golden examples and
 one baseline regression. The offline portfolio path runs without credentials, Docker,
 Redis, PostgreSQL, or network access. The Python 3.12/Poetry and
 optional-infrastructure gates run in CI.

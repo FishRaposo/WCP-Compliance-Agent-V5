@@ -1,5 +1,34 @@
 # Changelog
 
+## [5.4.0] — 2026-10-24 (feat/wcp-portfolio)
+
+### Fixed
+- `persist_decision` upsert silently overwrote the official record on a
+  duplicate job_id → insert-or-classify (created/duplicate/conflict → 201/200/409).
+- Post-commit event publish failure was silently dropped → durable
+  `decision_event_publish_failed` audit event (recoverable).
+- Review override not idempotent → identical replays dedupe, conflicting
+  second reviews on a finalized decision → 409.
+- Fuzzy trade→rate match silently substituted rates → provenance WARNING
+  check (requested vs matched trade + WD number).
+- `safeVerdict` allowed `approved` on warning-bearing coverage → abstains
+  to `needs_review`.
+- Baseline flakes: offline bridge timeout 4.5s→env-tunable 30s;
+  redis-refused test timeout 3s→20s (Windows refused-connect path).
+
+### Added
+- `tests/integration/test_portfolio_review.py` (5 proofs incl. file-SQLite
+  restart durability), `test_rate_provenance.py` (5),
+  `portfolio-boundaries.test.ts` (4).
+- `docs/portfolio-baseline.md`, `docs/supported-rule-pack.md`,
+  `docs/portfolio-verification.md`.
+
+### Changed
+- Golden gs-062 now expects `needs_review` (approximate classification is
+  unverified coverage — deliberate interpretation change).
+- Committed `poetry.toml` in both Python apps (in-project venv layout the
+  offline bridge depends on).
+
 ## [5.3.0] - 2026-08-14
 
 ### Comprehensive portfolio finalization
