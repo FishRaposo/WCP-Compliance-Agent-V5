@@ -31,7 +31,7 @@ const generatedBundleDirectory = resolve(
   repositoryRoot,
   "artifacts/portfolio/wcp-compliance-agent-v5-evidence",
 );
-const goldenFixturePath = resolve(repositoryRoot, "tests/fixtures/golden/portfolio-evidence.json");
+const goldenFixturePath = resolve(repositoryRoot, "tests/fixtures/golden/portfolio-evidence-v2.json");
 
 const secretKeyPattern = /(token|secret|password|authorization|api[_-]?key|credential)/i;
 const secretValuePatterns = [
@@ -117,7 +117,7 @@ const canonicalPayroll = [
   "Contractor: Offline Electric LLC",
   "Project: Library retrofit",
   "Project location: Washington, DC",
-  "Wage determination: DC20240001",
+  "Wage determination: DC-2025-001",
   "Week ending: 2026-01-10",
   "Certification date: 2026-01-15",
   "Employee: Jane Doe",
@@ -262,6 +262,7 @@ export async function runPortfolioScenario(): Promise<JsonValue> {
   return normalizeEvidence({
     schema_version: "v1",
     scenario: "offline-portfolio",
+    validation_profile: "strict-rate-scope-v2",
     mode: { provider_access_required: false, network_required: false, llm: "mock" },
     extraction: {
       contractor: extracted.contractor?.name,

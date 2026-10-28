@@ -88,7 +88,7 @@ def extract_from_text(text: str) -> ExtractedWCP:
     project_location = _extract_pattern(
         text,
         r"(?:^|\n)\s*(?:project.?location|site.?location|work.?location|work.?site|locality|location)[:\s]+([^\n]+)",
-    ) or "Washington, DC"
+    ) or ""
 
     contract_number = _extract_pattern(
         text,
@@ -374,7 +374,11 @@ def extract_from_pdf(pdf_bytes: bytes) -> ExtractedWCP:
                             all_text += " ".join(str(cell) for cell in row if cell) + "\n"
 
             if all_text.strip():
-                return extract_from_text(all_text)
+                # Preserve the same raw-input completeness authority used by
+                # text HTTP extraction and the subprocess bridge.
+                from wcp_compliance.offline_bridge import extract_for_offline
+
+                return extract_for_offline(all_text)
     except Exception:
         logger.warning("PDF extraction failed", exc_info=True)
 

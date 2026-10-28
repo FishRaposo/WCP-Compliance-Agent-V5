@@ -52,9 +52,13 @@ class DecisionResponse(BaseModel):
 
 
 class DecisionOverrideRequest(BaseModel):
-    """A human reviewer's override of a flagged decision."""
+    """A human reviewer's override of a flagged decision.
 
-    verdict: VerdictStatus
+    A review resolves the pending state: only terminal verdicts are accepted.
+    ``needs_review`` would leave the decision pending and is rejected with 422.
+    """
+
+    verdict: Literal["approved", "rejected"]
     reviewer: str = Field(min_length=1)
     note: str = ""
 

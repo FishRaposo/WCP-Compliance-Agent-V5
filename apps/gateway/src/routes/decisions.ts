@@ -5,11 +5,13 @@ import { ServiceClientError } from "@wcp/typescript-client";
 import { getInternalHeaders } from "../lib/request-headers.js";
 import { logUpstreamError } from "../lib/error-log.js";
 
-export const decisionsRoutes = new Hono();
+export const decisionsRoutes = new Hono<{
+  Variables: { user: { user_id?: string } };
+}>();
 
 const ReviewRequest = z.object({
   verdict: z.enum(["approved", "rejected", "needs_review"]),
-  reviewer: z.string().min(1),
+  reviewer: z.string().optional(),
   note: z.string().optional(),
 });
 
@@ -19,16 +21,18 @@ decisionsRoutes.get("/api/v1/decisions", async (c) => {
   const offset = c.req.query("offset");
   const verdict = c.req.query("verdict");
   const trust_band = c.req.query("trust_band");
+  const pending = c.req.query("requires_human_review");
   if (limit) params.limit = limit;
   if (offset) params.offset = offset;
   if (verdict) params.verdict = verdict;
   if (trust_band) params.trust_band = trust_band;
+  if (pending) params.requires_human_review = pending;
 
   try {
     const query = new URLSearchParams(params).toString();
     const path = query ? `/internal/decisions?${query}` : "/internal/decisions";
-    const data = await dataPlatformClient.get<unknown[]>(path, getInternalHeaders(c));
-    return c.json(data, 200);
+    const data = await dataPlatformClient.get<Array<Record<string, unknown>>>(path, getInternalHeaders(c));
+    return c.json(data.map((decision) => ({ ...decision, decision_id: decision.id })), 200);
   } catch (err) {
     if (err instanceof ServiceClientError) {
       logUpstreamError(c, "decisions/list", err);
@@ -67,11 +71,13 @@ decisionsRoutes.post("/api/v1/decisions/:id/review", async (c) => {
   if (!parsed.success) {
     return c.json({ error: "Invalid review payload", details: parsed.error.format() }, 400);
   }
+  const user = c.get("user") as { user_id?: string } | undefined;
+  if (!user?.user_id) return c.json({ error: "Verified reviewer identity required" }, 401);
 
   try {
     const data = await dataPlatformClient.post<unknown>(
       `/internal/decisions/${encodeURIComponent(id)}/override`,
-      parsed.data,
+      { ...parsed.data, reviewer: user.user_id },
       getInternalHeaders(c),
     );
     return c.json(data, 200);
@@ -80,6 +86,7 @@ decisionsRoutes.post("/api/v1/decisions/:id/review", async (c) => {
       logUpstreamError(c, "decisions/review", err);
       // Preserve a meaningful 404 (decision not found) instead of masking it as 502.
       if (err.statusCode === 404) return c.json({ error: "Decision not found" }, 404);
+      if (err.statusCode === 409) return c.json({ error: "Decision review conflicts with an existing review" }, 409);
       return c.json({ error: "Upstream service error" }, 502);
     }
     logUpstreamError(c, "decisions/review", err);

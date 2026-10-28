@@ -3,8 +3,9 @@ import logging
 
 from fastapi import APIRouter, Body, File, HTTPException, Request, UploadFile
 
-from wcp_compliance.extraction import extract_from_pdf, extract_from_text
+from wcp_compliance.extraction import extract_from_pdf
 from wcp_compliance.models.schemas import ExtractedWCP
+from wcp_compliance.offline_bridge import extract_for_offline as extract_from_text
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -31,7 +31,7 @@ const humanReviewStep = createStep({
   resumeSchema: reviewResumeSchema,
   execute: async ({ inputData, resumeData, suspend }) => {
     // Bands that don't need a human: pass through unchanged.
-    if (inputData.trust_band !== "require_human_review") {
+    if (!inputData.requires_human_review && inputData.trust_band !== "require_human_review") {
       return inputData;
     }
 

@@ -175,7 +175,8 @@ describe("wcp pipeline (Mastra workflow, mock mode)", () => {
       expect(result.result).toMatchObject({
         job_id: "job-offline",
         verdict: "needs_review",
-        trust_band: "flag_for_review",
+        trust_band: "require_human_review",
+        requires_human_review: true,
         warning_count: 1,
         llm_confidence: 0.75,
       });
@@ -188,6 +189,7 @@ describe("wcp pipeline (Mastra workflow, mock mode)", () => {
       });
       expect(decisions.getAuditEvents("job-offline")).toEqual([
         expect.objectContaining({ event_type: "decision_persisted", trace_id: "trace-offline" }),
+        expect.objectContaining({ event_type: "human_review_queued", trace_id: "trace-offline" }),
       ]);
       expect(mockPost).not.toHaveBeenCalled();
     } finally {

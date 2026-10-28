@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -116,6 +116,12 @@ async def override_decision(
     stmt = (
         update(decisions_table)
         .where(decisions_table.c.id == decision_id)
+        .where(
+            or_(
+                decisions_table.c.requires_human_review.is_(True),
+                decisions_table.c.verdict == "needs_review",
+            )
+        )
         .values(
             verdict=verdict,
             requires_human_review=False,
@@ -149,12 +155,33 @@ async def list_decisions(
     verdict: str | None = None,
     limit: int = 50,
     offset: int = 0,
+    *,
+    trust_band: str | None = None,
+    requires_human_review: bool | None = None,
 ) -> list[DecisionResponse]:
     query = select(decisions_table)
     if contract_id:
         query = query.where(decisions_table.c.contract_id == contract_id)
     if verdict:
         query = query.where(decisions_table.c.verdict == verdict)
+    if trust_band:
+        if trust_band == "require_human_review":
+            # The review queue covers both review bands: ``require_human_review``
+            # (blocking) and the legacy ``flag_for_review`` (advisory). The
+            # ``auto_approve`` band never routes to human review.
+            query = query.where(
+                decisions_table.c.trust_band.in_(["require_human_review", "flag_for_review"])
+            )
+        else:
+            query = query.where(decisions_table.c.trust_band == trust_band)
+    if requires_human_review is not None:
+        # "Still awaiting human review" is a derived state: the explicit flag
+        # or an unresolved pending verdict (legacy rows predate the flag).
+        pending = or_(
+            decisions_table.c.requires_human_review.is_(True),
+            decisions_table.c.verdict == "needs_review",
+        )
+        query = query.where(pending if requires_human_review else ~pending)
     query = query.order_by(decisions_table.c.created_at.desc()).offset(offset).limit(limit)
     result = await session.execute(query)
     items = []
