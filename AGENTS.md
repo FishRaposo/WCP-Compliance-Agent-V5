@@ -18,20 +18,26 @@ Infrastructure: PostgreSQL 16 (pgvector), Redis 7.
 
 | Layer | Count | Framework |
 |---|---:|---|
-| Compliance Core unit | 84 | pytest |
+| Compliance Core unit | 89 | pytest |
 | Compliance Core eval | 101 | pytest (100 examples + baseline) |
-| Data Platform | command gate | pytest unit + integration |
-| Agent (Mastra) | 66 | vitest |
+| Data Platform | 67 (+5 skipped) | pytest unit + integration |
+| Agent (Mastra) | 70 | vitest |
 | Gateway | 45 | vitest |
-| Web unit | 29 | vitest |
+| Web unit | 30 | vitest |
 | Contracts | 42 | vitest |
 | Tooling | 4 | node:test |
 | Browser smoke | 2 | Playwright desktop + mobile |
 
-**Current finalization verification:** `pnpm test` passed 42 Contracts, 66 Agent,
-45 Gateway, 29 Web, and four tooling tests. Typecheck, lint, production build,
+Measured 2026-10-28 from a fresh clone (`pnpm test`, Poetry pytest runs, Playwright
+smoke); `pnpm -r typecheck`, `pnpm build` and `pnpm evidence` all green the same day.
+Update this table when a suite changes; the README's "Current Verification State"
+table is the public-facing copy.
+
+**Current finalization verification:** `pnpm test` passed 42 Contracts, 70 Agent,
+45 Gateway, 30 Web, and four tooling tests. Typecheck, lint, production build,
 deterministic evidence, and two browser smoke projects passed. Compliance Core
-passed 185 tests locally (84 unit + 101 eval). Python 3.12/Poetry, Data Platform service
+passed 190 tests locally (89 unit + 101 eval). Data Platform passed 67 (+5 skipped).
+Python 3.12/Poetry, Data Platform service
 fixtures, and Docker builds are authoritative CI gates where the matching local
 toolchain is unavailable.
 
