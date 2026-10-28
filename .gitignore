@@ -23,3 +23,6 @@ _archive/
 artifacts/portfolio/
 test-results/
 playwright-report/
+
+# TS incremental build cache
+tsconfig.tsbuildinfo
