@@ -221,6 +221,10 @@ The documents under `docs/planning/` that describe the V3/V4 port are historical
 execution records. Current capability and deferred-boundary claims live in this
 README, `docs/planning/v5-known-gaps.md`, and the operational documents above.
 
+## Part of the stack
+
+[groundtruth](https://github.com/FishRaposo/groundtruth) · [evalforge](https://github.com/FishRaposo/evalforge) · [llm-gateway](https://github.com/FishRaposo/llm-gateway) · [aria-agent](https://github.com/FishRaposo/aria-agent) · [agenttrace](https://github.com/FishRaposo/agenttrace)
+
 ## License
 
 MIT
