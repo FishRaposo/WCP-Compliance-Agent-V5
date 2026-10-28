@@ -146,7 +146,7 @@ describe("portfolio evidence bundle", () => {
   it("matches the committed normalized golden fixture", async () => {
     const report = await runPortfolioScenario();
     const golden = JSON.parse(
-      readFileSync(resolve(process.cwd(), "../../tests/fixtures/golden/portfolio-evidence.json"), "utf8"),
+      readFileSync(resolve(process.cwd(), "../../tests/fixtures/golden/portfolio-evidence-v2.json"), "utf8"),
     );
 
     expect(report).toEqual(golden);

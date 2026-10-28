@@ -6,6 +6,15 @@ from wcp_data.models.schemas import DecisionCreate
 from wcp_data.services.decision_service import create_decision
 
 
+@pytest.fixture(autouse=True)
+def available_unit_publisher(monkeypatch):
+    # These repository doubles model successful delivery. Actual unavailable
+    # producer behavior is covered with a real database in test_diagnostic_review.
+    monkeypatch.setattr(
+        "wcp_data.services.decision_service.event_producer.publish_decision", AsyncMock()
+    )
+
+
 def _make_audit_row():
     row = MagicMock()
     row.id = "evt-001"

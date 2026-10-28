@@ -225,9 +225,14 @@ const trustStep = createStep({
 
     const components = computeTrustComponents(report, llm);
     const trust_score = computeTrustScore(components);
-    const trust_band = determineTrustBand(trust_score);
     const verdict = safeVerdict(report, llm);
-    const requires_human_review = trust_band === "require_human_review";
+    const scoreBand = determineTrustBand(trust_score);
+    // Confidence cannot finalize an abstention. Unverified deterministic
+    // coverage stays actionable in the review queue regardless of score.
+    const requires_human_review = verdict === "needs_review"
+      || (report.violation_count === 0 && report.warning_count > 0)
+      || scoreBand === "require_human_review";
+    const trust_band = requires_human_review ? "require_human_review" : scoreBand;
 
     const reasoning_summary = buildReasoningSummary(report, llm, verdict);
     const citations = groundCitations(report, llm.citations);

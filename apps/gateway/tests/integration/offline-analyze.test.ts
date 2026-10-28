@@ -13,7 +13,7 @@ const canonicalPayroll = [
   "Contractor: Offline Electric LLC",
   "Project: Library retrofit",
   "Project location: Washington, DC",
-  "Wage determination: DC20240001",
+  "Wage determination: DC-2025-001",
   "Week ending: 2026-01-10",
   "Certification date: 2026-01-15",
   "Employee: Jane Doe",

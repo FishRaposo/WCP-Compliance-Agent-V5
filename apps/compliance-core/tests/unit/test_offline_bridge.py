@@ -9,7 +9,7 @@ CANONICAL_PAYROLL = """
 Contractor: Offline Electric LLC
 Project: Library retrofit
 Project location: Washington, DC
-Wage determination: DC20240001
+Wage determination: DC-2025-001
 Week ending: 2026-01-10
 Certification date: 2026-01-15
 Employee: Jane Doe
@@ -76,7 +76,7 @@ async def test_offline_metadata_round_trips_without_overwriting_canonical_ids():
 
 def test_present_but_invalid_required_values_are_marked_noncanonical():
     invalid = CANONICAL_PAYROLL.replace(
-        "Wage determination: DC20240001", "Wage determination: ???"
+        "Wage determination: DC-2025-001", "Wage determination: ???"
     ).replace("Week ending: 2026-01-10", "Week ending: not-a-date")
 
     extracted = extract_for_offline(invalid)

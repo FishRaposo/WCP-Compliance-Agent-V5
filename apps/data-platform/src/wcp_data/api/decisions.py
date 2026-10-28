@@ -41,9 +41,14 @@ async def list_decisions_endpoint(
     verdict: str | None = Query(default=None),
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0, ge=0),
+    trust_band: str | None = Query(default=None),
+    requires_human_review: bool | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ) -> list[DecisionResponse]:
-    return await list_decisions(session, contract_id, verdict, limit, offset)
+    return await list_decisions(
+        session, contract_id, verdict, limit, offset,
+        trust_band=trust_band, requires_human_review=requires_human_review,
+    )
 
 
 @router.get("/{decision_id}", response_model=DecisionResponse)

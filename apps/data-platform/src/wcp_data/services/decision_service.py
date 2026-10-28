@@ -144,7 +144,11 @@ async def override_decision(
     if current is None:
         return None, "not_found"
 
-    if not current.requires_human_review:
+    # Actionable = still awaiting a human outcome: the explicit flag or an
+    # unresolved pending verdict (legacy rows predate the flag). Anything else
+    # is finalized; only an identical replay of its recorded review returns.
+    actionable = current.requires_human_review or current.verdict == "needs_review"
+    if not actionable:
         prior = await _find_review_event(session, current.job_id, decision_id)
         if (
             prior is not None
@@ -173,7 +177,19 @@ async def override_decision(
         )
         if updated_id is None:
             await session.rollback()
-            return None, "not_found"
+            # The compare-and-swap lost to a committed reviewer. Re-read after
+            # rollback so identical concurrent retries replay, conflicts reject.
+            fresh = await _get_decision(session, decision_id)
+            if fresh is None:
+                return None, "not_found"
+            prior = await _find_review_event(session, fresh.job_id, decision_id)
+            if (
+                prior is not None and prior.actor == override.reviewer
+                and prior.payload.get("new_verdict") == override.verdict
+                and prior.payload.get("note") == override.note
+            ):
+                return fresh, "duplicate"
+            raise DecisionConflictError(f"decision {decision_id} already has a finalized review")
 
         await append_audit_event(session, AuditEventCreate(
             job_id=current.job_id,
@@ -217,5 +233,11 @@ async def list_decisions(
     verdict: str | None = None,
     limit: int = 50,
     offset: int = 0,
+    *,
+    trust_band: str | None = None,
+    requires_human_review: bool | None = None,
 ) -> list[DecisionResponse]:
-    return await _list_decisions(session, contract_id, verdict, limit, offset)
+    return await _list_decisions(
+        session, contract_id, verdict, limit, offset,
+        trust_band=trust_band, requires_human_review=requires_human_review,
+    )

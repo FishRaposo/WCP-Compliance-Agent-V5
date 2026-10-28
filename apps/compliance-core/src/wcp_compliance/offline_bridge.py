@@ -45,6 +45,10 @@ _WAGE_DETERMINATION_PATTERN = re.compile(
     r"^(?:WD-?)?[A-Z]{2}-?\d{4}-?\d{3,4}(?:-[A-Z0-9]+)*$",
     re.IGNORECASE,
 )
+# A WH-347 payroll may legitimately declare "No Work Performed": zero employees
+# is then the correct extraction, not a missing table. Anything else with zero
+# parsed employees is treated as an unusable employee section.
+_NO_WORK_PERFORMED_PATTERN = re.compile(r"no\s+work\s+performed", re.IGNORECASE)
 
 
 def _meaningful_text(value: str | None) -> bool:
@@ -94,7 +98,7 @@ def _canonical_input_issues(text: str, extracted: ExtractedWCP) -> list[str]:
         match = re.search(pattern, text, re.IGNORECASE)
         if match is None or not _meaningful_text(match.group("value")):
             issues.append(field)
-    if not extracted.employees:
+    if not extracted.employees and _NO_WORK_PERFORMED_PATTERN.search(text) is None:
         issues.append("employees")
     if not _meaningful_text(extracted.contractor.name):
         issues.append("contractor_identity")
@@ -159,7 +163,7 @@ async def validate_for_offline(extracted: ExtractedWCP) -> DeterministicReport:
         variance=None,
         regulation_cite="29 C.F.R. § 5.5(a)(3)(ii)",
         message=(
-            "Offline input is noncanonical and cannot be auto-approved; "
+            "Input is noncanonical and cannot be auto-approved; "
             f"missing or unusable fields: {', '.join(issues)}"
         ),
     )

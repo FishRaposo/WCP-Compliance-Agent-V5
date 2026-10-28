@@ -28,6 +28,7 @@ class EventProducer:
                 await self._redis.ping()
             except Exception:
                 logger.warning("Redis unavailable, events will be dropped")
+                self._redis = None
                 return None
         return self._redis
 
@@ -35,15 +36,19 @@ class EventProducer:
         try:
             r = await self._get_redis()
             if r is None:
-                return
+                raise RuntimeError("Decision event backend unavailable")
             payload = event.model_dump()
             await r.xadd(
                 STREAM_DECISIONS,
                 {k: json.dumps(v) if not isinstance(v, str) else v for k, v in payload.items()},
                 maxlen=10000,
             )
-        except Exception:
+        except Exception as exc:
             logger.warning("Failed to publish decision event", exc_info=True)
+            # The owning decision service records a durable failure audit after
+            # its transaction commits. Never silently turn failed delivery into
+            # success, and never expose connection strings in that audit.
+            raise RuntimeError("Decision event delivery failed") from exc
 
     async def publish(
         self,

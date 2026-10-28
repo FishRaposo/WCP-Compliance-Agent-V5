@@ -20,24 +20,70 @@ from wcp_compliance.models.schemas import (
 )
 
 
-async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
+async def run_rule_engine(
+    extracted: ExtractedWCP, *, historical_fixture_scope: bool = False
+) -> DeterministicReport:
     checks: list[ComplianceCheck] = []
     dbwd_rates: list[DBWDRateRecord] = []
 
     unique_trades = {e.trade_classification for e in extracted.employees}
     trade_to_rate: dict[str, DBWDRateRecord] = {}
+    missing_scope = []
+    if not extracted.project.location.strip():
+        missing_scope.append("project location")
+    if extracted.week_ending is None:
+        missing_scope.append("week ending date")
+    if not extracted.project.wage_determination_number.strip():
+        missing_scope.append("wage determination number")
+    # Only the frozen historical evaluator may reproduce its original implicit
+    # scope. This option is not exposed by the HTTP schema or agent request.
     effective_date = extracted.week_ending.isoformat() if extracted.week_ending else "2026-01-01"
     locality = extracted.project.location or "Washington, DC"
+    verify_rates = historical_fixture_scope or not missing_scope
+    if unique_trades and not verify_rates:
+        checks.append(
+            ComplianceCheck(
+                check_id="rate_scope_missing",
+                check_type=CheckType.CLASSIFICATION,
+                employee_name="_multiple_",
+                status=CheckStatus.WARNING,
+                regulation_cite="29 C.F.R. § 5.5(a)(3)(i)",
+                message=(
+                    "Prevailing wage compliance was not verified: missing "
+                    + ", ".join(missing_scope)
+                ),
+            )
+        )
 
     rate_tasks = [
-        _fetch_dbwd_rate(trade, locality, effective_date)
-        for trade in unique_trades
+        _fetch_dbwd_rate(trade, locality, effective_date) for trade in unique_trades if verify_rates
     ]
     rate_results = await asyncio.gather(*rate_tasks, return_exceptions=True)
 
-    for trade, result in zip(unique_trades, rate_results):
+    for trade, result in zip(unique_trades if verify_rates else [], rate_results):
         if isinstance(result, tuple) and isinstance(result[0], DBWDRateRecord):
             record, match_kind = result
+            requested_wd = "".join(
+                c for c in extracted.project.wage_determination_number.upper() if c.isalnum()
+            )
+            actual_wd = "".join(c for c in record.wage_determination_number.upper() if c.isalnum())
+            if not historical_fixture_scope and requested_wd != actual_wd:
+                checks.append(
+                    ComplianceCheck(
+                        check_id=f"determination_{_slugify(trade)}",
+                        check_type=CheckType.CLASSIFICATION,
+                        employee_name="_multiple_",
+                        status=CheckStatus.WARNING,
+                        regulation_cite="29 C.F.R. § 5.5(a)(3)(i)",
+                        message=(
+                            "Requested wage determination "
+                            f"{extracted.project.wage_determination_number} does not match "
+                            f"available {record.wage_determination_number}; "
+                            "prevailing wage compliance was not verified"
+                        ),
+                    )
+                )
+                continue
             dbwd_rates.append(record)
             trade_to_rate[trade] = record
             if match_kind == "fuzzy":
@@ -77,10 +123,7 @@ async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
                     actual_value=None,
                     variance=None,
                     regulation_cite="29 C.F.R. § 5.5(a)(3)(i)",
-                    message=(
-                        f"{result}; "
-                        "prevailing wage compliance was not verified"
-                    ),
+                    message=(f"{result}; prevailing wage compliance was not verified"),
                 )
             )
 
@@ -144,7 +187,8 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
             message=(
-                "Data integrity: hourly wage is positive" if wage_ok
+                "Data integrity: hourly wage is positive"
+                if wage_ok
                 else "Data integrity error: hourly wage must be positive"
             ),
         )
@@ -163,7 +207,8 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
             message=(
-                "Data integrity: hours worked is non-negative" if hours_non_negative
+                "Data integrity: hours worked is non-negative"
+                if hours_non_negative
                 else "Data integrity error: hours worked cannot be negative"
             ),
         )
@@ -182,7 +227,8 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
             message=(
-                "Data integrity: hours worked does not exceed 168" if hours_max_ok
+                "Data integrity: hours worked does not exceed 168"
+                if hours_max_ok
                 else "Data integrity error: hours worked exceeds 168 (impossible)"
             ),
         )
@@ -227,7 +273,8 @@ def _check_data_integrity(employee: EmployeeRecord) -> list[ComplianceCheck]:
             variance=None,
             regulation_cite="29 C.F.R. \u00a7 5.5(a)(3)(ii)",
             message=(
-                "Data integrity: net wages is non-negative" if net_ok
+                "Data integrity: net wages is non-negative"
+                if net_ok
                 else "Data integrity error: net wages cannot be negative"
             ),
         )
@@ -315,9 +362,7 @@ def _compute_classification_score(deterministic: DeterministicReport) -> float:
     return weight / len(relevant)
 
 
-def _compute_agreement(
-    deterministic: DeterministicReport, llm_verdict: LLMVerdict
-) -> float:
+def _compute_agreement(deterministic: DeterministicReport, llm_verdict: LLMVerdict) -> float:
     has_violations = deterministic.violation_count > 0
     llm_approved = llm_verdict.verdict == VerdictStatus.APPROVED
 

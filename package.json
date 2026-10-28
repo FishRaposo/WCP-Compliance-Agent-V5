@@ -12,7 +12,7 @@
     "test:contracts": "turbo run test:contracts",
     "test:golden": "cd apps/compliance-core && poetry run pytest tests/eval -q",
     "test:gateway:integration": "cd apps/gateway && pnpm test integration",
-    "evidence": "pnpm --filter @wcp/agent exec tsx ../../scripts/portfolio_demo.ts && node scripts/verify_portfolio_evidence.mjs artifacts/portfolio/wcp-compliance-agent-v5-evidence --golden tests/fixtures/golden/portfolio-evidence.json",
+    "evidence": "pnpm --filter @wcp/agent exec tsx ../../scripts/portfolio_demo.ts && node scripts/verify_portfolio_evidence.mjs artifacts/portfolio/wcp-compliance-agent-v5-evidence --golden tests/fixtures/golden/portfolio-evidence-v2.json",
     "test:e2e": "playwright test",
     "demo:ui": "pnpm --filter @wcp/web demo:ui"
   },
@@ -25,3 +25,4 @@
     "typescript-eslint": "^8.61.0"
   }
 }
+

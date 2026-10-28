@@ -10,6 +10,7 @@ export function useDecisions(limit = 50, offset = 0, trustBand?: TrustBand) {
         limit,
         offset,
         trust_band: trustBand,
+        requires_human_review: trustBand === "require_human_review" ? "true" : undefined,
       }),
   });
 }

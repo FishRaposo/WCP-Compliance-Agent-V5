@@ -1,7 +1,8 @@
 """Golden-set evaluation: runs deterministic validation against known examples.
 
-Validates that the rule engine produces correct verdicts and violation counts
-for a fixed set of WH-347 payroll examples.
+Reproduces the historical rule profile over immutable examples.94/100 examples
+omit week ending; the explicit historical fixture option retains their old
+implicit scope. This is not acceptance of current HTTP input authority.
 """
 
 import json
@@ -45,7 +46,7 @@ def _verdict_to_expected(deterministic) -> str:
 async def test_golden_example(example: dict):
     """Run each golden example through extraction and deterministic validation."""
     extracted = extract_from_text(example["input"])
-    report = await run_rule_engine(extracted)
+    report = await run_rule_engine(extracted, historical_fixture_scope=True)
 
     # Verify verdict matches expected
     verdict = _verdict_to_expected(report)
@@ -91,7 +92,7 @@ async def test_regression_against_baseline():
             continue
 
         extracted = extract_from_text(example["input"])
-        report = await run_rule_engine(extracted)
+        report = await run_rule_engine(extracted, historical_fixture_scope=True)
         verdict = _verdict_to_expected(report)
         baseline = baseline_scores[ex_id]
 
