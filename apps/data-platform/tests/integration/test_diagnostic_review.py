@@ -20,9 +20,11 @@ def payload(job, band="require_human_review", review=True):
 
 async def test_pending_review_filter_excludes_unrelated_and_completed(client):
     a = (await client.post("/internal/decisions", json=payload("pending").model_dump())).json()
-    await client.post(
-        "/internal/decisions", json=payload("approved", "auto_approve", False).model_dump()
-    )
+    unrelated = (
+        await client.post(
+            "/internal/decisions", json=payload("approved", "auto_approve", False).model_dump()
+        )
+    ).json()
     completed = (
         await client.post("/internal/decisions", json=payload("completed").model_dump())
     ).json()
@@ -35,7 +37,12 @@ async def test_pending_review_filter_excludes_unrelated_and_completed(client):
         params={"trust_band": "require_human_review", "requires_human_review": "true"},
     )
     assert r.status_code == 200
-    assert [d["id"] for d in r.json()] == [a["id"]]
+    # The shared integration database may hold pending rows from other tests;
+    # membership assertions keep the contract: pending in, unrelated/completed out.
+    ids = {d["id"] for d in r.json()}
+    assert a["id"] in ids
+    assert unrelated["id"] not in ids
+    assert completed["id"] not in ids
 
 
 async def test_concurrent_conflicting_reviews_commit_once(tmp_path, monkeypatch):

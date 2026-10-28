@@ -22,18 +22,23 @@ async def test_legacy_warning_abstention_remains_visible_and_actionable_without_
  old=pending('legacy-abstention').model_copy(update={'requires_human_review':False,'trust_band':'flag_for_review','trust_score':.8375})
  row=(await client.post('/internal/decisions',json=old.model_dump())).json()
  approved=old.model_copy(update={'job_id':'approved-without-review','verdict':'approved'})
- await client.post('/internal/decisions',json=approved.model_dump())
+ approved_row=(await client.post('/internal/decisions',json=approved.model_dump())).json()
  complete=(await client.post('/internal/decisions',json=pending('actually-completed').model_dump())).json()
  await client.post(f"/internal/decisions/{complete['id']}/override",json={'verdict':'approved','reviewer':'verified-other'})
  queue=await client.get('/internal/decisions',params={'trust_band':'require_human_review','requires_human_review':'true'})
- assert [d['id']for d in queue.json()]==[row['id']]
+ # Shared-database safe membership: the legacy row stays queued while the
+ # finalized rows are excluded.
+ queue_ids={d['id']for d in queue.json()}
+ assert row['id']in queue_ids
+ assert approved_row['id']not in queue_ids and complete['id']not in queue_ids
  prior=(await client.get(f"/internal/decisions/{row['id']}")).json()
  assert prior['requires_human_review'] is False and prior['trust_band']=='flag_for_review'
  final=await client.post(f"/internal/decisions/{row['id']}/override",json={'verdict':'approved','reviewer':'verified-auditor'})
  assert final.status_code==200
  repeated=await client.post(f"/internal/decisions/{row['id']}/override",json={'verdict':'approved','reviewer':'verified-auditor'})
  assert repeated.status_code==200
- assert (await client.get('/internal/decisions',params={'trust_band':'require_human_review','requires_human_review':'true'})).json()==[]
+ resolved_ids={d['id']for d in (await client.get('/internal/decisions',params={'trust_band':'require_human_review','requires_human_review':'true'})).json()}
+ assert row['id']not in resolved_ids
  events=(await client.get('/internal/audit-events',params={'job_id':'legacy-abstention'})).json()
  reviews=[e for e in events if e['event_type']=='human_review_complete']
  assert len(reviews)==1 and reviews[0]['actor']=='verified-auditor'
