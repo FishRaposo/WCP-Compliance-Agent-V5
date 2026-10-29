@@ -20,6 +20,7 @@ jobs:
       - uses: snok/install-poetry@v1
         with:
           version: 1.8.5
+      - run: poetry check --lock
       - run: poetry install --no-interaction
       - run: poetry run pytest tests/eval/ -v --tb=long
       - name: Check for regressions

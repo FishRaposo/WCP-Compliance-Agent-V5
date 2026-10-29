@@ -15,6 +15,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import SampleDataBadge from "@/components/SampleDataBadge";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -50,6 +51,8 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const user = getUser();
+  // The sidebar is hidden below md, so the Sample data label moves into the content area there.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const handleLogout = () => {
     localStorage.removeItem("wcp_token");
@@ -68,7 +71,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold tracking-tight text-white">WCP Compliance</h1>
-              <SampleDataBadge />
+              {isDesktop && <SampleDataBadge />}
             </div>
             <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">Audit Suite v5.0</p>
           </div>
@@ -146,6 +149,11 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Subtle grid pattern overlay for high-fidelity background */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.007)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.007)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0" />
         <div className="relative z-10 animate-in fade-in duration-300">
+          {!isDesktop && (
+            <div className="mb-4 flex justify-end">
+              <SampleDataBadge />
+            </div>
+          )}
           {children}
         </div>
       </main>
