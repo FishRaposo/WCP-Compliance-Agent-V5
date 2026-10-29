@@ -20,7 +20,7 @@
     "zod": "^3.25.76",
     "ai": "^6.0.315",
     "@ai-sdk/openai": "^3.0.131",
-    "@ai-sdk/anthropic": "^3.0.0",
+    "@ai-sdk/anthropic": "^4.0.88",
     "ollama-ai-provider-v2": "^3.6.0",
     "@mastra/core": "^1.45.0",
     "@mastra/rag": "^2.3.0",
