@@ -54,7 +54,7 @@ export default function TopViolatorsChart({ data }: Props) {
           width={68}
         />
         <Tooltip
-          formatter={(v: number) => [`${v}%`, "Violation Rate"]}
+          formatter={(v) => [`${Number(v)}%`, "Violation Rate"]}
           contentStyle={{
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",

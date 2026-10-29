@@ -50,7 +50,7 @@ export default function TrustBandDistributionChart({ data }: Props) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number, name: string) => [`${value} decisions`, name]}
+          formatter={(value, name) => [`${Number(value)} decisions`, name]}
           contentStyle={{
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",

@@ -38,7 +38,7 @@ export default function ViolationBreakdownChart({ data }: Props) {
           outerRadius={80}
           paddingAngle={2}
           dataKey="value"
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
           labelLine={false}
         >
           {formatted.map((_, index) => (
@@ -46,7 +46,7 @@ export default function ViolationBreakdownChart({ data }: Props) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number) => [value, "Violations"]}
+          formatter={(value) => [Number(value), "Violations"]}
           contentStyle={{
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",
