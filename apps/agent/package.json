@@ -21,7 +21,7 @@
     "ai": "^6.0.315",
     "@ai-sdk/openai": "^3.0.131",
     "@ai-sdk/anthropic": "^3.0.0",
-    "ollama-ai-provider-v2": "^3.6.0",
+    "ollama-ai-provider-v2": "^4.1.0",
     "@mastra/core": "^1.45.0",
     "@mastra/rag": "^2.3.0",
     "@mastra/memory": "^1.21.0",
