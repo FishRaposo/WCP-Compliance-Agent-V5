@@ -1,12 +1,17 @@
 {
   "agent_synthesis": {
-    "citations": [],
+    "citations": [
+      "29 C.F.R. § 5.5(a)(3)(i)",
+      "40 U.S.C. § 3141(2)(B)",
+      "40 U.S.C. § 3142"
+    ],
     "deterministic_truth_in_reasoning": true,
-    "llm_confidence": 0.95,
+    "llm_confidence": 0.85,
+    "reasoning_summary": "Deterministic checks: 3 violation(s), 0 warning(s). LLM rationale (context): Deterministic checks failed: Wage violation: $45.00/hr is $6.69 below minimum $51.69/hr; Fringe violation: $900.00 is $762.24 below required $1662.24 ($34.63/hr x 48.0 hrs); Arithmetic error: Gross variance $-180.00",
     "requires_human_review": false,
     "trust_band": "auto_approve",
-    "trust_score": 0.9775,
-    "verdict": "approved"
+    "trust_score": 0.862045,
+    "verdict": "rejected"
   },
   "cache_fallback": {
     "backend": "memory",
@@ -30,21 +35,21 @@
     }
   },
   "extraction": {
-    "contractor": "Offline Electric LLC",
+    "contractor": "Keystone Builders",
     "employee_count": 1,
     "employees": [
       {
-        "hourly_wage": 55,
-        "hours": 40,
-        "name": "Jane Doe",
+        "hourly_wage": 45,
+        "hours": 48,
+        "name": "Jane Worker",
         "trade": "Electrician"
       }
     ],
     "locality": "Washington, DC",
     "noncanonical_input_issues": [],
-    "project": "Library retrofit",
+    "project": "Federal Courthouse Renovation",
     "wage_determination": "DC-2025-001",
-    "week_ending": "2026-01-10"
+    "week_ending": "2026-01-09"
   },
   "frontend_fixtures": {
     "analysis_fixture": {
@@ -103,13 +108,44 @@
       "total_arithmetic",
       "wage_rate"
     ],
-    "failing_check_types": [],
-    "overall_status": "pass",
-    "passed_count": 11,
+    "failing_check_types": [
+      "fringe_benefit",
+      "total_arithmetic",
+      "wage_rate"
+    ],
+    "overall_status": "fail",
+    "passed_count": 8,
     "status_counts": {
-      "pass": 11
+      "fail": 3,
+      "pass": 8
     },
-    "violation_count": 0,
+    "violation_count": 3,
+    "violations": [
+      {
+        "actual_value": 900,
+        "check_type": "fringe_benefit",
+        "employee": "Jane Worker",
+        "expected_value": 1662.24,
+        "message": "Fringe violation: $900.00 is $762.24 below required $1662.24 ($34.63/hr x 48.0 hrs)",
+        "regulation_cite": "40 U.S.C. § 3141(2)(B)"
+      },
+      {
+        "actual_value": 2160,
+        "check_type": "total_arithmetic",
+        "employee": "Jane Worker",
+        "expected_value": 2340,
+        "message": "Arithmetic error: Gross variance $-180.00",
+        "regulation_cite": "29 C.F.R. § 5.5(a)(3)(i)"
+      },
+      {
+        "actual_value": 45,
+        "check_type": "wage_rate",
+        "employee": "Jane Worker",
+        "expected_value": 51.69,
+        "message": "Wage violation: $45.00/hr is $6.69 below minimum $51.69/hr",
+        "regulation_cite": "40 U.S.C. § 3142"
+      }
+    ],
     "warning_count": 0
   },
   "validation_profile": "strict-rate-scope-v2"

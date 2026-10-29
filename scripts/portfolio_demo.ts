@@ -118,13 +118,15 @@ export function normalizeEvidence(value: unknown): JsonValue {
  * refusal is the thesis). Jane Worker is paid $45.00/hr against the $51.69 Electrician
  * minimum, fringe is under-reported, and the 8 overtime hours are paid at straight time so
  * the gross does not reconcile. The offline DBWD corpus holds Washington, DC rates, so the
- * locality stays DC; the three violations come from the real Compliance Core rule engine.
+ * locality stays DC and the payroll requests the corpus determination DC-2025-001; the
+ * strict profile refuses an unavailable determination, so the three violations come from
+ * the real Compliance Core rule engine.
  */
 const canonicalPayroll = [
   "Contractor: Keystone Builders",
   "Project: Federal Courthouse Renovation",
   "Project location: Washington, DC",
-  "Wage determination: DC20240001",
+  "Wage determination: DC-2025-001",
   "Week ending: 2026-01-09",
   "Certification date: 2026-01-15",
   "Employee: Jane Worker",
