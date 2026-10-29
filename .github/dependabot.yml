@@ -50,6 +50,12 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: "@hono/node-server"
         update-types: [version-update:semver-major]
+      # Mastra ecosystem is pinned at the 1.45-generation API surface (see AGENTS.md);
+      # coordinated upgrades are deliberate migrations, not patch streams.
+      - dependency-name: "@mastra/*"
+      - dependency-name: mastra
+      - dependency-name: ai
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: pip
     directories:
@@ -78,6 +84,7 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: redis
         update-types: [version-update:semver-major]
+      - dependency-name: ruff
 
   - package-ecosystem: github-actions
     directory: "/"
