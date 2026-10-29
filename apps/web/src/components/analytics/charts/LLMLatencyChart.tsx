@@ -43,7 +43,7 @@ export default function LLMLatencyChart({ data }: Props) {
           tickFormatter={(v: number) => `${v}ms`}
         />
         <Tooltip
-          formatter={(v: number) => [`${v}ms`]}
+          formatter={(v) => [`${Number(v)}ms`]}
           contentStyle={{
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",
