@@ -62,7 +62,7 @@ jobs:
       - run: pnpm build
       - run: pnpm test
       - run: pnpm evidence
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wcp-portfolio-evidence
           path: artifacts/portfolio/wcp-compliance-agent-v5-evidence
