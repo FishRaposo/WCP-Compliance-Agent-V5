@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
@@ -92,7 +92,7 @@ jobs:
         working-directory: apps/compliance-core
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
@@ -139,7 +139,7 @@ jobs:
       SKIP_DB_STARTUP: "false"
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
