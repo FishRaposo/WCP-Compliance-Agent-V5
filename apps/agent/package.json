@@ -31,7 +31,7 @@
     "@mastra/observability": "^1.15.0",
     "@mastra/langfuse": "^1.4.0",
     "@wcp/contracts": "workspace:*",
-    "pino": "^9.0.0",
+    "pino": "^10.4.0",
     "dotenv": "^16.4.0",
     "@wcp/typescript-client": "workspace:*"
   },
