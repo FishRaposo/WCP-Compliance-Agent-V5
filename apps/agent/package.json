@@ -15,11 +15,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.0",
-    "hono": "^4.7.0",
+    "@hono/node-server": "^1.19.17",
+    "hono": "^4.13.14",
     "zod": "^3.25.76",
-    "ai": "^6.0.0",
-    "@ai-sdk/openai": "^3.0.0",
+    "ai": "^6.0.315",
+    "@ai-sdk/openai": "^3.0.131",
     "@ai-sdk/anthropic": "^3.0.0",
     "ollama-ai-provider-v2": "^3.6.0",
     "@mastra/core": "^1.45.0",
@@ -40,6 +40,6 @@
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",
-    "tsx": "^4.19.0"
+    "tsx": "^4.23.15"
   }
 }
