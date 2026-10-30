@@ -43,6 +43,8 @@ updates:
         update-types: [version-update:semver-major]
       # AI SDK v6 pins @ai-sdk/openai ^3; v4 is out of range.
       - dependency-name: "@ai-sdk/openai"
+      # Same pin: AI SDK v6 keeps @ai-sdk/anthropic at ^3 (see AGENTS.md ecosystem table).
+      - dependency-name: "@ai-sdk/anthropic"
         update-types: [version-update:semver-major]
       - dependency-name: pino
         update-types: [version-update:semver-major]
