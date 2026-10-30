@@ -47,8 +47,8 @@ export default function ModelUsageChart({ data }: Props) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number, name: string) => [
-            `${value} calls`,
+          formatter={(value, name) => [
+            `${Number(value)} calls`,
             name,
           ]}
           contentStyle={{

@@ -16,14 +16,14 @@
     "@wcp/contracts": "workspace:*",
     "@wcp/observability": "workspace:*",
     "@wcp/typescript-client": "workspace:*",
-    "dotenv": "^16.4.0",
+    "dotenv": "^18.0.9",
     "hono": "^4.13.14",
     "jose": "^6.2.13",
-    "redis": "5.10.0",
+    "redis": "6.3.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.5",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

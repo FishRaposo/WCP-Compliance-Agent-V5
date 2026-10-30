@@ -39,7 +39,7 @@ export default function ApprovalRateChart({ data }: Props) {
           tickFormatter={(v) => `${v}%`}
         />
         <Tooltip
-          formatter={(v: number) => [`${v}%`, "Approval Rate"]}
+          formatter={(v) => [`${Number(v)}%`, "Approval Rate"]}
           contentStyle={{
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",
