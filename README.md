@@ -56,7 +56,11 @@ Web (React 19) -> Gateway (Hono) -> Agent (Mastra)
 ### Prerequisites and install
 
 - Node.js 20 and pnpm 9.15.0 (the exact pnpm version is declared in `package.json`).
+  Install via `npm i -g pnpm@9.15.0` — do not rely on the corepack shim.
 - Python 3.12 and Poetry 1.8.5 for the two Python services.
+- Nothing else: no Docker, database, Redis, LLM key, or `make` for the
+  credential-free paths below. Docker/PostgreSQL/Redis/provider keys are
+  optional expansions for the full-workflow and real modes at the bottom.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -100,7 +104,7 @@ Open `http://localhost:5173`.
 
 ### Full Local Workflow Mock Mode
 
-`LLM_MODE=mock` avoids LLM API keys, but the Agent workflow still calls Compliance Core and Data Platform.
+*Optional expansion — needs Docker.* `LLM_MODE=mock` avoids LLM API keys, but the Agent workflow still calls Compliance Core and Data Platform.
 
 ```bash
 cd infra
@@ -120,6 +124,8 @@ LLM_MODE=mock WCP_MOCK_AUTH=true pnpm dev
 ```
 
 ### Real Mode
+
+*Optional expansion — needs Docker and a provider API key.*
 
 ```bash
 cd infra
