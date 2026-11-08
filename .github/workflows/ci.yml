@@ -50,7 +50,7 @@ jobs:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: 2.5.1
       - name: Install Compliance Core venv for the TypeScript bridge tests
         working-directory: apps/compliance-core
         run: |
@@ -97,7 +97,7 @@ jobs:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: 2.5.1
       - run: poetry check --lock
       - run: poetry install --no-interaction
       - run: poetry run ruff check .
@@ -144,7 +144,7 @@ jobs:
           python-version: "3.12"
       - uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: 2.5.1
       - run: poetry check --lock
       - run: poetry install --no-interaction
       - run: poetry run ruff check .
