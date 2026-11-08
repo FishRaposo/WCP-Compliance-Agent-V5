@@ -21,7 +21,7 @@ ingestionRoutes.post("/api/v1/ingestion/jobs", async (c) => {
     const body = await c.req.json();
     const parsed = CreateIngestionJobRequest.safeParse(body);
     if (!parsed.success) {
-      return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+      return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
     }
     const data = await dataPlatformClient.post<unknown>(
       "/internal/ingestion/jobs",

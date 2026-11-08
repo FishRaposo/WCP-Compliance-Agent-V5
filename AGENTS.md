@@ -156,7 +156,7 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 
 ### Ecosystem versions (keep aligned)
 
-`@mastra/core@^1.45` · `@mastra/rag@^2.3` · `@mastra/memory@^1.21` · `@mastra/libsql@^1.14` · `@mastra/pg@^1.14` · `@mastra/loggers@^1.2` · `@mastra/evals@^1.4` · `@mastra/observability@^1.15` · `@mastra/langfuse@^1.4` · `mastra@^1.15` (dev CLI). Model layer: **AI SDK v6** (`ai@^6`, `@ai-sdk/openai@^3`, `@ai-sdk/anthropic@^3`, `ollama-ai-provider-v2@^3.6`) and **`zod@^3.25`** (Mastra peer floor; AI SDK v4 / zod 3.24 are NOT compatible).
+`@mastra/core@^1.45` · `@mastra/rag@^2.3` · `@mastra/memory@^1.21` · `@mastra/libsql@^1.14` · `@mastra/pg@^1.14` · `@mastra/loggers@^1.2` · `@mastra/evals@^1.4` · `@mastra/observability@^1.15` · `@mastra/langfuse@^1.4` · `mastra@^1.15` (dev CLI). Model layer: **AI SDK v6** (`ai@^6`, `@ai-sdk/openai@^3`, `@ai-sdk/anthropic@^3`, `ollama-ai-provider-v2@^3.6`) and **`zod@^4.6`** (one hoisted copy across the workspace; Mastra, the MCP SDK and the AI SDK providers all accept zod 4).
 
 ### Structure (`apps/agent/src/mastra/`)
 

@@ -12,8 +12,8 @@ for (const [key, value] of Object.entries(process.env)) {
 }
 
 const envSchema = z.object({
-  COMPLIANCE_CORE_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8000"),
-  DATA_PLATFORM_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8001"),
+  COMPLIANCE_CORE_URL: z.string().transform(normalizeUrl).pipe(z.url()).default("http://localhost:8000"),
+  DATA_PLATFORM_URL: z.string().transform(normalizeUrl).pipe(z.url()).default("http://localhost:8001"),
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODEL: z.string().default("gpt-4o-mini"),
   ANTHROPIC_API_KEY: z.string().default(""),
@@ -25,7 +25,7 @@ const envSchema = z.object({
   AGENT_SERVICE_TRANSPORT: z.enum(["http", "in-process"]).default("http"),
   LANGFUSE_PUBLIC_KEY: z.string().default(""),
   LANGFUSE_SECRET_KEY: z.string().default(""),
-  LANGFUSE_HOST: z.string().url().default("https://cloud.langfuse.com"),
+  LANGFUSE_HOST: z.url().default("https://cloud.langfuse.com"),
   EMBEDDING_MODEL: z.string().default("text-embedding-3-small"),
   VECTOR_DB_URL: z.string().default("file:./wcp-wage-rag.db"),
   MEMORY_DB_URL: z.string().default("file:./wcp-memory.db"),

@@ -8,7 +8,7 @@ import { signToken } from "../auth/jwt.js";
 export const authRoutes = new Hono();
 
 const LoginRequest = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1),
 });
 
@@ -20,7 +20,7 @@ authRoutes.post("/api/v1/auth/login", async (c) => {
   const body = await c.req.json();
   const parsed = LoginRequest.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
   }
 
   try {

@@ -25,6 +25,22 @@ describe("Gateway routes", () => {
     expect(res.status).toBeGreaterThanOrEqual(200);
   });
 
+  it("returns structured validation details for an invalid analyze request", async () => {
+    const { analyzeRoutes } = await import("../../src/routes/analyze.js");
+    const app = new Hono();
+    app.route("/", analyzeRoutes);
+    const res = await app.request("/api/v1/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Invalid request");
+    expect(body.details).toBeTruthy();
+    expect(typeof body.details).toBe("object");
+  });
+
   it("analyze-pdf route validates file presence", async () => {
     const { analyzePdfRoutes } = await import("../../src/routes/analyze-pdf.js");
     const app = new Hono();

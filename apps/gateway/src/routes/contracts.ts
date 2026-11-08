@@ -13,7 +13,7 @@ import { getInternalHeaders } from "../lib/request-headers.js";
 
 export const contractsRoutes = new Hono();
 
-const CreateContractRequest = z.object({
+const CreateContractRequest = z.looseObject({
   contract_number: z.string().min(1),
   contractor_name: z.string().min(1),
   project_name: z.string().min(1),
@@ -21,10 +21,10 @@ const CreateContractRequest = z.object({
   end_date: z.string(),
   wage_determination_number: z.string().optional(),
   location: z.string().optional(),
-}).passthrough();
+});
 
 // HIGH-04 Fix: Explicit allowed fields with strict() to prevent extra fields
-const PatchContractRequest = z.object({
+const PatchContractRequest = z.strictObject({
   contractor_name: z.string().optional(),
   project_name: z.string().optional(),
   status: z.enum(["active", "completed", "terminated"]).optional(),
@@ -32,7 +32,7 @@ const PatchContractRequest = z.object({
   end_date: z.string().optional(),
   wage_determination_number: z.string().optional(),
   location: z.string().optional(),
-}).strict();
+});
 
 // HIGH-03 Fix: Add validation for bulk contract import
 const BulkContractRequest = z.object({
@@ -71,7 +71,7 @@ contractsRoutes.post("/api/v1/contracts", async (c) => {
   const body = await c.req.json();
   const parsed = CreateContractRequest.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
   }
 
   try {
@@ -107,7 +107,7 @@ contractsRoutes.patch("/api/v1/contracts/:id", async (c) => {
   const body = await c.req.json();
   const parsed = PatchContractRequest.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
   }
 
   try {
@@ -128,7 +128,7 @@ contractsRoutes.post("/api/v1/contracts/bulk", async (c) => {
     const body = await c.req.json();
     const parsed = BulkContractRequest.safeParse(body);
     if (!parsed.success) {
-      return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+      return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
     }
     const data = await dataPlatformClient.post<unknown>(
       "/internal/contracts/bulk",
