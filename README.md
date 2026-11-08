@@ -18,8 +18,8 @@ pnpm install --frozen-lockfile
 pnpm demo:ui
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
-
+Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
+
 Three captures from that run, without installing anything: [dashboard](docs/images/portfolio/wcp-01-cover.png) · [a rejected payroll with its citations](docs/images/portfolio/wcp-02-verdict.png) · [the review drawer](docs/images/portfolio/wcp-03-review.png). How they were shot: [docs/images/portfolio](docs/images/portfolio/README.md).
 
 **Click path:**
@@ -55,9 +55,9 @@ Web (React 19) -> Gateway (Hono) -> Agent (Mastra)
 
 ### Prerequisites and install
 
-- Node.js 20 and pnpm 9.15.0 (the exact pnpm version is declared in `package.json`).
+- Node.js 24.15+ and pnpm 9.15.0 (the exact pnpm version is declared in `package.json`).
   Install via `npm i -g pnpm@9.15.0` — do not rely on the corepack shim.
-- Python 3.12 and Poetry 1.8.5 for the two Python services.
+- Python 3.12 and Poetry 2.5+ for the two Python services.
 - Nothing else: no Docker, database, Redis, LLM key, or `make` for the
   credential-free paths below. Docker/PostgreSQL/Redis/provider keys are
   optional expansions for the full-workflow and real modes at the bottom.

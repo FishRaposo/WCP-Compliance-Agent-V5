@@ -36,3 +36,9 @@ The repository does not vendor archived `shared_core` code and has no sibling-pa
 Git-installed runtime dependency. Runtime dependencies come from the pnpm and Poetry
 lockfiles. Optional Redis, PostgreSQL, SAM.gov, Langfuse, and LLM-provider surfaces are
 not required by the default demo or CI evidence job.
+
+The current pnpm audit has one low-severity advisory: `deepmerge` 4.3.1, which is the
+latest release and has no patched version. There are no medium, high, or critical
+advisories. The package-level deprecation notices for `@opentelemetry/sdk-trace-base`,
+`@opentelemetry/sdk-trace-node`, and `node-domexception` are upstream; the current
+Mastra/OpenTelemetry dependency graph does not yet offer a replacement release.

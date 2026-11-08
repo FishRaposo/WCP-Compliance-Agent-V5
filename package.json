@@ -42,9 +42,14 @@
       "image-size@<2.0.3": "2.0.3",
       "form-data@<4.0.6": "4.0.6",
       "postcss-selector-parser@<6.1.5": "6.1.5",
+      "minimatch@<11.0.1": "11.0.5",
       "undici@<6.29.1": "6.29.1",
+      "@opentelemetry/api": "1.9.0",
       "@ai-sdk/provider-utils@<3.0.28": "3.0.45",
+      "@ai-sdk/provider-utils@4.0.27": "4.0.33",
+      "@ai-sdk/provider-utils@4.0.30": "4.0.33",
       "@ai-sdk/provider-utils-v5": "npm:@ai-sdk/provider-utils@3.0.45",
+      "@ai-sdk/provider-utils-v6": "npm:@ai-sdk/provider-utils@4.0.33",
       "zod-from-json-schema-v3": "npm:zod-from-json-schema@0.5.3",
       "@modelcontextprotocol/sdk@<1.32.0": "1.32.2",
       "fast-copy@<4.1.0": "4.3.1",
@@ -54,6 +59,11 @@
       "brace-expansion@<1.1.21": "1.1.21",
       "brace-expansion@>=2.0.0 <2.0.2": "2.0.2",
       "tinypool@<2.1.2": "2.1.2"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@hono/node-ws>@hono/node-server": "2"
+      }
     }
   }
 }

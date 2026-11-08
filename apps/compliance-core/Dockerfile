@@ -5,7 +5,7 @@ WORKDIR /app
 ENV POETRY_VIRTUALENVS_CREATE=false \
     PYTHONPATH=/app/src
 
-RUN pip install --no-cache-dir poetry==1.8.5
+RUN pip install --no-cache-dir poetry==2.5.1
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --only main --no-interaction --no-root

@@ -1,12 +1,15 @@
-[tool.poetry]
+[project]
 name = "wcp-compliance-core"
 version = "5.0.0"
 description = "Deterministic payroll compliance validation for Davis-Bacon Act — WCP V5 Compliance Core Service"
-authors = ["WCP Team"]
+authors = [{name = "WCP Team"}]
+requires-python = ">=3.12,<4.0"
+dynamic = ["dependencies"]
+
+[tool.poetry]
 packages = [{include = "wcp_compliance", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.12"
 fastapi = ">=0.115.0"
 uvicorn = {version = ">=0.32.0", extras = ["standard"]}
 pydantic = ">=2.10.0"
@@ -22,6 +25,7 @@ pytest-asyncio = ">=0.24.0"
 ruff = ">=0.8.0"
 mypy = ">=1.13.0"
 httpx = "^0.28.1"
+httpx2 = ">=2.16.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased] — 2026-11-08
+
+### Changed
+- Split the web bundle into React, UI, and vendor chunks; the largest chunk is
+  468.72 kB, below the 500 kB warning threshold.
+- Aligned the Node 24.15, Poetry 2.5+, jsdom 31, Vite 8, and Vitest 4 toolchain.
+
+### Fixed
+- Cleared the medium `minimatch` and low `@ai-sdk/provider-utils` advisories with
+  overrides; pinned `@opentelemetry/api` 1.9.0 to satisfy the SDK peer ranges and
+  recorded the intentional `@hono/node-ws`/`@hono/node-server` peer exception.
+- Replaced Starlette's deprecated `httpx` test path with `httpx2` and migrated both
+  pyprojects to PEP 621 metadata, removing the Poetry deprecation warnings.
+
+### Known
+- `deepmerge` 4.3.1 (latest) has no patched release for its low advisory; the
+  OpenTelemetry trace packages and `node-domexception` remain upstream-deprecated.
+
 ## [5.4.0] — 2026-10-24 (feat/wcp-portfolio)
 
 ### Fixed

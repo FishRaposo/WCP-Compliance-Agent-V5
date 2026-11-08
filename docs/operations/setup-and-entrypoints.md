@@ -2,8 +2,8 @@
 
 ## Supported toolchains
 
-- Node.js 20 with pnpm 9.15.0;
-- Python 3.12 with Poetry 1.8.5;
+- Node.js 24.15+ with pnpm 9.15.0;
+- Python 3.12 with Poetry 2.5+;
 - Docker Compose only for the optional full-stack/infrastructure path.
 
 Install from the repository root:

@@ -3,7 +3,7 @@
 ## Dev Setup
 
 ```bash
-# Prerequisites: Node.js 24.15+, Python 3.12, pnpm 9+, Poetry 1.8+
+# Prerequisites: Node.js 24.15+, Python 3.12, pnpm 9+, Poetry 2.5+
 
 git clone <repo-url>
 cd wcp-compliance-agent-v5
