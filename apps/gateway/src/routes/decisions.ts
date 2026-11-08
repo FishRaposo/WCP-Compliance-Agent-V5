@@ -69,7 +69,7 @@ decisionsRoutes.post("/api/v1/decisions/:id/review", async (c) => {
   if (body === null) return c.json({ error: "Invalid JSON body" }, 400);
   const parsed = ReviewRequest.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid review payload", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid review payload", details: z.treeifyError(parsed.error) }, 400);
   }
   const user = c.get("user") as { user_id?: string } | undefined;
   if (!user?.user_id) return c.json({ error: "Verified reviewer identity required" }, 401);

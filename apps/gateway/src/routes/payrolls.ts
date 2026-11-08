@@ -47,7 +47,7 @@ payrollsRoutes.post("/api/v1/payrolls/bulk", async (c) => {
     const body = await c.req.json();
     const parsed = BulkPayrollRequest.safeParse(body);
     if (!parsed.success) {
-      return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+      return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
     }
     const data = await bulkImportPayrolls(c, parsed.data);
     return c.json(data, 202);

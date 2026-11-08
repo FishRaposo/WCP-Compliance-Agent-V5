@@ -1,5 +1,6 @@
 import { Hono, type Context, type Next } from "hono";
 import { timingSafeEqual } from "node:crypto";
+import { z } from "zod";
 import { RequestContext } from "@mastra/core/request-context";
 
 import { config } from "../config.js";
@@ -70,7 +71,7 @@ workflowRoutes.post("/wcp-pipeline", async (c) => {
   if (body === null) return c.json({ error: "Invalid JSON body" }, 400);
   const parsed = PipelineRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid request", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid request", details: z.treeifyError(parsed.error) }, 400);
   }
 
   const jobId = parsed.data.job_id ?? crypto.randomUUID();
@@ -97,7 +98,7 @@ workflowRoutes.post("/wcp-pipeline-from-extracted", async (c) => {
   if (body === null) return c.json({ error: "Invalid JSON body" }, 400);
   const parsed = ExtractedWCPSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid extracted data", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid extracted data", details: z.treeifyError(parsed.error) }, 400);
   }
 
   const requestContext = buildRequestContext(c, { [JOB_ID_KEY]: parsed.data.job_id });
@@ -128,7 +129,7 @@ workflowRoutes.post("/human-review/start", async (c) => {
   if (body === null) return c.json({ error: "Invalid JSON body" }, 400);
   const parsed = TrustScoredDecisionSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid decision", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid decision", details: z.treeifyError(parsed.error) }, 400);
   }
   const requestContext = buildRequestContext(c);
   try {
@@ -153,7 +154,7 @@ workflowRoutes.post("/human-review/:runId/resume", async (c) => {
   if (body === null) return c.json({ error: "Invalid JSON body" }, 400);
   const parsed = reviewResumeSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid review payload", details: parsed.error.format() }, 400);
+    return c.json({ error: "Invalid review payload", details: z.treeifyError(parsed.error) }, 400);
   }
   const requestContext = buildRequestContext(c);
   try {

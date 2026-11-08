@@ -4,7 +4,7 @@ const mockPost = vi.fn();
 const mockGet = vi.fn();
 
 vi.mock("@wcp/typescript-client", () => ({
-  ServiceClient: vi.fn().mockImplementation(() => ({ post: mockPost, get: mockGet })),
+  ServiceClient: vi.fn().mockImplementation(function () { return { post: mockPost, get: mockGet }; }),
   ServiceClientError: class extends Error {
     constructor(
       public service: string,

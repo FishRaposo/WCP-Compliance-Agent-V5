@@ -24,7 +24,7 @@ def _json_type_to_zod(js_type: str, enum: list[str] | None) -> str:
         "number": "z.number()",
         "boolean": "z.boolean()",
         "array": "z.array(z.any())",
-        "object": "z.record(z.any())",
+        "object": "z.record(z.string(), z.unknown())",
     }
     return mapping.get(js_type, "z.any()")
 

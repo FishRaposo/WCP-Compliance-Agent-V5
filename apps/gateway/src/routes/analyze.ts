@@ -27,7 +27,7 @@ analyzeRoutes.post("/api/v1/analyze", async (c) => {
   const parsed = AnalyzeRequest.safeParse(body);
   if (!parsed.success) {
     return c.json(
-      { error: "Invalid request", details: parsed.error.format() },
+      { error: "Invalid request", details: z.treeifyError(parsed.error) },
       400,
     );
   }

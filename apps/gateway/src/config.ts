@@ -12,11 +12,11 @@ for (const [key, value] of Object.entries(process.env)) {
 }
 
 const envSchema = z.object({
-  AGENT_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:3001"),
+  AGENT_URL: z.string().transform(normalizeUrl).pipe(z.url()).default("http://localhost:3001"),
   AGENT_SERVICE_TRANSPORT: z.enum(["http", "in-process"]).default("http"),
   LLM_MODE: z.enum(["mock", "real"]).default("mock"),
-  COMPLIANCE_CORE_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8000"),
-  DATA_PLATFORM_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8001"),
+  COMPLIANCE_CORE_URL: z.string().transform(normalizeUrl).pipe(z.url()).default("http://localhost:8000"),
+  DATA_PLATFORM_URL: z.string().transform(normalizeUrl).pipe(z.url()).default("http://localhost:8001"),
   JWT_SECRET: z.string().default("change-me-before-launch"),
   AUTH_DISABLED: z.enum(["true", "false"]).default("false"),
   WCP_MOCK_AUTH: z.enum(["true", "false"]).default("false"),

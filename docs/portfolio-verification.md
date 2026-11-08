@@ -7,7 +7,7 @@ agent→core offline bridge and is pinned via `poetry.toml`).
 ## Toolchain
 
 ```bash
-node --version          # 20+ (repo CI uses 20; 22/24 also verified)
+node --version          # 24.15+ (repo CI uses 24.15; 26 verified locally)
 pnpm --version          # 9.15.0 (declared packageManager)
 python3.12 --version    # e.g. via `uv python install 3.12`
 poetry --version        # 1.8.5

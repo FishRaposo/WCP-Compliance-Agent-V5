@@ -43,12 +43,14 @@ describe("in-process service adapters", () => {
             check_type: "signature",
             employee_name: "",
             status: "warning",
+            regulation_cite: "29 CFR 5.5(a)(3)",
             message: "Certification signature requires review.",
           },
         ],
         overall_status: "warnings",
         violation_count: 0,
         warning_count: 1,
+        dbwd_rates_used: [],
       }),
     });
     const agent = new InProcessServiceAdapter<

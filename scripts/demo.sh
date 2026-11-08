@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # WCP V5 Mock Mode Demo
 # Runs the full stack with zero external dependencies.
-# Requires: Node.js 20+, Python 3.12, pnpm, Poetry
+# Requires: Node.js 24.15+, Python 3.12, pnpm, Poetry
 
 set -e
 
