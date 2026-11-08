@@ -16,7 +16,7 @@ Re-baselined 2026-11-08 on branch `migration/zod-4-full`.
 
 ## 2026-11-08 dependency migration
 
-- **zod 3.25 → 4.6.6.** All six manifests that carried zod were reconciled; three were dead dependencies. `error.format()` became `z.treeifyError()`, `z.string().url()/email()` became `z.url()/z.email()`, `.passthrough()/.strict()` became `z.looseObject()/z.strictObject()`, and generated `z.record(z.any())` became `z.record(z.string(), z.unknown())`.
+- **zod 3.25 → 4.6.6.** All six manifests that carried zod were reconciled; three were dead dependencies. Mastra's v3-compatibility alias (`zod-from-json-schema-v3`) now points at the zod-4 line, so the workspace has one hoisted `zod@4.6.7` and no nested zod 3 copy. `error.format()` became `z.treeifyError()`, `z.string().url()/email()` became `z.url()/z.email()`, `.passthrough()/.strict()` became `z.looseObject()/z.strictObject()`, and generated `z.record(z.any())` became `z.record(z.string(), z.unknown())`.
 - **One Vite and one Vitest.** Vitest 3.2.6 → 4.1.12; Vite is 8.3.6 only (the nested 6.4.4 copy is gone); jsdom 31.
 - **Security pins:** `@modelcontextprotocol/sdk` 1.29.0 → 1.32.2, `probe-image-size` 7.5.0, `fast-copy` 4.3.1, the Mastra-aliased `@ai-sdk/provider-utils-v5` 3.0.45, and `undici` 5.29.0 → 6.29.1 (which also removed the vulnerable `@fastify/busboy` 2 copy). `minimatch` 11 and `deepmerge` stay open (eslint 10 pins minimatch ^10; deepmerge has no patched version).
 - **Python:** pytest 9.2.0, pytest-asyncio 1.4.1.post1, pyarrow 23.0.1; starlette 1.10.0 and cryptography 50.0.2 were already current.

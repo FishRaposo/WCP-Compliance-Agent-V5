@@ -45,6 +45,7 @@
       "undici@<6.29.1": "6.29.1",
       "@ai-sdk/provider-utils@<3.0.28": "3.0.45",
       "@ai-sdk/provider-utils-v5": "npm:@ai-sdk/provider-utils@3.0.45",
+      "zod-from-json-schema-v3": "npm:zod-from-json-schema@0.5.3",
       "@modelcontextprotocol/sdk@<1.32.0": "1.32.2",
       "fast-copy@<4.1.0": "4.3.1",
       "probe-image-size@<7.4.0": "7.5.0",
