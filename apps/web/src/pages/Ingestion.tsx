@@ -254,7 +254,7 @@ export default function Ingestion() {
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
                         <span className="capitalize">{j.type.replace(/_/g, " ")} &bull; {j.source_type}</span>
-                        <span className="text-[10px] text-gray-500">&bull; {new Date(j.created_at).toLocaleString()}</span>
+                        <span className="text-[10px] text-gray-500">&bull; {new Date(j.created_at).toLocaleString("en-US")}</span>
                       </div>
                     </div>
                   </div>

@@ -56,3 +56,21 @@ or `infra/docker-compose.test.yml` and is **not** claimed here.
 - Live PG/Redis behavior, live LLM provider output, Docker image runtime, or
   authoritative Davis-Bacon rate coverage (synthetic corpus — see
   `docs/supported-rule-pack.md`).
+
+## Offline UI demo — verified 2026-11-07
+
+`pnpm install --frozen-lockfile` then `pnpm demo:ui` on Node 26.13 / pnpm 9.15: install finished
+in 2m 11s with the lockfile unchanged, Vite served on `localhost:5173`, mock auth signed in as
+`portfolio@example.com`, and the app loaded the sample payroll with the **Sample data** badge.
+
+Click path exercised: Dashboard → Review Queue (`job-wh347-demo-2026`, 42% trust, 3 violations,
+2 warnings) → Inspect Audit (three citations: 40 U.S.C. § 3142(b), 29 CFR 5.5(a)(1), 5.5(a)(3)) →
+Analyze, pasting `packages/test-fixtures/sample-wh347.txt` and running the five steps to the same
+Rejected / 42% outcome with `trace-wh347-demo-2026`, 2,140 ms and $0.0038. **No console errors.**
+
+Two UI defects were found and fixed during the run: dates rendered in the machine locale (Portuguese)
+inside an English interface, and the dashboard card read "Inspect flagged flags". Both are fixed in
+`apps/web`. Captures live in `docs/images/portfolio/` with their crop boxes recorded.
+
+This proves the offline path the README promises. It does not prove live PostgreSQL/Redis or real
+provider output — unchanged from the section above.

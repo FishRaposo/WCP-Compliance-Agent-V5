@@ -15,7 +15,9 @@ pnpm install --frozen-lockfile
 pnpm demo:ui
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
+Open [http://localhost:5173](http://localhost:5173) — mock mode auto-authenticates and loads sample data with a quiet **Sample data** badge in the sidebar.
+
+Three captures from that run, without installing anything: [dashboard](docs/images/portfolio/wcp-01-cover.png) · [a rejected payroll with its citations](docs/images/portfolio/wcp-02-verdict.png) · [the review drawer](docs/images/portfolio/wcp-03-review.png). How they were shot: [docs/images/portfolio](docs/images/portfolio/README.md).
 
 **Click path:**
 
@@ -224,7 +226,7 @@ README, `docs/planning/v5-known-gaps.md`, and the operational documents above.
 
 ## Part of the stack
 
-[groundtruth](https://github.com/FishRaposo/groundtruth) · [evalforge](https://github.com/FishRaposo/evalforge) · [llm-gateway](https://github.com/FishRaposo/llm-gateway) · [aria-agent](https://github.com/FishRaposo/aria-agent) · [agenttrace](https://github.com/FishRaposo/agenttrace)
+[evalforge](https://github.com/FishRaposo/evalforge) · [llm-gateway](https://github.com/FishRaposo/llm-gateway) · [aria-agent](https://github.com/FishRaposo/aria-agent) · [agenttrace](https://github.com/FishRaposo/agenttrace)
 
 ## License
 

@@ -159,7 +159,7 @@ export default function Analytics() {
                   <tbody>
                     {volume.map((row) => (
                       <tr key={row.date} className="border-b last:border-0">
-                        <td className="px-4 py-2">{new Date(row.date).toLocaleDateString()}</td>
+                        <td className="px-4 py-2">{new Date(row.date).toLocaleDateString("en-US")}</td>
                         <td className="px-4 py-2 text-right font-mono">{row.count}</td>
                       </tr>
                     ))}

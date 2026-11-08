@@ -14,8 +14,8 @@ function formatValue(value: string | number, format: KPICardProps["format"]): st
   if (isNaN(num)) return String(value);
 
   if (format === "percent") return `${(num * 100).toFixed(1)}%`;
-  if (format === "currency") return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return num.toLocaleString();
+  if (format === "currency") return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return num.toLocaleString("en-US");
 }
 
 export default function KPICard({ label, value, delta, format, loading }: KPICardProps) {

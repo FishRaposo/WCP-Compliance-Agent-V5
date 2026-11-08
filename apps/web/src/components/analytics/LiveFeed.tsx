@@ -49,7 +49,7 @@ export default function LiveFeed() {
                   {ev.trust_score !== undefined && (
                     <span>{(ev.trust_score * 100).toFixed(0)}%</span>
                   )}
-                  <span>{new Date(ev.created_at ?? Date.now()).toLocaleTimeString()}</span>
+                  <span>{new Date(ev.created_at ?? Date.now()).toLocaleTimeString("en-US")}</span>
                 </div>
               </div>
             ))}

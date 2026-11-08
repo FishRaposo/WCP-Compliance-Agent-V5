@@ -168,7 +168,7 @@ export default function Payrolls() {
 
                     <div className="text-right border-l border-white/10 pl-8">
                       <span className="font-extrabold text-white block text-sm">
-                        ${p.gross_pay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${p.gross_pay.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                       <span className="text-[9px] uppercase tracking-wider text-gray-500">Gross Wages</span>
                     </div>
@@ -261,7 +261,7 @@ export default function Payrolls() {
                       Total Gross Pay
                     </span>
                     <span className="text-sm text-glow">
-                      ${selectedPayroll.gross_pay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${selectedPayroll.gross_pay.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>

@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   // Format Recharts data
   const chartData = volumeData?.map((v) => ({
-    date: new Date(v.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    date: new Date(v.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     count: v.count,
     trust: (v.avg_trust ?? 0) * 100,
   })) ?? [];
@@ -97,7 +97,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             { title: "Analyze Payroll", desc: "Upload & audit WH-347", path: "/analyze", icon: Upload, color: "from-indigo-500 to-indigo-600" },
-            { title: "Review Queue", desc: "Inspect flagged flags", path: "/review", icon: Scale, color: "from-rose-500 to-rose-600" },
+            { title: "Review Queue", desc: "Inspect flagged audits", path: "/review", icon: Scale, color: "from-rose-500 to-rose-600" },
             { title: "Gov Contracts", desc: "Agency localities list", path: "/contracts", icon: Briefcase, color: "from-purple-500 to-purple-600" },
             { title: "Wage Ledgers", desc: "Explore trade rates", path: "/payrolls", icon: TableProperties, color: "from-amber-500 to-amber-600" },
             { title: "Analytics suite", desc: "Inspect model costs", path: "/analytics", icon: BarChart3, color: "from-emerald-500 to-emerald-600" },
@@ -281,7 +281,7 @@ export default function Dashboard() {
                       <p className="font-mono text-xs text-gray-300 font-semibold group-hover:text-indigo-400 transition-colors">
                         {d.job_id}
                       </p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{new Date(d.created_at).toLocaleDateString()} at {new Date(d.created_at).toLocaleTimeString()}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">{new Date(d.created_at).toLocaleDateString("en-US")} at {new Date(d.created_at).toLocaleTimeString("en-US")}</p>
                     </div>
                   </div>
                   

@@ -74,7 +74,7 @@ export default function Decisions() {
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>{d.violation_count} violation{d.violation_count !== 1 ? "s" : ""}</span>
                 <span>{(d.trust_score * 100).toFixed(0)}% trust</span>
-                <span>{new Date(d.created_at).toLocaleDateString()}</span>
+                <span>{new Date(d.created_at).toLocaleDateString("en-US")}</span>
               </div>
             </CardContent>
           </Card>

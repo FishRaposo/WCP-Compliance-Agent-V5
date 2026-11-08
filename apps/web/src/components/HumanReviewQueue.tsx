@@ -129,7 +129,7 @@ export default function HumanReviewQueue() {
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                     {d.warning_count} Warning{d.warning_count !== 1 ? "s" : ""}
                   </span>
-                  <span className="text-[10px] text-gray-500">{new Date(d.created_at).toLocaleString()}</span>
+                  <span className="text-[10px] text-gray-500">{new Date(d.created_at).toLocaleString("en-US")}</span>
                 </div>
               </div>
 

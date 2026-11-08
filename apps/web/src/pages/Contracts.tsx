@@ -265,7 +265,7 @@ export default function Contracts() {
                     <Calendar className="w-4 h-4 text-amber-400 mx-auto mb-1" />
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Audit Onboarded</span>
                     <span className="text-[11px] font-bold text-white mt-2 block truncate">
-                      {new Date(selectedContract.created_at).toLocaleDateString()}
+                      {new Date(selectedContract.created_at).toLocaleDateString("en-US")}
                     </span>
                   </div>
                 </div>
