@@ -215,7 +215,7 @@ stays in Compliance Core pytest and `eval.yml`.
 ## Conventions
 
 - **Python**: ruff line-length 100, Python 3.12, mypy strict. Pydantic v2 everywhere.
-- **TypeScript**: ES modules, Node 22.13+, strict mode.
+- **TypeScript**: ES modules, Node 24.15+ (Node 22.22.2+ and 26+ also work), strict mode.
 - **Frontend**: `@` path alias → `./src`. TanStack Query for server state. Shadcn/ui pattern.
 - **API versioning**: External routes under `/api/v1/`. Internal routes under `/internal/`.
 - **No direct database access** from any service except Data Platform.

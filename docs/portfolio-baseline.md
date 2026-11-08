@@ -6,7 +6,7 @@ Re-baselined 2026-11-08 on branch `migration/zod-4-full`.
 
 | Gate | Result |
 |---|---|
-| `pnpm install --frozen-lockfile` | clean (pnpm 9.15.0, Node 26; repo targets Node 22.13+) |
+| `pnpm install --frozen-lockfile` | clean (pnpm 9.15.0, Node 26; repo targets Node 24.15+) |
 | `pnpm test` | 7/7 turbo packages green — Contracts 42, Agent 71, Gateway 50, Web 33 (+4 tooling) |
 | compliance-core `poetry install` (py3.12 in-project venv) | clean via uv-managed 3.12.15 |
 | `poetry run ruff check .` + `mypy src/` | clean (both Python services) |
@@ -20,7 +20,7 @@ Re-baselined 2026-11-08 on branch `migration/zod-4-full`.
 - **One Vite and one Vitest.** Vitest 3.2.6 → 4.1.12; Vite is 8.3.6 only (the nested 6.4.4 copy is gone); jsdom 31.
 - **Security pins:** `@modelcontextprotocol/sdk` 1.29.0 → 1.32.2, `probe-image-size` 7.5.0, `fast-copy` 4.3.1, and the Mastra-aliased `@ai-sdk/provider-utils-v5` 3.0.45. `minimatch` 11 and `deepmerge` stay open (eslint 10 pins minimatch ^10; deepmerge has no patched version).
 - **Python:** pytest 9.2.0, pytest-asyncio 1.4.1.post1, pyarrow 23.0.1; starlette 1.10.0 and cryptography 50.0.2 were already current.
-- **Node floor:** 22.13+ everywhere (Mastra 1.45's engine floor); CI and all three Dockerfiles now use Node 22.
+- **Node floor:** 24.15+ everywhere (jsdom 31's engine floor; Mastra 1.45 needs 22.13+); CI and all three Dockerfiles now use Node 24.
 - **Blocked, with the reason:** AI SDK provider 4.x and ollama 4.x emit `LanguageModelV4` / require `ai@^7`, while Mastra 1.45 consumes `MastraLanguageModelV3`; Vitest 5 breaks the agent's constructor mocks and buys nothing over 4.1.
 
 ## Baseline defects found and fixed
