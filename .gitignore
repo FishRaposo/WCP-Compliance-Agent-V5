@@ -26,3 +26,6 @@ playwright-report/
 
 # TS incremental build cache
 tsconfig.tsbuildinfo
+
+# agent scaffolding
+.kilo/
