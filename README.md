@@ -2,13 +2,16 @@
 
 **Five-service WH-347 payroll compliance platform: deterministic validation decides, the LLM explains.**
 
-**At a glance.** Payroll data moves through extraction, deterministic rule checks, verdict synthesis, trust scoring and audited persistence, with request and trace IDs carried across service boundaries. The model never writes the decision: wage coverage no check can verify goes to a human review instead of an approval. See it offline in one command — `pnpm install --frozen-lockfile && pnpm demo:ui` — with no credentials, Docker, Postgres, Redis or network. Evidence and limits: [portfolio-verification.md](docs/portfolio-verification.md). Personal open-source build: no hosted deployment, no client use.
+**At a glance.** Payroll data moves through extraction, deterministic rule checks, verdict synthesis, trust scoring and audited persistence, with request and trace IDs carried across service boundaries. The model never writes the decision: wage coverage no check can verify goes to a human review instead of an approval. Open it in a browser: **[fishraposo.github.io/wcp-demo](https://fishraposo.github.io/wcp-demo/)** — the mock layer is in-process, so the whole dashboard ships as static files. No backend, no keys, no network. To run it locally: `pnpm install --frozen-lockfile && pnpm demo:ui`. Evidence and limits: [portfolio-verification.md](docs/portfolio-verification.md). Personal open-source build: no hosted deployment, no client use.
 
 The offline portfolio path runs without credentials, Docker, Redis, PostgreSQL or network access; the Python 3.12/Poetry and optional-infrastructure gates run in CI. Dated suite, eval and verification records live beside the evidence links above — this file carries no count.
 
 ## Portfolio demo
 
 **Thesis:** deterministic compliance checks decide the verdict; the LLM only explains the audit record.
+
+**Hosted, no backend:** <https://fishraposo.github.io/wcp-demo/> — static build of this app in mock mode.
+Review queue, audit drawer and the five-step pipeline all run in the page.
 
 ```bash
 pnpm install --frozen-lockfile

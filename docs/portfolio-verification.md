@@ -57,6 +57,17 @@ or `infra/docker-compose.test.yml` and is **not** claimed here.
   authoritative Davis-Bacon rate coverage (synthetic corpus — see
   `docs/supported-rule-pack.md`).
 
+## Hosted demo — verified 2026-11-08
+
+`https://fishraposo.github.io/wcp-demo/` is the same app built with `VITE_MOCK_API=true` and
+`--base=/wcp-demo/`, published as static files. Verified in a headless browser against the live URL:
+the **Sample data** badge renders, the deep link `/wcp-demo/review` boots the app through the
+`404.html` fallback, `job-wh347-demo-2026` shows 3 violations and 42% trust, and the run made
+**zero requests outside `fishraposo.github.io`** with no console errors.
+
+The router takes its basename from `import.meta.env.BASE_URL`, so the same build works at `/` in the
+dev server and under a subpath on Pages.
+
 ## Offline UI demo — verified 2026-11-07
 
 `pnpm install --frozen-lockfile` then `pnpm demo:ui` on Node 26.13 / pnpm 9.15: install finished

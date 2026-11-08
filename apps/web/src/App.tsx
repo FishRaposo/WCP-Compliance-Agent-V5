@@ -60,7 +60,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      {/* BASE_URL keeps the router inside the deployed subpath (e.g. /wcp-demo/ on Pages)
+          and stays "/" for the dev server. */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
