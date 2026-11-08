@@ -1,15 +1,10 @@
 # WCP Compliance Agent V5
 
-**Production-ready WH-347 compliance platform: deterministic validation decides, the LLM explains, and every decision is traceable.**
+**Five-service WH-347 payroll compliance platform: deterministic validation decides, the LLM explains.**
 
-V5 is a five-service monorepo where each service has one clear responsibility. A payroll flows through extraction, deterministic validation, Mastra-based verdict synthesis, trust scoring, and audited persistence with request and trace IDs propagated across service boundaries.
+**At a glance.** Payroll data moves through extraction, deterministic rule checks, verdict synthesis, trust scoring and audited persistence, with request and trace IDs carried across service boundaries. The model never writes the decision: wage coverage no check can verify goes to a human review instead of an approval. See it offline in one command — `pnpm install --frozen-lockfile && pnpm demo:ui` — with no credentials, Docker, Postgres, Redis or network. Evidence and limits: [portfolio-verification.md](docs/portfolio-verification.md). Personal open-source build: no hosted deployment, no client use.
 
-**Shipped proof: 377 tests across five services, plus four tooling checks.** The
-current TypeScript gate covers 42 Contracts, 70 Agent, 45 Gateway, and 30 Web tests;
-Compliance Core passed 89 unit tests and 101 eval tests over 100 golden examples and
-one baseline regression. The offline portfolio path runs without credentials, Docker,
-Redis, PostgreSQL, or network access. The Python 3.12/Poetry and
-optional-infrastructure gates run in CI.
+The offline portfolio path runs without credentials, Docker, Redis, PostgreSQL or network access; the Python 3.12/Poetry and optional-infrastructure gates run in CI. Dated suite, eval and verification records live beside the evidence links above — this file carries no count.
 
 ## Portfolio demo
 
