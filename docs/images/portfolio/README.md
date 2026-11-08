@@ -27,3 +27,5 @@ reviewer should not carry either.
 
 **What the images do not claim:** the offline demo runs a mock model and sample payroll. The verdict
 shown comes from the deterministic rule checks, and every card says so in its own footer.
+
+**Social preview:** `docs/media/social-preview.png` is the 1280×640 GitHub card (a composite of the cover card with the repository name and thesis). Upload it in Settings → Social preview; a repo edit cannot set it.
