@@ -19,11 +19,11 @@ overrides:
   form-data@<4.0.6: 4.0.6
   postcss-selector-parser@<6.1.5: 6.1.5
   vitest@<3.2.6: 3.2.6
-  tinypool@<2.1.1: 2.1.1
   '@opentelemetry/core@<2.8.0': 2.8.0
   '@grpc/grpc-js@<1.14.5': 1.14.5
   brace-expansion@<1.1.21: 1.1.21
   brace-expansion@>=2.0.0 <2.0.2: 2.0.2
+  tinypool@<2.1.2: 2.1.2
 
 importers:
 
@@ -249,7 +249,7 @@ importers:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(tsx@4.23.15)(yaml@2.9.0)
       vitest:
-        specifier: 3.2.6
+        specifier: ^3.2.6
         version: 3.2.6(@types/debug@4.1.13)(@types/node@26.6.6)(jiti@1.21.7)(jsdom@25.0.1)(lightningcss@1.33.0)(tsx@4.23.15)(yaml@2.9.0)
 
   packages/contracts:
@@ -4746,8 +4746,8 @@ packages:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
-  tinypool@2.1.1:
-    resolution: {integrity: sha512-4XfFD6zX0z4qfx6YcV6IqMKWBRllNM6YCnIABm3k0jW5+Ja54v0OVbavVM6bLoE1Ywuplb1C+Inbn6vqlBdgaA==}
+  tinypool@2.1.2:
+    resolution: {integrity: sha512-9YodfrxS9g9IbFr/KOjE5bAeJ0p61n3bW6mqvy0jtoeKd1kTW1Cxm0oulm6KX2lyM9Gl6WIe8nEbY7LWv5ZJww==}
     engines: {node: ^20.0.0 || >=22.0.0}
 
   tinyrainbow@2.0.0:
@@ -7971,10 +7971,6 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.5.0(picomatch@4.0.4):
-    optionalDependencies:
-      picomatch: 4.0.4
-
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
@@ -9830,10 +9826,10 @@ snapshots:
 
   tinyglobby@0.2.17:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
 
-  tinypool@2.1.1: {}
+  tinypool@2.1.2: {}
 
   tinyrainbow@2.0.0: {}
 
@@ -10104,7 +10100,7 @@ snapshots:
       tinybench: 2.9.0
       tinyexec: 0.3.2
       tinyglobby: 0.2.17
-      tinypool: 2.1.1
+      tinypool: 2.1.2
       tinyrainbow: 2.0.0
       vite: 6.4.4(@types/node@26.6.6)(jiti@1.21.7)(lightningcss@1.33.0)(tsx@4.23.15)(yaml@2.9.0)
       vite-node: 3.2.4(@types/node@26.6.6)(jiti@1.21.7)(lightningcss@1.33.0)(tsx@4.23.15)(yaml@2.9.0)
