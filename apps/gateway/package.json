@@ -11,14 +11,14 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.3",
+    "@hono/node-server": "^2.1.6",
     "@wcp/agent": "workspace:*",
     "@wcp/contracts": "workspace:*",
     "@wcp/observability": "workspace:*",
     "@wcp/typescript-client": "workspace:*",
     "dotenv": "^18.0.9",
     "hono": "^4.13.16",
-    "jose": "^6.2.13",
+    "jose": "^6.2.15",
     "redis": "6.3.1",
     "zod": "^4.6.6"
   },

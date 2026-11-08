@@ -15,10 +15,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.3",
+    "@hono/node-server": "^2.1.6",
     "hono": "^4.13.16",
     "zod": "^4.6.6",
-    "ai": "^6.0.320",
+    "ai": "^6.0.323",
     "@ai-sdk/openai": "^3.0.131",
     "@ai-sdk/anthropic": "^3.0.137",
     "ollama-ai-provider-v2": "^3.6.0",
