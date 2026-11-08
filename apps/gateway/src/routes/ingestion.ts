@@ -13,7 +13,7 @@ const CreateIngestionJobRequest = z.object({
   contract_id: z.string().optional(),
   file_pattern: z.string().optional(),
   schedule: z.string().optional(),
-  config: z.record(z.any()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 });
 
 ingestionRoutes.post("/api/v1/ingestion/jobs", async (c) => {

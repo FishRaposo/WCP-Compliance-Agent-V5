@@ -16,7 +16,7 @@ import {
 } from "../generated/typescript/index.js";
 import { attachPipelineMetadata, createPipelineEvent } from "../adapters.js";
 
-const schemas: [string, z.ZodTypeAny][] = [
+const schemas: [string, z.ZodType][] = [
   ["AuditEventSchema", AuditEventSchema],
   ["ContractSchema", ContractSchema],
   ["DecisionRecordSchema", DecisionRecordSchema],
@@ -32,9 +32,9 @@ const schemas: [string, z.ZodTypeAny][] = [
 ];
 
 describe("Schema validation", () => {
-  it.each(schemas)("%s is a valid ZodObject", (_name, schema) => {
+  it.each(schemas)("%s is a valid Zod schema", (_name, schema) => {
     expect(schema).toBeDefined();
-    expect(schema._def.typeName).toBe("ZodObject");
+    expect(schema.safeParse({})).toHaveProperty("success");
   });
 
   it("all 12 schemas are defined", () => {

@@ -24,8 +24,8 @@ export type StreamMessageHandler = (messageId: string, fields: Record<string, st
 /** Redis client interface */
 interface RedisClientInterface {
   on(event: "error", listener: (err: Error) => void): void;
-  connect(): Promise<void>;
-  quit(): Promise<void>;
+  connect(): Promise<unknown>;
+  quit(): Promise<unknown>;
   xGroupCreate(
     stream: string,
     group: string,

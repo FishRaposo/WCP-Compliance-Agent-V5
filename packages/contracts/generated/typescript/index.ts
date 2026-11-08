@@ -7,7 +7,7 @@ export const AuditEventSchema = z.object({
   job_id: z.string(),
   event_type: z.enum(["artifact_received", "extraction_complete", "validation_complete", "verdict_issued", "trust_scored", "decision_persisted", "human_review_queued", "human_review_complete"]),
   actor: z.string().optional().default("system"),
-  payload: z.record(z.any()).optional(),
+  payload: z.record(z.string(), z.unknown()).optional(),
   regulation_references: z.array(z.any()).optional(),
   trace_id: z.string().optional(),
   created_at: z.string(),
@@ -53,7 +53,7 @@ export const TrustScoredDecisionSchema = z.object({
   citations: z.array(z.any()).optional(),
   cost_usd: z.number().optional(),
   latency_ms: z.number().int().optional(),
-  step_latencies: z.record(z.any()).optional(),
+  step_latencies: z.record(z.string(), z.unknown()).optional(),
   phoenix_trace_id: z.string().optional(),
   contract_id: z.string().optional(),
   created_at: z.string().optional(),
@@ -88,7 +88,7 @@ export const DeterministicReportSchema = z.object({
   violation_count: z.number().int(),
   warning_count: z.number().int(),
   passed_count: z.number().int().optional(),
-  confidence_inputs: z.record(z.any()).optional(),
+  confidence_inputs: z.record(z.string(), z.unknown()).optional(),
   dbwd_rates_used: z.array(z.any()).optional(),
 });
 export type DeterministicReport = z.infer<typeof DeterministicReportSchema>;
@@ -102,15 +102,15 @@ export type EvidenceManifest = z.infer<typeof EvidenceManifestSchema>;
 
 export const ExtractedWCPSchema = z.object({
   job_id: z.string(),
-  contractor: z.record(z.any()),
-  project: z.record(z.any()),
+  contractor: z.record(z.string(), z.unknown()),
+  project: z.record(z.string(), z.unknown()),
   employees: z.array(z.any()),
   certification_date: z.string().optional(),
   payroll_number: z.number().int().optional(),
   week_ending: z.string().optional(),
   report_id: z.string().optional(),
   artifact_id: z.string().optional(),
-  offline_metadata: z.record(z.any()).optional(),
+  offline_metadata: z.record(z.string(), z.unknown()).optional(),
 });
 export type ExtractedWCP = z.infer<typeof ExtractedWCPSchema>;
 
@@ -155,10 +155,10 @@ export const PipelineEventSchema = z.object({
   schema_version: z.enum(["v1"]),
   event_type: z.enum(["artifact_received", "extraction_complete", "validation_complete", "verdict_issued", "trust_scored", "decision_persisted", "human_review_queued", "human_review_complete"]),
   job_id: z.string(),
-  trace_context: z.record(z.any()).optional(),
-  cost_latency: z.record(z.any()).optional(),
-  evidence_manifest: z.record(z.any()).optional(),
-  payload: z.record(z.any()).optional(),
+  trace_context: z.record(z.string(), z.unknown()).optional(),
+  cost_latency: z.record(z.string(), z.unknown()).optional(),
+  evidence_manifest: z.record(z.string(), z.unknown()).optional(),
+  payload: z.record(z.string(), z.unknown()).optional(),
 });
 export type PipelineEvent = z.infer<typeof PipelineEventSchema>;
 
