@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -39,6 +42,11 @@
       "image-size@<2.0.3": "2.0.3",
       "form-data@<4.0.6": "4.0.6",
       "postcss-selector-parser@<6.1.5": "6.1.5",
+      "@ai-sdk/provider-utils@<3.0.28": "3.0.45",
+      "@ai-sdk/provider-utils-v5": "npm:@ai-sdk/provider-utils@3.0.45",
+      "@modelcontextprotocol/sdk@<1.32.0": "1.32.2",
+      "fast-copy@<4.1.0": "4.3.1",
+      "probe-image-size@<7.4.0": "7.5.0",
       "@opentelemetry/core@<2.8.0": "2.8.0",
       "@grpc/grpc-js@<1.14.5": "1.14.5",
       "brace-expansion@<1.1.21": "1.1.21",

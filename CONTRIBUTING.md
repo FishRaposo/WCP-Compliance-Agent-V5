@@ -3,7 +3,7 @@
 ## Dev Setup
 
 ```bash
-# Prerequisites: Node.js 20+, Python 3.12, pnpm 9+, Poetry 1.8+
+# Prerequisites: Node.js 22.13+, Python 3.12, pnpm 9+, Poetry 1.8+
 
 git clone <repo-url>
 cd wcp-compliance-agent-v5
@@ -19,7 +19,7 @@ cd ../data-platform && poetry install
 ## Code Style
 
 ### TypeScript
-- ES modules, strict mode, Node 20+
+- ES modules, strict mode, Node 22.13+
 - ESLint + Prettier via Turborepo
 - Run: `pnpm lint`
 

@@ -156,7 +156,7 @@ The agent service is built on **Mastra 1.45** (`@mastra/core@^1.45`). Mastra own
 
 ### Ecosystem versions (keep aligned)
 
-`@mastra/core@^1.45` · `@mastra/rag@^2.3` · `@mastra/memory@^1.21` · `@mastra/libsql@^1.14` · `@mastra/pg@^1.14` · `@mastra/loggers@^1.2` · `@mastra/evals@^1.4` · `@mastra/observability@^1.15` · `@mastra/langfuse@^1.4` · `mastra@^1.15` (dev CLI). Model layer: **AI SDK v6** (`ai@^6`, `@ai-sdk/openai@^3`, `@ai-sdk/anthropic@^3`, `ollama-ai-provider-v2@^3.6`) and **`zod@^4.6`** (one hoisted copy across the workspace; Mastra, the MCP SDK and the AI SDK providers all accept zod 4).
+`@mastra/core@^1.45` · `@mastra/rag@^2.3` · `@mastra/memory@^1.21` · `@mastra/libsql@^1.14` · `@mastra/pg@^1.14` · `@mastra/loggers@^1.2` · `@mastra/evals@^1.4` · `@mastra/observability@^1.15` · `@mastra/langfuse@^1.4` · `mastra@^1.15` (dev CLI). Model layer: **AI SDK v6** (`ai@^6`, `@ai-sdk/openai@^3`, `@ai-sdk/anthropic@^3`, `ollama-ai-provider-v2@^3.6`). The 4.x provider lines and the ollama 4.x line are blocked: they emit `LanguageModelV4` / require `ai@^7`, while Mastra 1.45 consumes `MastraLanguageModelV3`. One **`zod@^4.6`** copy is hoisted across the workspace; Mastra, the MCP SDK and the AI SDK providers all accept zod 4.
 
 ### Structure (`apps/agent/src/mastra/`)
 
@@ -215,7 +215,7 @@ stays in Compliance Core pytest and `eval.yml`.
 ## Conventions
 
 - **Python**: ruff line-length 100, Python 3.12, mypy strict. Pydantic v2 everywhere.
-- **TypeScript**: ES modules, Node 20+, strict mode.
+- **TypeScript**: ES modules, Node 22.13+, strict mode.
 - **Frontend**: `@` path alias → `./src`. TanStack Query for server state. Shadcn/ui pattern.
 - **API versioning**: External routes under `/api/v1/`. Internal routes under `/internal/`.
 - **No direct database access** from any service except Data Platform.
