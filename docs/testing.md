@@ -12,7 +12,7 @@ pnpm evidence
 pnpm test:e2e
 ```
 
-The finalization run passed 42 Contracts, 66 Agent, 45 Gateway, 29 Web, and four
+The finalization run passed 42 Contracts, 71 Agent, 50 Gateway, 33 Web, and four
 tooling tests. Playwright passed desktop and 390x844 mobile smoke flows for login,
 dashboard, analysis/decision proof, analytics, and review queue. The evidence bundle
 reproduced the tracked normalized fixture.
@@ -33,9 +33,9 @@ poetry run mypy src
 poetry run pytest tests/unit tests/integration -q
 ```
 
-Compliance Core passed 84 unit tests and 101 eval tests locally: 100 normalized golden
+Compliance Core passed 93 unit tests and 101 eval tests locally: 100 normalized golden
 examples plus one baseline-regression test. That local virtual environment uses Python
-3.14; the CI workflow remains the authoritative Python 3.12/Poetry environment. Data
+3.15; the CI workflow remains the authoritative Python 3.12/Poetry environment. Data
 Platform integration uses PostgreSQL and Redis service containers there.
 
 ## Optional infrastructure checks

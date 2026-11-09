@@ -61,8 +61,8 @@ Retrieval combines:
 
 Current finalization coverage:
 
-1. **TypeScript**: 42 Contracts, 66 Agent, 45 Gateway, 29 Web, and four tooling tests.
-2. **Compliance Core**: 84 unit tests and 101 eval tests, covering 100 WH-347 examples plus baseline regression.
+1. **TypeScript**: 42 Contracts, 71 Agent, 50 Gateway, 33 Web, and four tooling tests.
+2. **Compliance Core**: 93 unit tests and 101 eval tests, covering 100 WH-347 examples plus baseline regression.
 3. **Data Platform**: unit and integration command gates run under Python 3.12/Poetry with PostgreSQL/Redis CI services.
 4. **Browser/evidence**: desktop and mobile smoke projects plus a normalized, checksum-verified five-service evidence bundle.
 

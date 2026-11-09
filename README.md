@@ -4,7 +4,7 @@
 
 **At a glance.** Payroll data moves through extraction, deterministic rule checks, verdict synthesis, trust scoring and audited persistence, with request and trace IDs carried across service boundaries. The model never writes the decision: wage coverage no check can verify goes to a human review instead of an approval. Open it in a browser: **[fishraposo.github.io/wcp-demo](https://fishraposo.github.io/wcp-demo/)** — the mock layer is in-process, so the whole dashboard ships as static files. No backend, no keys, no network. To run it locally: `pnpm install --frozen-lockfile && pnpm demo:ui`. Evidence and limits: [portfolio-verification.md](docs/portfolio-verification.md). Personal open-source build: no hosted deployment, no client use.
 
-The offline portfolio path runs without credentials, Docker, Redis, PostgreSQL or network access; the Python 3.12/Poetry and optional-infrastructure gates run in CI. Dated suite, eval and verification records live beside the evidence links above — this file carries no count.
+The offline portfolio path runs without credentials, Docker, Redis, PostgreSQL or network access; the Python 3.12/Poetry and optional-infrastructure gates run in CI. Dated suite, eval and verification records live beside the evidence links above; the table below is the current verification state.
 
 ## Portfolio demo
 
@@ -154,12 +154,12 @@ Upload WH-347 (PDF or text)
 
 | Layer | Current count | Runner | Status |
 |---|---:|---|---|
-| Compliance Core unit tests | 84 | pytest | Passed locally in the project virtual environment |
+| Compliance Core unit tests | 93 | pytest | Passed locally in the project virtual environment |
 | Compliance Core eval tests | 101 | pytest | 100 examples plus one baseline regression passed |
-| Data Platform unit/integration | command gate | pytest | Python 3.12/Poetry CI job; PostgreSQL and Redis are service fixtures for integration |
-| Agent tests | 66 | vitest | Passed in the finalization gate |
-| Gateway tests | 45 | vitest | Passed in the finalization gate |
-| Web tests | 30 | vitest | Passed in the finalization gate |
+| Data Platform unit/integration | 103 (+5 skipped) | pytest | Python 3.12/Poetry CI job; PostgreSQL and Redis are service fixtures for integration |
+| Agent tests | 71 | vitest | Passed in the finalization gate |
+| Gateway tests | 50 | vitest | Passed in the finalization gate |
+| Web tests | 33 | vitest | Passed in the finalization gate |
 | Contracts tests | 42 | vitest | Passed in the finalization gate |
 | Tooling contract tests | 4 | node:test | Passed in the finalization gate |
 | Browser smoke | 2 | Playwright | Desktop Chromium-compatible Chrome and 390x844 mobile passed |

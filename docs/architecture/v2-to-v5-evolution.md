@@ -50,6 +50,6 @@ The V5 architecture enforces strict boundaries:
 | Database | SQLite | PostgreSQL | PostgreSQL + pgvector | Same, partitioned |
 | Analytics | None | None | DuckDB + PostgreSQL | PostgreSQL (scalable) |
 | Ingestion | None | None | SFTP/CSV connectors | Connector registry |
-| Testing | ~40 tests | ~80 tests | ~120 tests | **42 Contracts, 66 Agent, 45 Gateway, 29 Web; 84 Compliance Core unit + 101 eval collected** |
+| Testing | ~40 tests | ~80 tests | ~120 tests | **42 Contracts, 71 Agent, 50 Gateway, 33 Web; 93 Compliance Core unit + 101 eval collected** |
 | Key weakness | LLM trusted alone | Fuzzy boundaries | Monolith backend | — |
 | Key strength | Proved concept | Separation worked | Full pipeline | **Clean boundaries** |
