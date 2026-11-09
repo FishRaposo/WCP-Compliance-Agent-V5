@@ -31,7 +31,7 @@ export default function AnalyticsLayout({ title, description, children }: Analyt
           <Link
             key={tab.href}
             to={tab.href}
-            className={`px-3 py-1.5 text-sm rounded-t-md transition-colors ${
+            className={`inline-flex min-h-[44px] items-center px-3 py-2 text-sm rounded-t-md transition-colors ${
               location.pathname.startsWith(tab.href)
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"

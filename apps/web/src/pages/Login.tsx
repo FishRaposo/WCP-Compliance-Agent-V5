@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "../utils/api-client";
@@ -38,27 +38,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050508] relative overflow-hidden px-4">
-      {/* Decorative premium ambient glow background shapes */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
-      
+    <div className="min-h-screen flex items-center justify-center bg-[#0c1410] relative overflow-hidden px-4">
       <Card className="w-full max-w-md bg-glass border-glass shadow-premium relative z-10 overflow-hidden">
-        {/* Subtle top border color gradient */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-        
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#9a743c]" />
+
         <CardHeader className="text-center pt-8 pb-6">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-premium flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-ledger-accent flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
             <ShieldCheck className="w-6 h-6 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             WCP Compliance
-          </CardTitle>
+          </h1>
           <CardDescription className="text-gray-400 mt-1.5">
             Sign in to access the Davis-Bacon audit command center
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="pb-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
@@ -71,11 +66,11 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="pl-10 bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-purple-500/50 focus:ring-purple-500/20 h-10.5 rounded-lg transition-all"
+                  className="pl-10 bg-[#0c1410] border-white/10 text-white placeholder-gray-500 focus:border-purple-500/50 focus:ring-purple-500/20 h-11 rounded-lg transition-all"
                 />
               </div>
             </div>
-            
+
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-semibold text-gray-300 tracking-wide uppercase">Password</label>
@@ -88,7 +83,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="pl-10 bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-purple-500/50 focus:ring-purple-500/20 h-10.5 rounded-lg transition-all"
+                  className="pl-10 bg-[#0c1410] border-white/10 text-white placeholder-gray-500 focus:border-purple-500/50 focus:ring-purple-500/20 h-11 rounded-lg transition-all"
                 />
               </div>
             </div>
@@ -99,10 +94,10 @@ export default function Login() {
               </div>
             )}
 
-            <Button 
-              type="submit" 
-              disabled={isLoading} 
-              className="w-full bg-gradient-premium hover:opacity-95 text-white font-medium h-10.5 rounded-lg shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-all flex items-center justify-center gap-2 mt-2"
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-ledger-accent hover:opacity-95 text-white font-medium h-11 rounded-lg shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-all flex items-center justify-center gap-2 mt-2"
             >
               {isLoading ? (
                 <>

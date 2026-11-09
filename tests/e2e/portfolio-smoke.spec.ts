@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("mock portfolio workflow covers login, decision proof, analytics, and review", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "WCP Davis-Bacon Compliance Audit Engine" }),
+    page.getByRole("heading", { name: "Payroll compliance, decided before the model speaks." }),
   ).toBeVisible();
   const sampleDataBadge = page.getByLabel("Sample data mode");
   const viewportWidth = page.viewportSize()?.width ?? 0;

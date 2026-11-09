@@ -6,15 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Eye, 
-  ShieldCheck, 
-  XCircle, 
-  AlertTriangle, 
-  Scale, 
-  ExternalLink, 
-  CheckCircle2, 
-  FileText, 
+import {
+  Eye,
+  ShieldCheck,
+  XCircle,
+  AlertTriangle,
+  Scale,
+  ExternalLink,
+  CheckCircle2,
+  FileText,
   Loader2
 } from "lucide-react";
 import type { DecisionSummary } from "../types/api";
@@ -116,7 +116,7 @@ export default function HumanReviewQueue() {
                   </span>
                   <TrustScoreBadge score={d.trust_score} band={d.trust_band} />
                 </div>
-                
+
                 <div className="flex items-center gap-4 text-xs text-gray-400">
                   <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-0.5 rounded-full capitalize">
                     {d.verdict.replace(/_/g, " ")}
@@ -129,12 +129,12 @@ export default function HumanReviewQueue() {
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                     {d.warning_count} Warning{d.warning_count !== 1 ? "s" : ""}
                   </span>
-                  <span className="text-[10px] text-gray-500">{new Date(d.created_at).toLocaleString("en-US")}</span>
+                  <span className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString("en-US")}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 self-end md:self-center">
-                <Button 
+                <Button
                   onClick={() => setSelectedDecision(d)}
                   className="bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-semibold h-9 rounded-xl flex items-center gap-2 group/btn"
                 >
@@ -149,16 +149,16 @@ export default function HumanReviewQueue() {
 
       {/* Advanced Inspection side drawer overlay */}
       {selectedDecision && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-end animate-in fade-in duration-300">
-          <div 
-            className="absolute inset-0" 
-            onClick={() => !submittingAction && setSelectedDecision(null)} 
+        <div className="fixed inset-0 bg-black/70 z-50 flex justify-end animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0"
+            onClick={() => !submittingAction && setSelectedDecision(null)}
           />
-          
-          <div className="w-full max-w-2xl bg-[#09090c] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+
+          <div className="w-full max-w-2xl bg-[#111a15] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             {/* Drawer top indicator */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-500" />
-            
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-ledger-accent" />
+
             {/* Header */}
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
               <div>
@@ -166,11 +166,11 @@ export default function HumanReviewQueue() {
                   <Scale className="w-5 h-5 text-indigo-400" />
                   <h2 className="text-lg font-bold text-white">Compliance Audit Station</h2>
                 </div>
-                <p className="text-[10px] font-mono text-gray-500 mt-1">Audit Ledger ID: {selectedDecision.decision_id}</p>
+                <p className="text-xs font-mono text-gray-500 mt-1">Audit Ledger ID: {selectedDecision.decision_id}</p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedDecision(null)}
                 disabled={submittingAction !== null}
                 className="text-gray-400 hover:text-white hover:bg-white/5"
@@ -186,14 +186,14 @@ export default function HumanReviewQueue() {
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Audit Diagnostics</h3>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-[10px] text-gray-500 uppercase font-semibold">Trust confidence rating</span>
+                    <span className="text-xs text-gray-500 uppercase font-semibold">Trust confidence rating</span>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-extrabold text-white">{(selectedDecision.trust_score * 100).toFixed(0)}%</span>
                       <TrustScoreBadge score={selectedDecision.trust_score} band={selectedDecision.trust_band} />
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-gray-500 uppercase font-semibold">Job Reference</span>
+                    <span className="text-xs text-gray-500 uppercase font-semibold">Job Reference</span>
                     <p className="font-mono text-xs text-indigo-400 font-semibold block mt-1 bg-indigo-500/10 px-2 py-0.5 rounded">
                       {selectedDecision.job_id}
                     </p>
@@ -215,7 +215,7 @@ export default function HumanReviewQueue() {
                         {selectedDecision.violation_count !== 1 ? "s" : ""}
                       </p>
                       {selectedDecision.reasoning_summary && (
-                        <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                           {selectedDecision.reasoning_summary}
                         </p>
                       )}
@@ -236,7 +236,7 @@ export default function HumanReviewQueue() {
                         {selectedDecision.warning_count} warning
                         {selectedDecision.warning_count !== 1 ? "s" : ""} raised
                       </p>
-                      <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                      <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                         Flagged for human review based on the deterministic report.
                       </p>
                     </div>
@@ -261,7 +261,7 @@ export default function HumanReviewQueue() {
                           {cit.section ? ` ${cit.section}` : ""}
                         </p>
                         {cit.text && (
-                          <p className="text-[9px] text-gray-500 mt-0.5 leading-relaxed">{cit.text}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{cit.text}</p>
                         )}
                       </div>
                     ))}
@@ -275,7 +275,7 @@ export default function HumanReviewQueue() {
               <div className="bg-glass border-glass p-5 rounded-2xl flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Phoenix LLM Tracing</h4>
-                  <p className="text-[10px] text-gray-500 mt-1">Review the raw computational reasoning span for the underlying LLM call.</p>
+                  <p className="text-xs text-gray-500 mt-1">Review the raw computational reasoning span for the underlying LLM call.</p>
                 </div>
                 <Button variant="outline" className="h-8 text-xs font-semibold bg-white/5 hover:bg-white/10 text-indigo-300 hover:text-indigo-200 border-white/10 rounded-xl">
                   <span>Open Phoenix Trace</span>
@@ -288,7 +288,7 @@ export default function HumanReviewQueue() {
             <div className="p-6 border-t border-white/5 bg-black/40 space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-300 uppercase tracking-wide">Override Justification Comment</label>
-                <Textarea 
+                <Textarea
                   value={justification}
                   onChange={(e) => setJustification(e.target.value)}
                   placeholder="Type structural audit observations or override reasoning here (minimum 10 characters)..."
@@ -311,7 +311,7 @@ export default function HumanReviewQueue() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  <Button 
+                  <Button
                     onClick={() => handleOverride("reject")}
                     disabled={justification.trim().length < 10 || submittingAction !== null}
                     className="bg-rose-950/20 text-rose-400 border border-rose-500/20 hover:bg-rose-500/10 text-xs font-bold h-10 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-rose-950/10"
@@ -328,8 +328,8 @@ export default function HumanReviewQueue() {
                       </>
                     )}
                   </Button>
-                  
-                  <Button 
+
+                  <Button
                     onClick={() => handleOverride("approve")}
                     disabled={justification.trim().length < 10 || submittingAction !== null}
                     className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold h-10 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/10"

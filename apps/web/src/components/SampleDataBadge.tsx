@@ -5,7 +5,7 @@ export default function SampleDataBadge() {
 
   return (
     <span
-      className="text-[10px] font-medium text-gray-500 tracking-wide uppercase px-2 py-0.5 rounded-md bg-white/5 border border-white/10"
+      className="text-xs font-medium text-gray-400 tracking-wide uppercase px-2 py-1 rounded-md bg-white/5 border border-white/10"
       aria-label="Sample data mode"
     >
       Sample data

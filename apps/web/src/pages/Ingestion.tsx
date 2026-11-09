@@ -5,13 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { 
-  UploadCloud, 
-  RefreshCw, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Loader2, 
-  Database, 
+import {
+  UploadCloud,
+  RefreshCw,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  Database,
   History,
   FileSpreadsheet
 } from "lucide-react";
@@ -20,7 +20,7 @@ import type { IngestionJobSummary } from "../types/api";
 export default function Ingestion() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
+
   // Progress indicators
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "parsing" | "success" | "error">("idle");
@@ -57,12 +57,12 @@ export default function Ingestion() {
         clearInterval(interval);
         setUploadProgress(100);
         setUploadState("parsing");
-        
+
         // Simulate background parsing
         setTimeout(() => {
           setUploadState("success");
           refetch();
-          
+
           // Clear states after a moment
           setTimeout(() => {
             setUploadState("idle");
@@ -80,7 +80,7 @@ export default function Ingestion() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       simulateIngestion(e.dataTransfer.files[0]);
     }
@@ -106,7 +106,7 @@ export default function Ingestion() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-sm font-bold text-gray-300 uppercase tracking-widest">Ingest Panel</h2>
-          
+
           <div
             onDragEnter={handleDrag}
             onDragOver={handleDrag}
@@ -116,15 +116,15 @@ export default function Ingestion() {
               dragActive ? "border-purple-500 bg-purple-500/5 shadow-lg shadow-purple-500/5" : "border-white/10 bg-glass"
             }`}
           >
-            <input 
+            <input
               ref={fileInputRef}
-              type="file" 
+              type="file"
               accept=".zip,.csv,.xlsx,.pdf"
               onChange={handleFileInput}
               className="hidden"
               disabled={uploadState !== "idle"}
             />
-            
+
             {uploadState === "idle" && (
               <div className="space-y-4">
                 <div className="mx-auto w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
@@ -134,7 +134,7 @@ export default function Ingestion() {
                   <p className="text-sm font-bold text-white">Drop your certified payroll archive here</p>
                   <p className="text-xs text-gray-500 mt-1">Accepts CSV, XLSX spreadsheets, or ZIP folders of WH-347 PDFs</p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold h-9 rounded-xl text-white px-5"
                 >
@@ -151,8 +151,8 @@ export default function Ingestion() {
                   <p className="text-xs text-gray-500 mt-1">Transferring to secure ingest repository...</p>
                 </div>
                 <div className="max-w-xs mx-auto w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-premium transition-all duration-200" 
+                  <div
+                    className="h-full bg-ledger-accent transition-all duration-200"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -242,8 +242,8 @@ export default function Ingestion() {
                         <span className="font-mono text-xs font-semibold bg-white/10 px-2 py-0.5 rounded text-gray-300">
                           {j.job_id}
                         </span>
-                        <Badge 
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                        <Badge
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${
                             j.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                             j.status === "partial" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
                             "bg-rose-500/10 text-rose-400 border border-rose-500/20"
@@ -254,7 +254,7 @@ export default function Ingestion() {
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
                         <span className="capitalize">{j.type.replace(/_/g, " ")} &bull; {j.source_type}</span>
-                        <span className="text-[10px] text-gray-500">&bull; {new Date(j.created_at).toLocaleString("en-US")}</span>
+                        <span className="text-xs text-gray-500">&bull; {new Date(j.created_at).toLocaleString("en-US")}</span>
                       </div>
                     </div>
                   </div>
@@ -262,23 +262,23 @@ export default function Ingestion() {
                   <div className="flex flex-wrap items-center gap-6 justify-between md:justify-end text-xs">
                     <div className="text-right">
                       <span className="font-bold text-gray-200 block">{j.total_records}</span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Total Rows</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Total Rows</span>
                     </div>
 
                     <div className="text-right border-l border-white/10 pl-6">
                       <span className="font-bold text-emerald-400 block">{j.processed_records}</span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Processed</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Processed</span>
                     </div>
 
                     <div className="text-right border-l border-white/10 pl-6">
                       <span className={`font-bold block ${j.failed_records > 0 ? "text-rose-400 animate-pulse" : "text-gray-500"}`}>
                         {j.failed_records}
                       </span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Failed</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Failed</span>
                     </div>
 
                     {j.failed_records > 0 && (
-                      <Button 
+                      <Button
                         onClick={() => setSelectedJob(j)}
                         className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 text-xs font-semibold h-8 rounded-lg px-3 shrink-0 ml-2"
                       >
@@ -295,9 +295,9 @@ export default function Ingestion() {
 
       {/* Selected failed job error inspection side drawer */}
       {selectedJob && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-end animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/70 z-50 flex justify-end animate-in fade-in duration-300">
           <div className="absolute inset-0" onClick={() => setSelectedJob(null)} />
-          <div className="w-full max-w-xl bg-[#09090c] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-xl bg-[#111a15] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-rose-500" />
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
               <div>
@@ -307,9 +307,9 @@ export default function Ingestion() {
                 </div>
                 <p className="font-mono text-xs text-gray-500 mt-1">Ingestion ID: {selectedJob.job_id}</p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedJob(null)}
                 className="text-gray-400 hover:text-white"
               >
@@ -321,16 +321,16 @@ export default function Ingestion() {
               {/* Job summary metrics in drawer */}
               <div className="bg-glass border-glass p-5 rounded-2xl flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className="text-[10px] text-gray-500 uppercase font-semibold">Tally breakdown</span>
+                  <span className="text-xs text-gray-500 uppercase font-semibold">Tally breakdown</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-bold text-white">{selectedJob.processed_records} / {selectedJob.total_records}</span>
-                    <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-bold">
+                    <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold">
                       {selectedJob.failed_records} Failed Rows
                     </Badge>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-gray-500 uppercase font-semibold text-right block">Failure Rate</span>
+                  <span className="text-xs text-gray-500 uppercase font-semibold text-right block">Failure Rate</span>
                   <strong className="text-sm text-rose-400 block mt-1">
                     {((selectedJob.failed_records / selectedJob.total_records) * 100).toFixed(1)}% Error Ratio
                   </strong>
@@ -340,14 +340,14 @@ export default function Ingestion() {
               {/* Error list logs */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Detailed Validation Infractions</h4>
-                
+
                 <div className="space-y-2">
                   <div className="bg-rose-500/5 border border-rose-500/10 p-4 rounded-xl space-y-1">
                     <div className="flex justify-between items-center text-xs">
                       <strong className="text-rose-300">Row 42: Classification Mismatch</strong>
-                      <span className="text-[9px] text-gray-500 font-mono">Row_Index: 42</span>
+                      <span className="text-xs text-gray-500 font-mono">Row_Index: 42</span>
                     </div>
-                    <p className="text-[10px] text-gray-400 leading-relaxed pt-1">
+                    <p className="text-xs text-gray-400 leading-relaxed pt-1">
                       Auditor failed parsing employee trade rate schedule. Locality schedule `Boston, MA` requires classification of `Electrician` or `Laborer`. Row 42 logged `Apprentice Supervisor` which is unlisted.
                     </p>
                   </div>
@@ -355,9 +355,9 @@ export default function Ingestion() {
                   <div className="bg-rose-500/5 border border-rose-500/10 p-4 rounded-xl space-y-1">
                     <div className="flex justify-between items-center text-xs">
                       <strong className="text-rose-300">Row 89: Structurally Empty Rate</strong>
-                      <span className="text-[9px] text-gray-500 font-mono">Row_Index: 89</span>
+                      <span className="text-xs text-gray-500 font-mono">Row_Index: 89</span>
                     </div>
-                    <p className="text-[10px] text-gray-400 leading-relaxed pt-1">
+                    <p className="text-xs text-gray-400 leading-relaxed pt-1">
                       Billing rate is zero or empty. Employee name `Alex Mechanic` logged 38.0 hours but payroll hourly wage is absent. Minimum required for heavy highway structures is $38.50/hr.
                     </p>
                   </div>

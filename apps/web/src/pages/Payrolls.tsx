@@ -7,16 +7,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  User, 
-  Wrench, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  Search, 
-  CheckCircle2, 
-  XCircle, 
-  ShieldAlert, 
+import {
+  User,
+  Wrench,
+  MapPin,
+  DollarSign,
+  Clock,
+  Search,
+  CheckCircle2,
+  XCircle,
+  ShieldAlert,
   TrendingUp
 } from "lucide-react";
 import type { PaginatedPayrolls, PayrollRecordSummary } from "../types/api";
@@ -68,7 +68,8 @@ export default function Payrolls() {
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-            <Input 
+            <Input
+              aria-label="Search payrolls by employee name"
               placeholder="Search employee name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -77,10 +78,10 @@ export default function Payrolls() {
           </div>
 
           <Select value={tradeFilter} onValueChange={setTradeFilter}>
-            <SelectTrigger className="w-full sm:w-48 bg-black/40 border-white/10 text-white h-10 rounded-lg">
+            <SelectTrigger aria-label="Trade filter" className="w-full sm:w-48 bg-black/40 border-white/10 text-white h-10 rounded-lg">
               <SelectValue placeholder="Filter Trade" />
             </SelectTrigger>
-            <SelectContent className="bg-[#09090c] border-white/10 text-white">
+            <SelectContent className="bg-[#111a15] border-white/10 text-white">
               {TRADES.map((t) => (
                 <SelectItem key={t} value={t} className="hover:bg-white/5 font-semibold text-xs py-2">{t}</SelectItem>
               ))}
@@ -88,18 +89,18 @@ export default function Payrolls() {
           </Select>
 
           <Select value={localityFilter} onValueChange={setLocalityFilter}>
-            <SelectTrigger className="w-full sm:w-48 bg-black/40 border-white/10 text-white h-10 rounded-lg">
+            <SelectTrigger aria-label="Locality filter" className="w-full sm:w-48 bg-black/40 border-white/10 text-white h-10 rounded-lg">
               <SelectValue placeholder="Filter Locality" />
             </SelectTrigger>
-            <SelectContent className="bg-[#09090c] border-white/10 text-white">
+            <SelectContent className="bg-[#111a15] border-white/10 text-white">
               {LOCALITIES.map((l) => (
                 <SelectItem key={l} value={l} className="hover:bg-white/5 font-semibold text-xs py-2">{l}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        
-        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg shrink-0 self-end md:self-auto">
+
+        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg shrink-0 self-end md:self-auto">
           {filteredPayrolls.length} Records Ledgered
         </div>
       </div>
@@ -118,10 +119,10 @@ export default function Payrolls() {
           {filteredPayrolls.map((p) => {
             const minWage = getMinWage(p.trade_code);
             const isCompliant = p.hourly_rate >= minWage;
-            
+
             return (
-              <Card 
-                key={p.id} 
+              <Card
+                key={p.id}
                 className="bg-glass border-glass hover:border-white/15 transition-all shadow-sm overflow-hidden group cursor-pointer"
                 onClick={() => setSelectedPayroll(p)}
               >
@@ -156,29 +157,29 @@ export default function Payrolls() {
                         <Clock className="w-3.5 h-3.5 text-gray-500" />
                         {p.total_hours.toFixed(1)} hrs
                       </span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Audited Hours</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Audited Hours</span>
                     </div>
 
                     <div className="text-right border-l border-white/10 pl-8">
                       <span className="font-semibold text-gray-200 block text-xs">
                         ${p.hourly_rate.toFixed(2)}/hr
                       </span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Hourly rate</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Hourly rate</span>
                     </div>
 
                     <div className="text-right border-l border-white/10 pl-8">
                       <span className="font-extrabold text-white block text-sm">
                         ${p.gross_pay.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
-                      <span className="text-[9px] uppercase tracking-wider text-gray-500">Gross Wages</span>
+                      <span className="text-xs uppercase tracking-wider text-gray-500">Gross Wages</span>
                     </div>
                   </div>
 
                   {/* Right Section: Compliance status badge */}
                   <div className="shrink-0 flex justify-end">
-                    <Badge className={`text-[10px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5 ${
-                      isCompliant 
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                    <Badge className={`text-xs font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5 ${
+                      isCompliant
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                     }`}>
                       {isCompliant ? (
@@ -203,18 +204,18 @@ export default function Payrolls() {
 
       {/* Selected Payroll details sheet */}
       {selectedPayroll && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex justify-end animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/70 z-50 flex justify-end animate-in fade-in duration-300">
           <div className="absolute inset-0" onClick={() => setSelectedPayroll(null)} />
-          <div className="w-full max-w-xl bg-[#09090c] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-premium" />
+          <div className="w-full max-w-xl bg-[#111a15] border-l border-white/10 h-full overflow-y-auto relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-ledger-accent" />
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-white">Wage Audit Inspection</h2>
                 <p className="text-xs text-gray-500 mt-1">Record ID: {selectedPayroll.id}</p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedPayroll(null)}
                 className="text-gray-400 hover:text-white"
               >
@@ -237,7 +238,7 @@ export default function Payrolls() {
               {/* Wage calculations block */}
               <div className="bg-glass border-glass p-5 rounded-2xl space-y-4">
                 <h4 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Audited Gross Wage Formulation</h4>
-                
+
                 <div className="divide-y divide-white/5 space-y-3">
                   <div className="flex items-center justify-between text-xs pt-1">
                     <span className="text-gray-400 flex items-center gap-1.5">
@@ -246,7 +247,7 @@ export default function Payrolls() {
                     </span>
                     <span className="font-bold text-white">{selectedPayroll.total_hours.toFixed(1)} Hours</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs pt-3">
                     <span className="text-gray-400 flex items-center gap-1.5">
                       <DollarSign className="w-3.5 h-3.5 text-gray-500" />
@@ -260,7 +261,7 @@ export default function Payrolls() {
                       <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
                       Total Gross Pay
                     </span>
-                    <span className="text-sm text-glow">
+                    <span className="text-sm ">
                       ${selectedPayroll.gross_pay.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -275,8 +276,8 @@ export default function Payrolls() {
 
                 return (
                   <div className={`p-5 rounded-2xl border ${
-                    isCompliant 
-                      ? "bg-emerald-950/20 border-emerald-500/20 text-emerald-300" 
+                    isCompliant
+                      ? "bg-emerald-950/20 border-emerald-500/20 text-emerald-300"
                       : "bg-rose-950/20 border-rose-500/20 text-rose-300"
                   }`}>
                     <div className="flex items-center gap-2">
@@ -289,10 +290,10 @@ export default function Payrolls() {
                         Wage Determination Delta Analysis
                       </h4>
                     </div>
-                    
+
                     <p className="text-xs mt-3 leading-relaxed text-gray-300">
-                      The Davis-Bacon Prevailing Wage Determination minimum scheduled wage rate for an 
-                      <strong>{" "}{selectedPayroll.trade_code}</strong> in <strong>{selectedPayroll.locality_code}</strong> is 
+                      The Davis-Bacon Prevailing Wage Determination minimum scheduled wage rate for an
+                      <strong>{" "}{selectedPayroll.trade_code}</strong> in <strong>{selectedPayroll.locality_code}</strong> is
                       <strong>{" "}${minWage.toFixed(2)}/hr</strong>.
                     </p>
 

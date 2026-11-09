@@ -47,7 +47,7 @@ export default function UploadDropzone({
         }`}
       >
         {/* Decorative gradient top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-ledger-accent opacity-0 group-hover:opacity-100 transition-opacity" />
 
         <div className="mx-auto w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors mb-4 border border-white/5">
           <UploadCloud className="w-6 h-6 text-gray-400 group-hover:text-white group-hover:scale-105 transition-all" />
@@ -68,7 +68,7 @@ export default function UploadDropzone({
         <>
           <div className="relative flex items-center py-2">
             <Separator className="flex-1 bg-white/5" />
-            <span className="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-[#030303] relative z-10">Or paste text</span>
+            <span className="px-4 text-xs font-bold text-gray-500 uppercase tracking-widest bg-[#0c1410] relative z-10">Or paste text</span>
             <Separator className="flex-1 bg-white/5" />
           </div>
 

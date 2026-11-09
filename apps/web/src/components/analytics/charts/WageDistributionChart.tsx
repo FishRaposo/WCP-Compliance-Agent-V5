@@ -88,7 +88,7 @@ export default function WageDistributionChart({ data }: Props) {
           ]}
           stroke="hsl(var(--muted-foreground))"
           strokeDasharray="4 4"
-          label={{ value: "Parity", fontSize: 10 }}
+          label={{ value: "Parity", fontSize: 12 }}
         />
         <Scatter name="Workers" data={data} shape={<CustomDot />} />
       </ScatterChart>

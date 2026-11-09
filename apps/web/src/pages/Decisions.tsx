@@ -22,6 +22,7 @@ export default function Decisions() {
 
       <div className="flex gap-3">
         <Input
+          aria-label="Search decisions by job ID"
           placeholder="Search by job ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -31,7 +32,7 @@ export default function Decisions() {
           value={trustBandFilter ?? "all"}
           onValueChange={(v) => setTrustBandFilter(v === "all" ? undefined : v as TrustBand)}
         >
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-48" aria-label="Trust band filter">
             <SelectValue placeholder="Trust Band" />
           </SelectTrigger>
           <SelectContent>
