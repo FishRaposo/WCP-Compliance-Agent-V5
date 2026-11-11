@@ -17,7 +17,7 @@
     "@wcp/observability": "workspace:*",
     "@wcp/typescript-client": "workspace:*",
     "dotenv": "^18.0.9",
-    "hono": "^4.13.16",
+    "hono": "^4.13.17",
     "jose": "^6.2.15",
     "redis": "6.3.1",
     "zod": "^4.6.6"

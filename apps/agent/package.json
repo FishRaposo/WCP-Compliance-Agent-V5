@@ -16,9 +16,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",
-    "hono": "^4.13.16",
+    "hono": "^4.13.17",
     "zod": "^4.6.6",
-    "ai": "^6.0.323",
+    "ai": "^6.0.325",
     "@ai-sdk/openai": "^3.0.131",
     "@ai-sdk/anthropic": "^3.0.137",
     "ollama-ai-provider-v2": "^3.6.0",
