@@ -10,29 +10,29 @@ dynamic = ["dependencies"]
 packages = [{include = "wcp_data", from = "src"}]
 
 [tool.poetry.dependencies]
-fastapi = ">=0.115,<0.163"
+fastapi = ">=0.165.0,<0.166"
 uvicorn = {version = ">=0.34,<0.55", extras = ["standard"]}
-pydantic = {extras = ["email"], version = "^2.13.3"}
-pydantic-settings = "^2.7.0"
-sqlalchemy = {version = "^2.0.36", extras = ["asyncio"]}
+pydantic = {extras = ["email"], version = "^2.14.4"}
+pydantic-settings = "^2.16.3"
+sqlalchemy = {version = "^2.1.9", extras = ["asyncio"]}
 asyncpg = "0.32.0"
 alembic = "^1.14.0"
 opentelemetry-api = "^1.29.0"
 bcrypt = ">=4.2,<6.0"
 
 [project.optional-dependencies]
-analytics = ["duckdb>=1.1,<3.0", "pyarrow>=23.0.1,<27.0.0"]
+analytics = ["duckdb>=2.0.1,<3.0", "pyarrow>=23.0.1,<27.0.0"]
 connectors = ["aiohttp>=3.11.0"]
 cache = ["redis>=5.0.0"]
-all = ["duckdb>=1.1,<3.0", "pyarrow>=23.0.1,<27.0.0", "aiohttp>=3.11.0", "redis>=5.0.0"]
+all = ["duckdb>=2.0.1,<3.0", "pyarrow>=23.0.1,<27.0.0", "aiohttp>=3.11.0", "redis>=5.0.0"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
-pytest-asyncio = ">=1.0,<2"
+pytest-asyncio = ">=1.5.0,<2"
 ruff = "^0.8.0"
 mypy = "^1.13.0"
 httpx = "^0.28.1"
-httpx2 = ">=2.16.0"
+httpx2 = ">=2.16.2"
 aiosqlite = ">=0.20,<0.23"
 aiohttp = "^3.11.0"
 
